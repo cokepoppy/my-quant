@@ -1,0 +1,171 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  extensions = [timescaledb]
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String   @unique
+  password  String
+  role      String   @default("user")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  strategies    Strategy[]
+  backtests     Backtest[]
+  trades        Trade[]
+  accounts      Account[]
+  apiKeys       ApiKey[]
+  
+  @@map("users")
+}
+
+model Strategy {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  code        String
+  type        String   // 'technical', 'statistical', 'ml', 'high_frequency'
+  status      String   @default("draft") // 'draft', 'active', 'inactive', 'archived'
+  parameters  Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  backtests   Backtest[]
+  trades      Trade[]
+  
+  @@map("strategies")
+}
+
+model MarketData {
+  id        String   @id @default(cuid())
+  symbol    String
+  timestamp DateTime
+  open      Float
+  high      Float
+  low       Float
+  close     Float
+  volume    Float?
+  interval  String   // '1m', '5m', '15m', '30m', '1h', '4h', '1d', '1w', '1M'
+  source    String   @default("manual") // 'manual', 'api', 'feed'
+  
+  // TimescaleDB hypertable
+  @@map("market_data")
+}
+
+model Backtest {
+  id              String   @id @default(cuid())
+  name            String
+  strategyId      String
+  userId          String
+  startDate       DateTime
+  endDate         DateTime
+  initialCapital  Float
+  finalCapital    Float?
+  totalReturn     Float?
+  sharpeRatio     Float?
+  maxDrawdown     Float?
+  winRate         Float?
+  totalTrades     Int?
+  status          String   @default("pending") // 'pending', 'running', 'completed', 'failed'
+  parameters      Json?
+  results         Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  strategy        Strategy    @relation(fields: [strategyId], references: [id], onDelete: Cascade)
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trades          Trade[]
+  
+  @@map("backtests")
+}
+
+model Trade {
+  id            String    @id @default(cuid())
+  strategyId    String
+  userId        String
+  backtestId    String?
+  symbol        String
+  type          String    // 'buy', 'sell'
+  side          String    // 'long', 'short'
+  quantity      Float
+  price         Float
+  timestamp     DateTime
+  status        String    @default("pending") // 'pending', 'executed', 'cancelled', 'failed'
+  commission    Float?
+  slippage      Float?
+  pnl           Float?
+  notes         String?
+  
+  // Relations
+  strategy      Strategy  @relation(fields: [strategyId], references: [id], onDelete: Cascade)
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  backtest      Backtest? @relation(fields: [backtestId], references: [id], onDelete: Cascade)
+  
+  @@map("trades")
+}
+
+model Account {
+  id            String   @id @default(cuid())
+  userId        String
+  name          String
+  type          String   // 'demo', 'live'
+  balance       Float
+  currency      String   @default("USD")
+  broker        String?
+  apiKey        String?
+  apiSecret     String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("accounts")
+}
+
+model SystemLog {
+  id        String   @id @default(cuid())
+  level     String   // 'info', 'warn', 'error', 'debug'
+  message   String
+  metadata  Json?
+  source    String   @default("system")
+  createdAt DateTime @default(now())
+  
+  @@map("system_logs")
+}
+
+model ApiKey {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  key       String   @unique
+  secret    String
+  permissions Json?
+  isActive  Boolean  @default(true)
+  expiresAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("api_keys")
+}

@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  # PostgreSQL 数据库
+  postgres:
+    image: timescale/timescaledb:latest-pg15
+    container_name: myquant-postgres
+    environment:
+      POSTGRES_DB: quant_trading
+      POSTGRES_USER: quant
+      POSTGRES_PASSWORD: quant123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - quant-network
+    restart: unless-stopped
+
+  # Redis 缓存
+  redis:
+    image: redis:7-alpine
+    container_name: myquant-redis
+    command: redis-server --requirepass redis123 --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - quant-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  quant-network:
+    driver: bridge

@@ -1,0 +1,323 @@
+version: '3.8'
+
+services:
+  # PostgreSQL 数据库 (使用 TimescaleDB 以支持时间序列数据)
+  postgres:
+    image: timescale/timescaledb:latest-pg15
+    container_name: myquant-postgres
+    environment:
+      POSTGRES_DB: quant_trading
+      POSTGRES_USER: quant
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_INITDB_ARGS: "--data-checksums"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./docker/postgresql.conf:/etc/postgresql/postgresql.conf
+    ports:
+      - "5432:5432"
+    networks:
+      - quant-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U quant"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+
+  # Redis 缓存和会话存储
+  redis:
+    image: redis:7-alpine
+    container_name: myquant-redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD} --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+      - ./docker/redis.conf:/etc/redis/redis.conf
+    ports:
+      - "6379:6379"
+    networks:
+      - quant-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "--no-auth-warning", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 512M
+          cpus: '0.2'
+
+  # 后端 API 服务
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: production
+      PORT: 8000
+      DATABASE_URL: postgresql://quant:${POSTGRES_PASSWORD}@postgres:5432/quant_trading
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ORIGIN: https://localhost
+      LOG_LEVEL: info
+      RATE_LIMIT_WINDOW_MS: 900000
+      RATE_LIMIT_MAX_REQUESTS: 1000
+    volumes:
+      - ./backend/logs:/app/logs
+      - ./backend/.env:/app/.env
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - quant-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+
+  # 前端应用
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: production
+      VITE_API_URL: https://localhost/api
+      VITE_WS_URL: wss://localhost/ws
+    volumes:
+      - ./frontend/.env:/app/.env
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - quant-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.2'
+
+  # Nginx 反向代理和负载均衡
+  nginx:
+    image: nginx:alpine
+    container_name: myquant-nginx
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf
+      - ./docker/ssl:/etc/nginx/ssl
+      - ./logs/nginx:/var/log/nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - quant-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.3'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
+
+  # 数据备份服务
+  backup:
+    image: postgres:15-alpine
+    container_name: myquant-backup
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_DB: quant_trading
+      POSTGRES_USER: quant
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      BACKUP_DIR: /backups
+      BACKUP_SCHEDULE: "0 2 * * *"  # 每天凌晨2点备份
+      RETENTION_DAYS: 30
+    volumes:
+      - ./backups:/backups
+      - ./scripts/backup.sh:/backup.sh
+    depends_on:
+      - postgres
+    networks:
+      - quant-network
+    restart: unless-stopped
+
+  # 监控服务 - Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: myquant-prometheus
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - quant-network
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 512M
+          cpus: '0.2'
+
+  # 监控服务 - Grafana
+  grafana:
+    image: grafana/grafana:latest
+    container_name: myquant-grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
+      GF_USERS_ALLOW_SIGN_UP: false
+      GF_USERS_ALLOW_ORG_CREATE: false
+      GF_AUTH_ANONYMOUS_ENABLED: false
+      GF_SERVER_ROOT_URL: https://localhost/grafana
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./docker/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./docker/grafana/datasources:/etc/grafana/provisioning/datasources
+    ports:
+      - "3001:3000"
+    networks:
+      - quant-network
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.3'
+        reservations:
+          memory: 256M
+          cpus: '0.1'
+
+  # 日志收集 - Fluentd
+  fluentd:
+    build:
+      context: ./docker/fluentd
+    container_name: myquant-fluentd
+    volumes:
+      - ./backend/logs:/fluentd/log/backend
+      - ./frontend/logs:/fluentd/log/frontend
+      - ./logs/fluentd:/fluentd/log
+      - ./docker/fluentd/conf:/fluentd/etc
+    networks:
+      - quant-network
+    restart: unless-stopped
+    depends_on:
+      - backend
+      - frontend
+
+  # 性能监控 - Node Exporter
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: myquant-node-exporter
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
+    ports:
+      - "9100:9100"
+    networks:
+      - quant-network
+    restart: unless-stopped
+
+  # 数据库监控 - Postgres Exporter
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: myquant-postgres-exporter
+    environment:
+      DATA_SOURCE_NAME: postgresql://quant:${POSTGRES_PASSWORD}@postgres:5432/quant_trading?sslmode=disable
+    ports:
+      - "9187:9187"
+    depends_on:
+      - postgres
+    networks:
+      - quant-network
+    restart: unless-stopped
+
+  # Redis 监控 - Redis Exporter
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: myquant-redis-exporter
+    environment:
+      REDIS_ADDR: redis://:${REDIS_PASSWORD}@redis:6379
+    ports:
+      - "9121:9121"
+    depends_on:
+      - redis
+    networks:
+      - quant-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  quant-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
