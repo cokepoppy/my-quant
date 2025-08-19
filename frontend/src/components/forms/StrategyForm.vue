@@ -14,7 +14,7 @@
             <h3>基本信息</h3>
           </div>
         </template>
-        
+
         <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="策略名称" prop="name">
@@ -38,7 +38,7 @@
             </el-form-item>
           </el-col>
         </el-row>
-        
+
         <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="编程语言" prop="language">
@@ -69,7 +69,7 @@
             </el-form-item>
           </el-col>
         </el-row>
-        
+
         <el-form-item label="策略描述" prop="description">
           <el-input
             v-model="form.description"
@@ -97,18 +97,26 @@
                 </el-button>
                 <template #dropdown>
                   <el-dropdown-menu>
-                    <el-dropdown-item command="sma">简单移动平均</el-dropdown-item>
-                    <el-dropdown-item command="ema">指数移动平均</el-dropdown-item>
-                    <el-dropdown-item command="rsi">相对强弱指数</el-dropdown-item>
+                    <el-dropdown-item command="sma"
+                      >简单移动平均</el-dropdown-item
+                    >
+                    <el-dropdown-item command="ema"
+                      >指数移动平均</el-dropdown-item
+                    >
+                    <el-dropdown-item command="rsi"
+                      >相对强弱指数</el-dropdown-item
+                    >
                     <el-dropdown-item command="macd">MACD</el-dropdown-item>
-                    <el-dropdown-item command="bollinger">布林带</el-dropdown-item>
+                    <el-dropdown-item command="bollinger"
+                      >布林带</el-dropdown-item
+                    >
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
             </div>
           </div>
         </template>
-        
+
         <el-form-item prop="code">
           <el-input
             v-model="form.code"
@@ -118,7 +126,7 @@
             class="code-editor"
           />
         </el-form-item>
-        
+
         <div v-if="validationResult" class="validation-result">
           <el-alert
             :title="validationResult.isValid ? '验证通过' : '验证失败'"
@@ -138,14 +146,22 @@
             <el-button @click="addParameter">添加参数</el-button>
           </div>
         </template>
-        
-        <div v-for="(param, index) in form.parameters" :key="index" class="parameter-item">
+
+        <div
+          v-for="(param, index) in form.parameters"
+          :key="index"
+          class="parameter-item"
+        >
           <el-row :gutter="20">
             <el-col :span="4">
               <el-form-item
                 :label="`参数${index + 1}名称`"
                 :prop="`parameters.${index}.name`"
-                :rules="{ required: true, message: '请输入参数名称', trigger: 'blur' }"
+                :rules="{
+                  required: true,
+                  message: '请输入参数名称',
+                  trigger: 'blur',
+                }"
               >
                 <el-input v-model="param.name" placeholder="参数名称" />
               </el-form-item>
@@ -154,7 +170,11 @@
               <el-form-item
                 label="类型"
                 :prop="`parameters.${index}.type`"
-                :rules="{ required: true, message: '请选择参数类型', trigger: 'change' }"
+                :rules="{
+                  required: true,
+                  message: '请选择参数类型',
+                  trigger: 'change',
+                }"
               >
                 <el-select v-model="param.type">
                   <el-option label="数字" value="number" />
@@ -169,7 +189,11 @@
               <el-form-item
                 label="值"
                 :prop="`parameters.${index}.value`"
-                :rules="{ required: true, message: '请输入参数值', trigger: 'blur' }"
+                :rules="{
+                  required: true,
+                  message: '请输入参数值',
+                  trigger: 'blur',
+                }"
               >
                 <el-input v-model="param.value" placeholder="参数值" />
               </el-form-item>
@@ -211,7 +235,7 @@
             </el-col>
           </el-row>
         </div>
-        
+
         <div v-if="form.parameters.length === 0" class="empty-parameters">
           <el-empty description="暂无参数" :image-size="80">
             <el-button @click="addParameter">添加第一个参数</el-button>
@@ -226,7 +250,7 @@
             <h3>交易配置</h3>
           </div>
         </template>
-        
+
         <el-row :gutter="20">
           <el-col :span="8">
             <el-form-item label="交易标的" prop="config.symbols">
@@ -247,7 +271,10 @@
           </el-col>
           <el-col :span="8">
             <el-form-item label="时间周期" prop="config.timeframe">
-              <el-select v-model="form.config.timeframe" placeholder="请选择时间周期">
+              <el-select
+                v-model="form.config.timeframe"
+                placeholder="请选择时间周期"
+              >
                 <el-option label="1分钟" value="1m" />
                 <el-option label="5分钟" value="5m" />
                 <el-option label="15分钟" value="15m" />
@@ -261,7 +288,10 @@
           </el-col>
           <el-col :span="8">
             <el-form-item label="交易所" prop="config.execution.exchange">
-              <el-select v-model="form.config.execution.exchange" placeholder="请选择交易所">
+              <el-select
+                v-model="form.config.execution.exchange"
+                placeholder="请选择交易所"
+              >
                 <el-option label="币安" value="binance" />
                 <el-option label="OKX" value="okx" />
                 <el-option label="火币" value="huobi" />
@@ -279,10 +309,13 @@
             <h3>风险管理</h3>
           </div>
         </template>
-        
+
         <el-row :gutter="20">
           <el-col :span="6">
-            <el-form-item label="最大持仓" prop="config.riskManagement.maxPositionSize">
+            <el-form-item
+              label="最大持仓"
+              prop="config.riskManagement.maxPositionSize"
+            >
               <el-input-number
                 v-model="form.config.riskManagement.maxPositionSize"
                 :min="0"
@@ -293,7 +326,10 @@
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="最大回撤" prop="config.riskManagement.maxDrawdown">
+            <el-form-item
+              label="最大回撤"
+              prop="config.riskManagement.maxDrawdown"
+            >
               <el-input-number
                 v-model="form.config.riskManagement.maxDrawdown"
                 :min="0"
@@ -304,7 +340,10 @@
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="止损比例" prop="config.riskManagement.stopLoss">
+            <el-form-item
+              label="止损比例"
+              prop="config.riskManagement.stopLoss"
+            >
               <el-input-number
                 v-model="form.config.riskManagement.stopLoss"
                 :min="0"
@@ -315,7 +354,10 @@
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="止盈比例" prop="config.riskManagement.takeProfit">
+            <el-form-item
+              label="止盈比例"
+              prop="config.riskManagement.takeProfit"
+            >
               <el-input-number
                 v-model="form.config.riskManagement.takeProfit"
                 :min="0"
@@ -326,10 +368,13 @@
             </el-form-item>
           </el-col>
         </el-row>
-        
+
         <el-row :gutter="20">
           <el-col :span="6">
-            <el-form-item label="单笔风险" prop="config.riskManagement.riskPerTrade">
+            <el-form-item
+              label="单笔风险"
+              prop="config.riskManagement.riskPerTrade"
+            >
               <el-input-number
                 v-model="form.config.riskManagement.riskPerTrade"
                 :min="0"
@@ -340,7 +385,10 @@
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="最大相关性" prop="config.riskManagement.maxCorrelation">
+            <el-form-item
+              label="最大相关性"
+              prop="config.riskManagement.maxCorrelation"
+            >
               <el-input-number
                 v-model="form.config.riskManagement.maxCorrelation"
                 :min="0"
@@ -357,7 +405,7 @@
       <div class="form-actions">
         <el-button @click="handleCancel">取消</el-button>
         <el-button type="primary" @click="handleSubmit" :loading="loading">
-          {{ isEdit ? '更新策略' : '创建策略' }}
+          {{ isEdit ? "更新策略" : "创建策略" }}
         </el-button>
       </div>
     </el-form>
@@ -365,145 +413,145 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
-import { ArrowDown } from '@element-plus/icons-vue'
-import { useStrategyStore } from '@/stores/strategy'
-import type { Strategy, StrategyParameter, StrategyConfig } from '@/types/strategy'
+import { ref, reactive, computed, onMounted } from "vue";
+import { ElMessage } from "element-plus";
+import { ArrowDown } from "@element-plus/icons-vue";
+import { useStrategyStore } from "@/stores/strategy";
+import type {
+  Strategy,
+  StrategyParameter,
+  StrategyConfig,
+} from "@/types/strategy";
 
 interface Props {
-  strategy?: Strategy
-  templates?: any[]
-  isEdit?: boolean
+  strategy?: Strategy;
+  templates?: any[];
+  isEdit?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  isEdit: false
-})
+  isEdit: false,
+});
 
 const emit = defineEmits<{
-  submit: [data: Partial<Strategy>]
-  cancel: []
-}>()
+  submit: [data: Partial<Strategy>];
+  cancel: [];
+}>();
 
-const strategyStore = useStrategyStore()
+const strategyStore = useStrategyStore();
 
 // 响应式数据
-const formRef = ref()
-const loading = ref(false)
-const validationResult = ref<any>(null)
+const formRef = ref();
+const loading = ref(false);
+const validationResult = ref<any>(null);
 
 // 表单数据
 const form = reactive<Partial<Strategy>>({
-  name: '',
-  description: '',
-  type: 'trend',
-  language: 'python',
-  code: '',
+  name: "",
+  description: "",
+  type: "trend",
+  language: "python",
+  code: "",
   config: {
     symbols: [],
-    timeframe: '1h',
+    timeframe: "1h",
     riskManagement: {
       maxPositionSize: 10,
       maxDrawdown: 20,
       stopLoss: 5,
       takeProfit: 10,
       riskPerTrade: 2,
-      maxCorrelation: 0.7
+      maxCorrelation: 0.7,
     },
     execution: {
-      exchange: 'binance',
-      accountType: 'spot',
+      exchange: "binance",
+      accountType: "spot",
       slippage: 0.1,
       commission: 0.1,
       leverage: 1,
-      executionDelay: 1000
+      executionDelay: 1000,
     },
     notifications: {
       email: true,
       push: true,
-      events: ['trade', 'error', 'warning']
-    }
+      events: ["trade", "error", "warning"],
+    },
   },
   parameters: [],
-  tags: []
-})
+  tags: [],
+});
 
 // 验证规则
 const rules = {
   name: [
-    { required: true, message: '请输入策略名称', trigger: 'blur' },
-    { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
+    { required: true, message: "请输入策略名称", trigger: "blur" },
+    { min: 2, max: 50, message: "长度在 2 到 50 个字符", trigger: "blur" },
   ],
   description: [
-    { required: true, message: '请输入策略描述', trigger: 'blur' },
-    { min: 10, max: 500, message: '长度在 10 到 500 个字符', trigger: 'blur' }
+    { required: true, message: "请输入策略描述", trigger: "blur" },
+    { min: 10, max: 500, message: "长度在 10 到 500 个字符", trigger: "blur" },
   ],
-  type: [
-    { required: true, message: '请选择策略类型', trigger: 'change' }
-  ],
-  language: [
-    { required: true, message: '请选择编程语言', trigger: 'change' }
-  ],
+  type: [{ required: true, message: "请选择策略类型", trigger: "change" }],
+  language: [{ required: true, message: "请选择编程语言", trigger: "change" }],
   code: [
-    { required: true, message: '请输入策略代码', trigger: 'blur' },
-    { min: 10, message: '代码长度至少 10 个字符', trigger: 'blur' }
+    { required: true, message: "请输入策略代码", trigger: "blur" },
+    { min: 10, message: "代码长度至少 10 个字符", trigger: "blur" },
   ],
-  'config.symbols': [
-    { required: true, message: '请选择至少一个交易标的', trigger: 'change' }
+  "config.symbols": [
+    { required: true, message: "请选择至少一个交易标的", trigger: "change" },
   ],
-  'config.timeframe': [
-    { required: true, message: '请选择时间周期', trigger: 'change' }
-  ]
-}
+  "config.timeframe": [
+    { required: true, message: "请选择时间周期", trigger: "change" },
+  ],
+};
 
 // 标签选项
 const tagOptions = [
-  '趋势跟踪',
-  '均值回归',
-  '动量策略',
-  '套利',
-  '高频交易',
-  '量化交易',
-  '自动化',
-  '低风险',
-  '中风险',
-  '高风险'
-]
+  "趋势跟踪",
+  "均值回归",
+  "动量策略",
+  "套利",
+  "高频交易",
+  "量化交易",
+  "自动化",
+  "低风险",
+  "中风险",
+  "高风险",
+];
 
 // 方法
 const validateCode = async () => {
   if (!form.code || !form.language || !form.type) {
-    ElMessage.warning('请先填写策略代码、语言和类型')
-    return
+    ElMessage.warning("请先填写策略代码、语言和类型");
+    return;
   }
 
   try {
-    loading.value = true
+    loading.value = true;
     const result = await strategyStore.validateStrategyCode({
       code: form.code,
       language: form.language,
-      type: form.type
-    })
-    validationResult.value = result
-    
+      type: form.type,
+    });
+    validationResult.value = result;
+
     if (result.isValid) {
-      ElMessage.success('代码验证通过')
+      ElMessage.success("代码验证通过");
     } else {
-      ElMessage.error('代码验证失败')
+      ElMessage.error("代码验证失败");
     }
   } catch (error) {
-    console.error('验证代码失败:', error)
-    ElMessage.error('验证代码失败')
+    console.error("验证代码失败:", error);
+    ElMessage.error("验证代码失败");
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 const formatCode = () => {
   // 这里可以添加代码格式化逻辑
-  ElMessage.info('代码格式化功能开发中')
-}
+  ElMessage.info("代码格式化功能开发中");
+};
 
 const handleTemplateCommand = (command: string) => {
   const templates = {
@@ -521,7 +569,7 @@ def handle_data(context, data):
         order_target_percent(context.symbol, 1.0)
     else:
         order_target_percent(context.symbol, 0.0)`,
-    
+
     ema: `# 指数移动平均策略
 def initialize(context):
     context.ema_period = 12
@@ -536,7 +584,7 @@ def handle_data(context, data):
         order_target_percent(context.symbol, 1.0)
     else:
         order_target_percent(context.symbol, 0.0)`,
-    
+
     rsi: `# RSI策略
 def initialize(context):
     context.rsi_period = 14
@@ -559,7 +607,7 @@ def calculate_rsi(prices, period):
     loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
     rs = gain / loss
     return 100 - (100 / (1 + rs))`,
-    
+
     macd: `# MACD策略
 def initialize(context):
     context.fast_period = 12
@@ -579,7 +627,7 @@ def handle_data(context, data):
         order_target_percent(context.symbol, 1.0)
     else:
         order_target_percent(context.symbol, 0.0)`,
-    
+
     bollinger: `# 布林带策略
 def initialize(context):
     context.bb_period = 20
@@ -599,63 +647,63 @@ def handle_data(context, data):
     if current_price < lower_band.iloc[-1]:
         order_target_percent(context.symbol, 1.0)
     elif current_price > upper_band.iloc[-1]:
-        order_target_percent(context.symbol, 0.0)`
-  }
-  
+        order_target_percent(context.symbol, 0.0)`,
+  };
+
   if (templates[command]) {
-    form.code = templates[command]
-    ElMessage.success('模板已插入')
+    form.code = templates[command];
+    ElMessage.success("模板已插入");
   }
-}
+};
 
 const addParameter = () => {
   if (!form.parameters) {
-    form.parameters = []
+    form.parameters = [];
   }
   form.parameters.push({
-    name: '',
-    type: 'number',
-    value: '',
-    description: '',
+    name: "",
+    type: "number",
+    value: "",
+    description: "",
     required: true,
     min: 0,
-    max: 100
-  })
-}
+    max: 100,
+  });
+};
 
 const removeParameter = (index: number) => {
   if (form.parameters) {
-    form.parameters.splice(index, 1)
+    form.parameters.splice(index, 1);
   }
-}
+};
 
 const handleSubmit = async () => {
-  if (!formRef.value) return
-  
+  if (!formRef.value) return;
+
   try {
-    await formRef.value.validate()
-    loading.value = true
-    
-    emit('submit', form)
+    await formRef.value.validate();
+    loading.value = true;
+
+    emit("submit", form);
   } catch (error) {
-    console.error('表单验证失败:', error)
-    ElMessage.error('请检查表单填写是否正确')
+    console.error("表单验证失败:", error);
+    ElMessage.error("请检查表单填写是否正确");
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 const handleCancel = () => {
-  emit('cancel')
-}
+  emit("cancel");
+};
 
 // 生命周期
 onMounted(() => {
   if (props.strategy) {
     // 编辑模式，填充表单数据
-    Object.assign(form, props.strategy)
+    Object.assign(form, props.strategy);
   }
-})
+});
 </script>
 
 <style scoped>
@@ -688,7 +736,7 @@ onMounted(() => {
 }
 
 .code-editor {
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
   font-size: 14px;
 }
 
@@ -721,12 +769,12 @@ onMounted(() => {
   .strategy-form-container {
     padding: 10px;
   }
-  
+
   .header-actions {
     flex-direction: column;
     gap: 4px;
   }
-  
+
   .form-actions {
     flex-direction: column;
   }

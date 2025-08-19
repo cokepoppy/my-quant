@@ -27,17 +27,17 @@
           <div class="card-header">
             <h3>回测配置</h3>
             <el-button @click="toggleAdvanced">
-              {{ showAdvanced ? '收起' : '高级设置' }}
+              {{ showAdvanced ? "收起" : "高级设置" }}
             </el-button>
           </div>
         </template>
-        
+
         <el-form :model="backtestConfig" label-width="120px">
           <el-row :gutter="20">
             <el-col :span="8">
               <el-form-item label="选择策略" prop="strategyId">
-                <el-select 
-                  v-model="backtestConfig.strategyId" 
+                <el-select
+                  v-model="backtestConfig.strategyId"
                   placeholder="请选择策略"
                   filterable
                   @change="onStrategyChange"
@@ -50,7 +50,10 @@
                   >
                     <div class="strategy-option">
                       <span>{{ strategy.name }}</span>
-                      <el-tag size="small" :type="getStatusType(strategy.status)">
+                      <el-tag
+                        size="small"
+                        :type="getStatusType(strategy.status)"
+                      >
                         {{ getStatusText(strategy.status) }}
                       </el-tag>
                     </div>
@@ -79,7 +82,7 @@
               </el-form-item>
             </el-col>
           </el-row>
-          
+
           <el-row :gutter="20">
             <el-col :span="8">
               <el-form-item label="初始资金" prop="initialCapital">
@@ -94,7 +97,10 @@
             </el-col>
             <el-col :span="8">
               <el-form-item label="基准" prop="benchmark">
-                <el-select v-model="backtestConfig.benchmark" placeholder="选择基准">
+                <el-select
+                  v-model="backtestConfig.benchmark"
+                  placeholder="选择基准"
+                >
                   <el-option label="BTC/USDT" value="BTC/USDT" />
                   <el-option label="ETH/USDT" value="ETH/USDT" />
                   <el-option label="BNB/USDT" value="BNB/USDT" />
@@ -104,7 +110,10 @@
             </el-col>
             <el-col :span="8">
               <el-form-item label="数据频率" prop="dataFrequency">
-                <el-select v-model="backtestConfig.dataFrequency" placeholder="选择频率">
+                <el-select
+                  v-model="backtestConfig.dataFrequency"
+                  placeholder="选择频率"
+                >
                   <el-option label="1分钟" value="1m" />
                   <el-option label="5分钟" value="5m" />
                   <el-option label="15分钟" value="15m" />
@@ -157,7 +166,7 @@
                 </el-form-item>
               </el-col>
             </el-row>
-            
+
             <el-row :gutter="20">
               <el-col :span="12">
                 <el-form-item label="风险限制" prop="riskLimits">
@@ -198,11 +207,11 @@
             />
           </div>
         </template>
-        
+
         <div v-if="isLoading" class="loading-container">
           <el-skeleton :rows="5" animated />
         </div>
-        
+
         <div v-else-if="filteredBacktests.length === 0" class="empty-container">
           <el-empty description="暂无回测记录">
             <el-button type="primary" @click="startBacktest">
@@ -210,9 +219,13 @@
             </el-button>
           </el-empty>
         </div>
-        
+
         <div v-else>
-          <div v-for="backtest in filteredBacktests" :key="backtest.id" class="backtest-item">
+          <div
+            v-for="backtest in filteredBacktests"
+            :key="backtest.id"
+            class="backtest-item"
+          >
             <div class="backtest-content">
               <div class="backtest-info">
                 <div class="backtest-header">
@@ -224,7 +237,8 @@
                 <div class="backtest-meta">
                   <span class="meta-item">
                     <el-icon><calendar /></el-icon>
-                    {{ formatDate(backtest.startDate) }} - {{ formatDate(backtest.endDate) }}
+                    {{ formatDate(backtest.startDate) }} -
+                    {{ formatDate(backtest.endDate) }}
                   </span>
                   <span class="meta-item">
                     <el-icon><timer /></el-icon>
@@ -235,24 +249,36 @@
                     初始资金: {{ formatCurrency(backtest.initialCapital) }}
                   </span>
                 </div>
-                
+
                 <div v-if="backtest.results" class="backtest-results">
                   <div class="result-grid">
                     <div class="result-item">
                       <div class="result-label">总收益</div>
-                      <div class="result-value" :class="getPerformanceClass(backtest.results.totalReturn)">
+                      <div
+                        class="result-value"
+                        :class="
+                          getPerformanceClass(backtest.results.totalReturn)
+                        "
+                      >
                         {{ formatPercent(backtest.results.totalReturn) }}
                       </div>
                     </div>
                     <div class="result-item">
                       <div class="result-label">年化收益</div>
-                      <div class="result-value" :class="getPerformanceClass(backtest.results.annualizedReturn)">
+                      <div
+                        class="result-value"
+                        :class="
+                          getPerformanceClass(backtest.results.annualizedReturn)
+                        "
+                      >
                         {{ formatPercent(backtest.results.annualizedReturn) }}
                       </div>
                     </div>
                     <div class="result-item">
                       <div class="result-label">夏普比率</div>
-                      <div class="result-value">{{ backtest.results.sharpeRatio.toFixed(2) }}</div>
+                      <div class="result-value">
+                        {{ backtest.results.sharpeRatio.toFixed(2) }}
+                      </div>
                     </div>
                     <div class="result-item">
                       <div class="result-label">最大回撤</div>
@@ -262,38 +288,35 @@
                     </div>
                     <div class="result-item">
                       <div class="result-label">胜率</div>
-                      <div class="result-value">{{ formatPercent(backtest.results.winRate) }}</div>
+                      <div class="result-value">
+                        {{ formatPercent(backtest.results.winRate) }}
+                      </div>
                     </div>
                     <div class="result-item">
                       <div class="result-label">交易次数</div>
-                      <div class="result-value">{{ backtest.results.totalTrades }}</div>
+                      <div class="result-value">
+                        {{ backtest.results.totalTrades }}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-              
+
               <div class="backtest-actions">
                 <el-button-group>
-                  <el-button
-                    size="small"
-                    @click="viewBacktest(backtest.id)"
-                  >
+                  <el-button size="small" @click="viewBacktest(backtest.id)">
                     查看详情
                   </el-button>
-                  <el-button
-                    size="small"
-                    @click="duplicateBacktest(backtest)"
-                  >
+                  <el-button size="small" @click="duplicateBacktest(backtest)">
                     复制配置
                   </el-button>
-                  <el-button
-                    size="small"
-                    @click="exportBacktest(backtest)"
-                  >
+                  <el-button size="small" @click="exportBacktest(backtest)">
                     导出报告
                   </el-button>
                 </el-button-group>
-                <el-dropdown @command="(command) => handleAction(command, backtest)">
+                <el-dropdown
+                  @command="(command) => handleAction(command, backtest)"
+                >
                   <el-button size="small" text>
                     <el-icon><more /></el-icon>
                   </el-button>
@@ -309,7 +332,7 @@
             </div>
           </div>
         </div>
-        
+
         <!-- 分页 -->
         <div v-if="filteredBacktests.length > 0" class="pagination-container">
           <el-pagination
@@ -328,112 +351,119 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { ElMessage, ElMessageBox } from "element-plus";
 import {
   VideoPlay,
   Refresh,
   Calendar,
   Timer,
   Money,
-  More
-} from '@element-plus/icons-vue'
-import { useStrategyStore } from '@/stores/strategy'
-import { useBacktestStore } from '@/stores/backtest'
-import type { Strategy, BacktestConfig, BacktestRecord } from '@/types/strategy'
+  More,
+} from "@element-plus/icons-vue";
+import { useStrategyStore } from "@/stores/strategy";
+import { useBacktestStore } from "@/stores/backtest";
+import type {
+  Strategy,
+  BacktestConfig,
+  BacktestRecord,
+} from "@/types/strategy";
 
-const router = useRouter()
-const strategyStore = useStrategyStore()
-const backtestStore = useBacktestStore()
+const router = useRouter();
+const strategyStore = useStrategyStore();
+const backtestStore = useBacktestStore();
 
 // 响应式数据
-const showAdvanced = ref(false)
-const searchQuery = ref('')
-const selectedStrategy = ref<Strategy | null>(null)
+const showAdvanced = ref(false);
+const searchQuery = ref("");
+const selectedStrategy = ref<Strategy | null>(null);
 
 // 计算属性
-const strategies = computed(() => strategyStore.strategies.filter(s => s.status !== 'draft'))
-const backtests = computed(() => backtestStore.backtests)
-const isLoading = computed(() => backtestStore.isLoading)
-const pagination = computed(() => backtestStore.pagination)
-const backtestConfig = computed(() => backtestStore.backtestConfig)
+const strategies = computed(() =>
+  strategyStore.strategies.filter((s) => s.status !== "draft"),
+);
+const backtests = computed(() => backtestStore.backtests);
+const isLoading = computed(() => backtestStore.isLoading);
+const pagination = computed(() => backtestStore.pagination);
+const backtestConfig = computed(() => backtestStore.backtestConfig);
 
 const filteredBacktests = computed(() => {
-  let filtered = backtests.value
-  
+  let filtered = backtests.value;
+
   if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter(backtest => 
-      backtest.strategyName.toLowerCase().includes(query)
-    )
+    const query = searchQuery.value.toLowerCase();
+    filtered = filtered.filter((backtest) =>
+      backtest.strategyName.toLowerCase().includes(query),
+    );
   }
-  
-  return filtered
-})
+
+  return filtered;
+});
 
 // 方法
 const toggleAdvanced = () => {
-  showAdvanced.value = !showAdvanced.value
-}
+  showAdvanced.value = !showAdvanced.value;
+};
 
 const onStrategyChange = (strategyId: string) => {
-  selectedStrategy.value = strategies.value.find(s => s.id === strategyId) || null
+  selectedStrategy.value =
+    strategies.value.find((s) => s.id === strategyId) || null;
   if (selectedStrategy.value) {
     // 自动填充策略相关的配置
     backtestStore.updateBacktestConfig({
       symbols: selectedStrategy.value.config.symbols,
-      timeframe: selectedStrategy.value.config.timeframe
-    })
+      timeframe: selectedStrategy.value.config.timeframe,
+    });
   }
-}
+};
 
 const disabledStartDate = (time: Date) => {
   if (backtestConfig.value.endDate) {
-    return time.getTime() > backtestConfig.value.endDate.getTime()
+    return time.getTime() > backtestConfig.value.endDate.getTime();
   }
-  return false
-}
+  return false;
+};
 
 const disabledEndDate = (time: Date) => {
   if (backtestConfig.value.startDate) {
-    return time.getTime() < backtestConfig.value.startDate.getTime()
+    return time.getTime() < backtestConfig.value.startDate.getTime();
   }
-  return false
-}
+  return false;
+};
 
 const startBacktest = async () => {
   if (!backtestConfig.value.strategyId) {
-    ElMessage.warning('请先选择策略')
-    return
+    ElMessage.warning("请先选择策略");
+    return;
   }
-  
+
   if (!backtestConfig.value.startDate || !backtestConfig.value.endDate) {
-    ElMessage.warning('请选择回测时间范围')
-    return
+    ElMessage.warning("请选择回测时间范围");
+    return;
   }
-  
+
   try {
-    await backtestStore.startBacktest()
-    ElMessage.success('回测任务已启动')
-    router.push(`/backtest/${backtestStore.backtests[0].id}`)
+    await backtestStore.startBacktest();
+    ElMessage.success("回测任务已启动");
+    router.push(`/backtest/${backtestStore.backtests[0].id}`);
   } catch (error) {
-    console.error('启动回测失败:', error)
-    ElMessage.error('启动回测失败')
+    console.error("启动回测失败:", error);
+    ElMessage.error("启动回测失败");
   }
-}
+};
 
 const fetchBacktests = async () => {
   try {
-    await backtestStore.fetchBacktests()
+    await backtestStore.fetchBacktests();
   } catch (error) {
-    console.error('获取回测记录失败:', error)
+    console.error("获取回测记录失败:", error);
   }
-}
+};
 
 const viewBacktest = (id: string) => {
-  router.push(`/backtest/${id}`)
-}
+  router.push(`/backtest/${id}`);
+};
 
 const duplicateBacktest = (backtest: BacktestRecord) => {
   backtestStore.updateBacktestConfig({
@@ -445,111 +475,111 @@ const duplicateBacktest = (backtest: BacktestRecord) => {
     dataFrequency: backtest.dataFrequency,
     commission: backtest.commission,
     slippage: backtest.slippage,
-    leverage: backtest.leverage
-  })
-  ElMessage.success('配置已复制')
-}
+    leverage: backtest.leverage,
+  });
+  ElMessage.success("配置已复制");
+};
 
 const exportBacktest = async (backtest: BacktestRecord) => {
   try {
-    await backtestStore.exportBacktestReport(backtest.id)
-    ElMessage.success('报告导出成功')
+    await backtestStore.exportBacktestReport(backtest.id);
+    ElMessage.success("报告导出成功");
   } catch (error) {
-    console.error('导出报告失败:', error)
-    ElMessage.error('导出报告失败')
+    console.error("导出报告失败:", error);
+    ElMessage.error("导出报告失败");
   }
-}
+};
 
 const handleAction = (command: string, backtest: BacktestRecord) => {
   switch (command) {
-    case 'delete':
-      deleteBacktest(backtest)
-      break
+    case "delete":
+      deleteBacktest(backtest);
+      break;
   }
-}
+};
 
 const deleteBacktest = async (backtest: BacktestRecord) => {
   try {
     await ElMessageBox.confirm(
-      '确定要删除这个回测记录吗？此操作不可撤销。',
-      '删除回测记录',
+      "确定要删除这个回测记录吗？此操作不可撤销。",
+      "删除回测记录",
       {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning',
-      }
-    )
-    
-    await backtestStore.deleteBacktest(backtest.id)
-    ElMessage.success('删除成功')
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      },
+    );
+
+    await backtestStore.deleteBacktest(backtest.id);
+    ElMessage.success("删除成功");
   } catch (error) {
-    if (error !== 'cancel') {
-      console.error('删除回测记录失败:', error)
+    if (error !== "cancel") {
+      console.error("删除回测记录失败:", error);
     }
   }
-}
+};
 
 const handleSizeChange = (size: number) => {
-  backtestStore.setPagination({ limit: size })
-  backtestStore.fetchBacktests()
-}
+  backtestStore.setPagination({ limit: size });
+  backtestStore.fetchBacktests();
+};
 
 const handleCurrentChange = (page: number) => {
-  backtestStore.setPagination({ page })
-  backtestStore.fetchBacktests()
-}
+  backtestStore.setPagination({ page });
+  backtestStore.fetchBacktests();
+};
 
 const getStatusType = (status: string) => {
   const types: Record<string, string> = {
-    pending: 'info',
-    running: 'warning',
-    completed: 'success',
-    failed: 'danger',
-    cancelled: 'info'
-  }
-  return types[status] || 'info'
-}
+    pending: "info",
+    running: "warning",
+    completed: "success",
+    failed: "danger",
+    cancelled: "info",
+  };
+  return types[status] || "info";
+};
 
 const getStatusText = (status: string) => {
   const texts: Record<string, string> = {
-    pending: '等待中',
-    running: '运行中',
-    completed: '已完成',
-    failed: '失败',
-    cancelled: '已取消'
-  }
-  return texts[status] || status
-}
+    pending: "等待中",
+    running: "运行中",
+    completed: "已完成",
+    failed: "失败",
+    cancelled: "已取消",
+  };
+  return texts[status] || status;
+};
 
 const getPerformanceClass = (value: number) => {
-  return value > 0 ? 'positive' : value < 0 ? 'negative' : ''
-}
+  return value > 0 ? "positive" : value < 0 ? "negative" : "";
+};
 
 const formatPercent = (value: number) => {
-  return `${(value * 100).toFixed(2)}%`
-}
+  return `${(value * 100).toFixed(2)}%`;
+};
 
 const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('zh-CN', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0
-  }).format(value)
-}
+  return new Intl.NumberFormat("zh-CN", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 0,
+  }).format(value);
+};
 
 const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('zh-CN')
-}
+  return new Date(dateString).toLocaleDateString("zh-CN");
+};
 
 // 生命周期
 onMounted(async () => {
   try {
-    await strategyStore.fetchStrategies()
-    await backtestStore.fetchBacktests()
+    await strategyStore.fetchStrategies();
+    await backtestStore.fetchBacktests();
   } catch (error) {
-    console.error('初始化失败:', error)
+    console.error("初始化失败:", error);
   }
-})
+});
 </script>
 
 <style scoped>
@@ -728,26 +758,26 @@ onMounted(async () => {
   .backtest-container {
     padding: 10px;
   }
-  
+
   .header-content {
     flex-direction: column;
     gap: 16px;
     align-items: flex-start;
   }
-  
+
   .backtest-content {
     flex-direction: column;
     gap: 16px;
   }
-  
+
   .backtest-actions {
     justify-content: flex-start;
   }
-  
+
   .result-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .backtest-meta {
     flex-direction: column;
     gap: 8px;

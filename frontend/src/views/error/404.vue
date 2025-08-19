@@ -22,18 +22,18 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
-import { Warning, ArrowLeft, HomeFilled } from '@element-plus/icons-vue'
+import { useRouter } from "vue-router";
+import { Warning, ArrowLeft, HomeFilled } from "@element-plus/icons-vue";
 
-const router = useRouter()
+const router = useRouter();
 
 const goBack = () => {
-  router.go(-1)
-}
+  router.go(-1);
+};
 
 const goHome = () => {
-  router.push('/')
-}
+  router.push("/");
+};
 </script>
 
 <style scoped>
@@ -101,23 +101,23 @@ const goHome = () => {
   .error-container {
     padding: 10px;
   }
-  
+
   .error-box {
     padding: 30px 20px;
   }
-  
+
   .error-box h1 {
     font-size: 60px;
   }
-  
+
   .error-box h2 {
     font-size: 20px;
   }
-  
+
   .error-actions {
     flex-direction: column;
   }
-  
+
   .error-actions .el-button {
     width: 100%;
   }

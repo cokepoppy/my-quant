@@ -4,7 +4,7 @@
       <template #header>
         <h2>忘记密码</h2>
       </template>
-      
+
       <el-form
         ref="formRef"
         :model="form"
@@ -19,7 +19,7 @@
             prefix-icon="Message"
           />
         </el-form-item>
-        
+
         <el-form-item>
           <el-button
             type="primary"
@@ -31,7 +31,7 @@
             发送重置邮件
           </el-button>
         </el-form-item>
-        
+
         <div class="form-links">
           <router-link to="/login" class="link">返回登录</router-link>
           <router-link to="/register" class="link">注册账号</router-link>
@@ -42,40 +42,40 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
+import { ref, reactive } from "vue";
+import { ElMessage, type FormInstance, type FormRules } from "element-plus";
 
-const formRef = ref<FormInstance>()
-const loading = ref(false)
+const formRef = ref<FormInstance>();
+const loading = ref(false);
 
 const form = reactive({
-  email: ''
-})
+  email: "",
+});
 
 const rules: FormRules = {
   email: [
-    { required: true, message: '请输入邮箱地址', trigger: 'blur' },
-    { type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' }
-  ]
-}
+    { required: true, message: "请输入邮箱地址", trigger: "blur" },
+    { type: "email", message: "请输入正确的邮箱格式", trigger: "blur" },
+  ],
+};
 
 const handleSubmit = async () => {
-  if (!formRef.value) return
-  
+  if (!formRef.value) return;
+
   try {
-    await formRef.value.validate()
-    loading.value = true
-    
+    await formRef.value.validate();
+    loading.value = true;
+
     // TODO: 实现发送重置密码邮件的逻辑
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    ElMessage.success('重置密码邮件已发送，请查收')
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    ElMessage.success("重置密码邮件已发送，请查收");
   } catch (error) {
-    console.error('Form validation failed:', error)
+    console.error("Form validation failed:", error);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 </script>
 
 <style scoped>

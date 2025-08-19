@@ -5,7 +5,7 @@
         <h1>量化交易系统</h1>
         <p>欢迎回来，请登录您的账户</p>
       </div>
-      
+
       <el-form
         ref="loginFormRef"
         :model="loginForm"
@@ -22,7 +22,7 @@
             size="large"
           />
         </el-form-item>
-        
+
         <el-form-item prop="password">
           <el-input
             v-model="loginForm.password"
@@ -33,18 +33,16 @@
             show-password
           />
         </el-form-item>
-        
+
         <el-form-item>
           <div class="form-options">
-            <el-checkbox v-model="loginForm.rememberMe">
-              记住我
-            </el-checkbox>
+            <el-checkbox v-model="loginForm.rememberMe"> 记住我 </el-checkbox>
             <router-link to="/forgot-password" class="forgot-password">
               忘记密码？
             </router-link>
           </div>
         </el-form-item>
-        
+
         <el-form-item>
           <el-button
             type="primary"
@@ -53,13 +51,14 @@
             :loading="authStore.isLoading"
             @click="handleLogin"
           >
-            {{ authStore.isLoading ? '登录中...' : '登录' }}
+            {{ authStore.isLoading ? "登录中..." : "登录" }}
           </el-button>
         </el-form-item>
       </el-form>
-      
+
       <div class="login-footer">
-        <p>还没有账户？
+        <p>
+          还没有账户？
           <router-link to="/register" class="register-link">
             立即注册
           </router-link>
@@ -70,69 +69,68 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import { useRouter } from 'vue-router'
-import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
-import { useAuthStore } from '@/stores/auth'
-import type { LoginData } from '@/types/auth'
+import { ref, reactive } from "vue";
+import { useRouter } from "vue-router";
+import { ElMessage, type FormInstance, type FormRules } from "element-plus";
+import { useAuthStore } from "@/stores/auth";
+import type { LoginData } from "@/types/auth";
 
-const router = useRouter()
-const authStore = useAuthStore()
+const router = useRouter();
+const authStore = useAuthStore();
 
-console.log('=== 登录页面加载 ===')
-console.log('authStore:', authStore)
-console.log('router:', router)
+console.log("=== 登录页面加载 ===");
+console.log("authStore:", authStore);
+console.log("router:", router);
 
 // 表单引用
-const loginFormRef = ref<FormInstance>()
+const loginFormRef = ref<FormInstance>();
 
 // 登录表单数据
 const loginForm = reactive<LoginData>({
-  email: '',
-  password: '',
-  rememberMe: false
-})
+  email: "",
+  password: "",
+  rememberMe: false,
+});
 
 // 表单验证规则
 const loginRules: FormRules = {
   email: [
-    { required: true, message: '请输入邮箱地址', trigger: 'blur' },
-    { type: 'email', message: '请输入有效的邮箱地址', trigger: 'blur' }
+    { required: true, message: "请输入邮箱地址", trigger: "blur" },
+    { type: "email", message: "请输入有效的邮箱地址", trigger: "blur" },
   ],
   password: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, message: '密码长度至少6位', trigger: 'blur' }
-  ]
-}
+    { required: true, message: "请输入密码", trigger: "blur" },
+    { min: 6, message: "密码长度至少6位", trigger: "blur" },
+  ],
+};
 
 // 处理登录
 const handleLogin = async () => {
-  console.log('=== 登录按钮被点击 ===')
-  if (!loginFormRef.value) return
-  
-  console.log('=== 登录调试信息 ===')
-  console.log('表单数据:', JSON.stringify(loginForm, null, 2))
-  
+  console.log("=== 登录按钮被点击 ===");
+  if (!loginFormRef.value) return;
+
+  console.log("=== 登录调试信息 ===");
+  console.log("表单数据:", JSON.stringify(loginForm, null, 2));
+
   try {
     // 验证表单
-    console.log('开始验证表单...')
-    await loginFormRef.value.validate()
-    console.log('表单验证通过')
-    
+    console.log("开始验证表单...");
+    await loginFormRef.value.validate();
+    console.log("表单验证通过");
+
     // 调用登录接口
-    console.log('调用登录接口...')
-    await authStore.login(loginForm)
-    console.log('登录接口调用成功')
-    
+    console.log("调用登录接口...");
+    await authStore.login(loginForm);
+    console.log("登录接口调用成功");
+
     // 登录成功，跳转到首页
-    await router.push('/')
-    
+    await router.push("/");
   } catch (error) {
     // 错误处理已在store中完成
-    console.error('Login failed:', error)
-    console.error('错误详情:', JSON.stringify(error, null, 2))
+    console.error("Login failed:", error);
+    console.error("错误详情:", JSON.stringify(error, null, 2));
   }
-}
+};
 </script>
 
 <style scoped>
@@ -220,15 +218,15 @@ const handleLogin = async () => {
   .login-container {
     padding: 10px;
   }
-  
+
   .login-box {
     padding: 30px 20px;
   }
-  
+
   .login-header h1 {
     font-size: 24px;
   }
-  
+
   .form-options {
     flex-direction: column;
     gap: 10px;

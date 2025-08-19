@@ -4,7 +4,7 @@
       <h2>用户管理</h2>
       <el-button type="primary" @click="handleAdd">添加用户</el-button>
     </div>
-    
+
     <el-card>
       <el-form :model="searchForm" inline>
         <el-form-item label="用户名">
@@ -24,7 +24,11 @@
           />
         </el-form-item>
         <el-form-item label="角色">
-          <el-select v-model="searchForm.role" placeholder="请选择角色" clearable>
+          <el-select
+            v-model="searchForm.role"
+            placeholder="请选择角色"
+            clearable
+          >
             <el-option label="管理员" value="admin" />
             <el-option label="用户" value="user" />
           </el-select>
@@ -34,7 +38,7 @@
           <el-button @click="handleReset">重置</el-button>
         </el-form-item>
       </el-form>
-      
+
       <el-table
         v-loading="loading"
         :data="tableData"
@@ -48,14 +52,14 @@
         <el-table-column prop="role" label="角色">
           <template #default="{ row }">
             <el-tag :type="row.role === 'admin' ? 'danger' : 'success'">
-              {{ row.role === 'admin' ? '管理员' : '用户' }}
+              {{ row.role === "admin" ? "管理员" : "用户" }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="status" label="状态">
           <template #default="{ row }">
             <el-tag :type="row.status === 'active' ? 'success' : 'danger'">
-              {{ row.status === 'active' ? '启用' : '禁用' }}
+              {{ row.status === "active" ? "启用" : "禁用" }}
             </el-tag>
           </template>
         </el-table-column>
@@ -68,13 +72,15 @@
               :type="row.status === 'active' ? 'danger' : 'success'"
               @click="handleToggleStatus(row)"
             >
-              {{ row.status === 'active' ? '禁用' : '启用' }}
+              {{ row.status === "active" ? "禁用" : "启用" }}
             </el-button>
-            <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
+            <el-button size="small" type="danger" @click="handleDelete(row)"
+              >删除</el-button
+            >
           </template>
         </el-table-column>
       </el-table>
-      
+
       <div class="pagination">
         <el-pagination
           v-model:current-page="pagination.page"
@@ -87,7 +93,7 @@
         />
       </div>
     </el-card>
-    
+
     <!-- 用户对话框 -->
     <el-dialog
       v-model="dialogVisible"
@@ -132,205 +138,213 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
-import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
+import { ref, reactive, onMounted } from "vue";
+import {
+  ElMessage,
+  ElMessageBox,
+  type FormInstance,
+  type FormRules,
+} from "element-plus";
 
-const loading = ref(false)
-const dialogVisible = ref(false)
-const dialogType = ref<'add' | 'edit'>('add')
-const formRef = ref<FormInstance>()
+const loading = ref(false);
+const dialogVisible = ref(false);
+const dialogType = ref<"add" | "edit">("add");
+const formRef = ref<FormInstance>();
 
 const searchForm = reactive({
-  username: '',
-  email: '',
-  role: ''
-})
+  username: "",
+  email: "",
+  role: "",
+});
 
 const userForm = reactive({
-  id: '',
-  username: '',
-  email: '',
-  phone: '',
-  role: 'user',
-  password: ''
-})
+  id: "",
+  username: "",
+  email: "",
+  phone: "",
+  role: "user",
+  password: "",
+});
 
 const userRules: FormRules = {
   username: [
-    { required: true, message: '请输入用户名', trigger: 'blur' },
-    { min: 3, max: 20, message: '用户名长度在 3 到 20 个字符', trigger: 'blur' }
+    { required: true, message: "请输入用户名", trigger: "blur" },
+    {
+      min: 3,
+      max: 20,
+      message: "用户名长度在 3 到 20 个字符",
+      trigger: "blur",
+    },
   ],
   email: [
-    { required: true, message: '请输入邮箱', trigger: 'blur' },
-    { type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' }
+    { required: true, message: "请输入邮箱", trigger: "blur" },
+    { type: "email", message: "请输入正确的邮箱格式", trigger: "blur" },
   ],
   phone: [
-    { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号格式', trigger: 'blur' }
+    {
+      pattern: /^1[3-9]\d{9}$/,
+      message: "请输入正确的手机号格式",
+      trigger: "blur",
+    },
   ],
-  role: [
-    { required: true, message: '请选择角色', trigger: 'change' }
-  ],
+  role: [{ required: true, message: "请选择角色", trigger: "change" }],
   password: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, message: '密码长度不能少于6位', trigger: 'blur' }
-  ]
-}
+    { required: true, message: "请输入密码", trigger: "blur" },
+    { min: 6, message: "密码长度不能少于6位", trigger: "blur" },
+  ],
+};
 
-const tableData = ref([])
+const tableData = ref([]);
 const pagination = reactive({
   page: 1,
   size: 10,
-  total: 0
-})
+  total: 0,
+});
 
 const fetchUsers = async () => {
-  loading.value = true
+  loading.value = true;
   try {
     // TODO: 从API获取用户列表
     // 模拟数据
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     tableData.value = [
       {
         id: 1,
-        username: 'admin',
-        email: 'admin@example.com',
-        phone: '13800138000',
-        role: 'admin',
-        status: 'active',
-        createdAt: '2024-01-01 00:00:00'
+        username: "admin",
+        email: "admin@example.com",
+        phone: "13800138000",
+        role: "admin",
+        status: "active",
+        createdAt: "2024-01-01 00:00:00",
       },
       {
         id: 2,
-        username: 'user1',
-        email: 'user1@example.com',
-        phone: '13800138001',
-        role: 'user',
-        status: 'active',
-        createdAt: '2024-01-02 00:00:00'
-      }
-    ]
-    pagination.total = 2
+        username: "user1",
+        email: "user1@example.com",
+        phone: "13800138001",
+        role: "user",
+        status: "active",
+        createdAt: "2024-01-02 00:00:00",
+      },
+    ];
+    pagination.total = 2;
   } catch (error) {
-    ElMessage.error('获取用户列表失败')
+    ElMessage.error("获取用户列表失败");
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 const handleSearch = () => {
-  pagination.page = 1
-  fetchUsers()
-}
+  pagination.page = 1;
+  fetchUsers();
+};
 
 const handleReset = () => {
   Object.assign(searchForm, {
-    username: '',
-    email: '',
-    role: ''
-  })
-  handleSearch()
-}
+    username: "",
+    email: "",
+    role: "",
+  });
+  handleSearch();
+};
 
 const handleSizeChange = (size: number) => {
-  pagination.size = size
-  fetchUsers()
-}
+  pagination.size = size;
+  fetchUsers();
+};
 
 const handleCurrentChange = (page: number) => {
-  pagination.page = page
-  fetchUsers()
-}
+  pagination.page = page;
+  fetchUsers();
+};
 
 const handleAdd = () => {
-  dialogType.value = 'add'
+  dialogType.value = "add";
   Object.assign(userForm, {
-    id: '',
-    username: '',
-    email: '',
-    phone: '',
-    role: 'user',
-    password: ''
-  })
-  dialogVisible.value = true
-}
+    id: "",
+    username: "",
+    email: "",
+    phone: "",
+    role: "user",
+    password: "",
+  });
+  dialogVisible.value = true;
+};
 
 const handleEdit = (row: any) => {
-  dialogType.value = 'edit'
+  dialogType.value = "edit";
   Object.assign(userForm, {
     ...row,
-    password: ''
-  })
-  dialogVisible.value = true
-}
+    password: "",
+  });
+  dialogVisible.value = true;
+};
 
 const handleSave = async () => {
-  if (!formRef.value) return
-  
+  if (!formRef.value) return;
+
   try {
-    await formRef.value.validate()
-    
+    await formRef.value.validate();
+
     // TODO: 调用API保存用户
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    ElMessage.success(dialogType.value === 'add' ? '添加成功' : '编辑成功')
-    dialogVisible.value = false
-    fetchUsers()
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    ElMessage.success(dialogType.value === "add" ? "添加成功" : "编辑成功");
+    dialogVisible.value = false;
+    fetchUsers();
   } catch (error) {
-    console.error('Form validation failed:', error)
+    console.error("Form validation failed:", error);
   }
-}
+};
 
 const handleToggleStatus = async (row: any) => {
   try {
     await ElMessageBox.confirm(
-      `确定要${row.status === 'active' ? '禁用' : '启用'}该用户吗？`,
-      '确认',
+      `确定要${row.status === "active" ? "禁用" : "启用"}该用户吗？`,
+      "确认",
       {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }
-    )
-    
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      },
+    );
+
     // TODO: 调用API切换用户状态
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    ElMessage.success('操作成功')
-    fetchUsers()
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    ElMessage.success("操作成功");
+    fetchUsers();
   } catch (error) {
-    if (error !== 'cancel') {
-      ElMessage.error('操作失败')
+    if (error !== "cancel") {
+      ElMessage.error("操作失败");
     }
   }
-}
+};
 
 const handleDelete = async (row: any) => {
   try {
-    await ElMessageBox.confirm(
-      '确定要删除该用户吗？删除后无法恢复！',
-      '确认',
-      {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }
-    )
-    
+    await ElMessageBox.confirm("确定要删除该用户吗？删除后无法恢复！", "确认", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+
     // TODO: 调用API删除用户
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    ElMessage.success('删除成功')
-    fetchUsers()
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    ElMessage.success("删除成功");
+    fetchUsers();
   } catch (error) {
-    if (error !== 'cancel') {
-      ElMessage.error('删除失败')
+    if (error !== "cancel") {
+      ElMessage.error("删除失败");
     }
   }
-}
+};
 
 onMounted(() => {
-  fetchUsers()
-})
+  fetchUsers();
+});
 </script>
 
 <style scoped>

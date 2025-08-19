@@ -1,59 +1,59 @@
 // 导出所有store
 
 // 认证store
-export { useAuthStore } from './auth'
+export { useAuthStore } from "./auth";
 
 // 用户管理store
-export { useUserStore } from './user'
+export { useUserStore } from "./user";
 
 // 应用store
-export { useAppStore } from './app'
+export { useAppStore } from "./app";
 
 // 策略管理store
-export { useStrategyStore } from './strategy'
+export { useStrategyStore } from "./strategy";
 
 // 导出类型
-export type { AuthState } from '@/types/auth'
-export type { User, UserStats } from '@/types/user'
-export type { Notification } from './app'
-export type { 
-  Strategy, 
-  StrategyTemplate, 
-  StrategyValidation, 
-  StrategyPerformance 
-} from '@/types/strategy'
+export type { AuthState } from "@/types/auth";
+export type { User, UserStats } from "@/types/user";
+export type { Notification } from "./app";
+export type {
+  Strategy,
+  StrategyTemplate,
+  StrategyValidation,
+  StrategyPerformance,
+} from "@/types/strategy";
 
 // Store初始化函数
 export const initializeStores = async () => {
-  const authStore = useAuthStore()
-  const appStore = useAppStore()
-  
+  const authStore = useAuthStore();
+  const appStore = useAppStore();
+
   try {
     // 显示加载状态
-    appStore.setLoading(true)
-    
+    appStore.setLoading(true);
+
     // 初始化认证状态
-    const isAuthenticated = await authStore.initializeAuth()
-    
+    const isAuthenticated = await authStore.initializeAuth();
+
     if (isAuthenticated) {
       // 如果用户已认证，可以初始化其他store数据
-      const userStore = useUserStore()
-      await userStore.fetchUserStats()
-      
-      appStore.showSuccess('欢迎回来！')
+      const userStore = useUserStore();
+      await userStore.fetchUserStats();
+
+      appStore.showSuccess("欢迎回来！");
     }
-    
+
     return {
       isAuthenticated,
-      user: authStore.user
-    }
+      user: authStore.user,
+    };
   } catch (error) {
-    appStore.handleError(error, '系统初始化失败')
+    appStore.handleError(error, "系统初始化失败");
     return {
       isAuthenticated: false,
-      user: null
-    }
+      user: null,
+    };
   } finally {
-    appStore.setLoading(false)
+    appStore.setLoading(false);
   }
-}
+};

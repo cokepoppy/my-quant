@@ -4,7 +4,7 @@
     <div class="page-header">
       <div class="header-content">
         <div class="header-left">
-          <h1>{{ backtest?.strategyName || '回测结果' }}</h1>
+          <h1>{{ backtest?.strategyName || "回测结果" }}</h1>
           <p>{{ backtest?.startDate }} - {{ backtest?.endDate }}</p>
         </div>
         <div class="header-right">
@@ -23,7 +23,9 @@
             </el-button>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item command="duplicate">复制配置</el-dropdown-item>
+                <el-dropdown-item command="duplicate"
+                  >复制配置</el-dropdown-item
+                >
                 <el-dropdown-item command="compare">对比分析</el-dropdown-item>
                 <el-dropdown-item divided command="delete" class="text-danger">
                   删除记录
@@ -60,20 +62,20 @@
               </span>
             </div>
           </div>
-          
+
           <div v-if="backtest.status === 'running'" class="progress-section">
             <div class="progress-info">
               <span>进度: {{ formatPercent(backtest.progress || 0) }}</span>
-              <span>{{ backtest.currentStep || '初始化中...' }}</span>
+              <span>{{ backtest.currentStep || "初始化中..." }}</span>
             </div>
-            <el-progress 
-              :percentage="Math.round((backtest.progress || 0) * 100)" 
+            <el-progress
+              :percentage="Math.round((backtest.progress || 0) * 100)"
               :status="backtest.status === 'failed' ? 'exception' : ''"
             />
             <div class="progress-actions">
-              <el-button 
-                size="small" 
-                type="warning" 
+              <el-button
+                size="small"
+                type="warning"
                 @click="cancelBacktest"
                 :loading="loading"
               >
@@ -96,13 +98,14 @@
             {{ backtest.strategyName }}
           </el-descriptions-item>
           <el-descriptions-item label="回测期间">
-            {{ formatDate(backtest.startDate) }} - {{ formatDate(backtest.endDate) }}
+            {{ formatDate(backtest.startDate) }} -
+            {{ formatDate(backtest.endDate) }}
           </el-descriptions-item>
           <el-descriptions-item label="初始资金">
             {{ formatCurrency(backtest.initialCapital) }}
           </el-descriptions-item>
           <el-descriptions-item label="基准">
-            {{ backtest.benchmark || '无' }}
+            {{ backtest.benchmark || "无" }}
           </el-descriptions-item>
           <el-descriptions-item label="数据频率">
             {{ backtest.dataFrequency }}
@@ -142,47 +145,67 @@
             </el-button>
           </div>
         </template>
-        
+
         <div class="performance-grid">
           <div class="performance-metrics">
             <h4>收益指标</h4>
             <div class="metrics-grid">
               <div class="metric-card">
                 <div class="metric-title">总收益</div>
-                <div class="metric-value" :class="getPerformanceClass(backtest.results.totalReturn)">
+                <div
+                  class="metric-value"
+                  :class="getPerformanceClass(backtest.results.totalReturn)"
+                >
                   {{ formatPercent(backtest.results.totalReturn) }}
                 </div>
                 <div class="metric-subtitle">
-                  {{ formatCurrency(backtest.results.totalReturn * backtest.initialCapital) }}
+                  {{
+                    formatCurrency(
+                      backtest.results.totalReturn * backtest.initialCapital,
+                    )
+                  }}
                 </div>
               </div>
               <div class="metric-card">
                 <div class="metric-title">年化收益</div>
-                <div class="metric-value" :class="getPerformanceClass(backtest.results.annualizedReturn)">
+                <div
+                  class="metric-value"
+                  :class="
+                    getPerformanceClass(backtest.results.annualizedReturn)
+                  "
+                >
                   {{ formatPercent(backtest.results.annualizedReturn) }}
                 </div>
               </div>
               <div class="metric-card">
                 <div class="metric-title">基准收益</div>
-                <div class="metric-value" :class="getPerformanceClass(backtest.results.benchmarkReturn)">
+                <div
+                  class="metric-value"
+                  :class="getPerformanceClass(backtest.results.benchmarkReturn)"
+                >
                   {{ formatPercent(backtest.results.benchmarkReturn) }}
                 </div>
               </div>
               <div class="metric-card">
                 <div class="metric-title">超额收益</div>
-                <div class="metric-value" :class="getPerformanceClass(backtest.results.excessReturn)">
+                <div
+                  class="metric-value"
+                  :class="getPerformanceClass(backtest.results.excessReturn)"
+                >
                   {{ formatPercent(backtest.results.excessReturn) }}
                 </div>
               </div>
             </div>
           </div>
-          
+
           <div class="performance-metrics">
             <h4>风险指标</h4>
             <div class="metrics-grid">
               <div class="metric-card">
                 <div class="metric-title">夏普比率</div>
-                <div class="metric-value">{{ backtest.results.sharpeRatio.toFixed(2) }}</div>
+                <div class="metric-value">
+                  {{ backtest.results.sharpeRatio.toFixed(2) }}
+                </div>
               </div>
               <div class="metric-card">
                 <div class="metric-title">最大回撤</div>
@@ -192,33 +215,46 @@
               </div>
               <div class="metric-card">
                 <div class="metric-title">波动率</div>
-                <div class="metric-value">{{ formatPercent(backtest.results.volatility) }}</div>
+                <div class="metric-value">
+                  {{ formatPercent(backtest.results.volatility) }}
+                </div>
               </div>
               <div class="metric-card">
                 <div class="metric-title">信息比率</div>
-                <div class="metric-value">{{ backtest.results.informationRatio.toFixed(2) }}</div>
+                <div class="metric-value">
+                  {{ backtest.results.informationRatio.toFixed(2) }}
+                </div>
               </div>
             </div>
           </div>
-          
+
           <div class="performance-metrics">
             <h4>交易指标</h4>
             <div class="metrics-grid">
               <div class="metric-card">
                 <div class="metric-title">总交易次数</div>
-                <div class="metric-value">{{ backtest.results.totalTrades }}</div>
+                <div class="metric-value">
+                  {{ backtest.results.totalTrades }}
+                </div>
               </div>
               <div class="metric-card">
                 <div class="metric-title">胜率</div>
-                <div class="metric-value">{{ formatPercent(backtest.results.winRate) }}</div>
+                <div class="metric-value">
+                  {{ formatPercent(backtest.results.winRate) }}
+                </div>
               </div>
               <div class="metric-card">
                 <div class="metric-title">盈亏比</div>
-                <div class="metric-value">{{ backtest.results.profitFactor.toFixed(2) }}</div>
+                <div class="metric-value">
+                  {{ backtest.results.profitFactor.toFixed(2) }}
+                </div>
               </div>
               <div class="metric-card">
                 <div class="metric-title">平均交易收益</div>
-                <div class="metric-value" :class="getPerformanceClass(backtest.results.averageTrade)">
+                <div
+                  class="metric-value"
+                  :class="getPerformanceClass(backtest.results.averageTrade)"
+                >
                   {{ formatPercent(backtest.results.averageTrade) }}
                 </div>
               </div>
@@ -241,7 +277,9 @@
                     <el-option label="线性" value="line" />
                     <el-option label="阶梯" value="step" />
                   </el-select>
-                  <el-checkbox v-model="showBenchmark" size="small">显示基准</el-checkbox>
+                  <el-checkbox v-model="showBenchmark" size="small"
+                    >显示基准</el-checkbox
+                  >
                 </div>
               </div>
               <div class="chart-placeholder">
@@ -282,7 +320,7 @@
                   </el-button>
                 </div>
               </div>
-              
+
               <el-table :data="filteredTrades" stripe>
                 <el-table-column prop="timestamp" label="时间" width="180">
                   <template #default="{ row }">
@@ -292,8 +330,11 @@
                 <el-table-column prop="symbol" label="标的" width="100" />
                 <el-table-column prop="type" label="类型" width="80">
                   <template #default="{ row }">
-                    <el-tag :type="row.type === 'buy' ? 'success' : 'danger'" size="small">
-                      {{ row.type === 'buy' ? '买入' : '卖出' }}
+                    <el-tag
+                      :type="row.type === 'buy' ? 'success' : 'danger'"
+                      size="small"
+                    >
+                      {{ row.type === "buy" ? "买入" : "卖出" }}
                     </el-tag>
                   </template>
                 </el-table-column>
@@ -328,7 +369,7 @@
                   </template>
                 </el-table-column>
               </el-table>
-              
+
               <!-- 分页 -->
               <div class="pagination-container">
                 <el-pagination
@@ -385,7 +426,7 @@
             </el-button>
           </div>
         </template>
-        
+
         <div class="logs-content">
           <div v-if="logs.length === 0" class="no-logs">
             <el-empty description="暂无日志" :image-size="60" />
@@ -413,80 +454,81 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { ElMessage, ElMessageBox } from "element-plus";
 import {
   ArrowLeft,
   ArrowDown,
   Download,
   Timer,
   Clock,
-  Refresh
-} from '@element-plus/icons-vue'
-import { useBacktestStore } from '@/stores/backtest'
-import type { BacktestRecord, BacktestTrade } from '@/types/strategy'
+  Refresh,
+} from "@element-plus/icons-vue";
+import { useBacktestStore } from "@/stores/backtest";
+import type { BacktestRecord, BacktestTrade } from "@/types/strategy";
 
-const route = useRoute()
-const router = useRouter()
-const backtestStore = useBacktestStore()
+const route = useRoute();
+const router = useRouter();
+const backtestStore = useBacktestStore();
 
 // 响应式数据
-const activeTab = ref('equity')
-const chartType = ref('line')
-const showBenchmark = ref(true)
-const tradeSearch = ref('')
-const logs = ref<any[]>([])
-const loading = ref(false)
-const logsLoading = ref(false)
-let refreshInterval: any = null
+const activeTab = ref("equity");
+const chartType = ref("line");
+const showBenchmark = ref(true);
+const tradeSearch = ref("");
+const logs = ref<any[]>([]);
+const loading = ref(false);
+const logsLoading = ref(false);
+let refreshInterval: any = null;
 
 // 计算属性
-const backtest = computed(() => backtestStore.currentBacktest)
-const tradePagination = computed(() => backtestStore.tradePagination)
+const backtest = computed(() => backtestStore.currentBacktest);
+const tradePagination = computed(() => backtestStore.tradePagination);
 
 const filteredTrades = computed(() => {
-  let filtered = backtestStore.trades
-  
+  let filtered = backtestStore.trades;
+
   if (tradeSearch.value) {
-    const query = tradeSearch.value.toLowerCase()
-    filtered = filtered.filter(trade => 
-      trade.symbol.toLowerCase().includes(query) ||
-      trade.type.toLowerCase().includes(query)
-    )
+    const query = tradeSearch.value.toLowerCase();
+    filtered = filtered.filter(
+      (trade) =>
+        trade.symbol.toLowerCase().includes(query) ||
+        trade.type.toLowerCase().includes(query),
+    );
   }
-  
-  return filtered
-})
+
+  return filtered;
+});
 
 // 方法
 const backToList = () => {
-  router.push('/backtest')
-}
+  router.push("/backtest");
+};
 
 const exportReport = async () => {
   try {
-    await backtestStore.exportBacktestReport(route.params.id as string)
-    ElMessage.success('报告导出成功')
+    await backtestStore.exportBacktestReport(route.params.id as string);
+    ElMessage.success("报告导出成功");
   } catch (error) {
-    console.error('导出报告失败:', error)
-    ElMessage.error('导出报告失败')
+    console.error("导出报告失败:", error);
+    ElMessage.error("导出报告失败");
   }
-}
+};
 
 const handleAction = (command: string) => {
   switch (command) {
-    case 'duplicate':
-      duplicateBacktest()
-      break
-    case 'compare':
-      compareBacktest()
-      break
-    case 'delete':
-      deleteBacktest()
-      break
+    case "duplicate":
+      duplicateBacktest();
+      break;
+    case "compare":
+      compareBacktest();
+      break;
+    case "delete":
+      deleteBacktest();
+      break;
   }
-}
+};
 
 const duplicateBacktest = () => {
   if (backtest.value) {
@@ -499,206 +541,208 @@ const duplicateBacktest = () => {
       dataFrequency: backtest.value.dataFrequency,
       commission: backtest.value.commission,
       slippage: backtest.value.slippage,
-      leverage: backtest.value.leverage
-    })
-    ElMessage.success('配置已复制，可以开始新的回测')
-    router.push('/backtest')
+      leverage: backtest.value.leverage,
+    });
+    ElMessage.success("配置已复制，可以开始新的回测");
+    router.push("/backtest");
   }
-}
+};
 
 const compareBacktest = () => {
-  ElMessage.info('对比分析功能开发中')
-}
+  ElMessage.info("对比分析功能开发中");
+};
 
 const deleteBacktest = async () => {
   try {
     await ElMessageBox.confirm(
-      '确定要删除这个回测记录吗？此操作不可撤销。',
-      '删除回测记录',
+      "确定要删除这个回测记录吗？此操作不可撤销。",
+      "删除回测记录",
       {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning',
-      }
-    )
-    
-    await backtestStore.deleteBacktest(route.params.id as string)
-    ElMessage.success('删除成功')
-    router.push('/backtest')
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      },
+    );
+
+    await backtestStore.deleteBacktest(route.params.id as string);
+    ElMessage.success("删除成功");
+    router.push("/backtest");
   } catch (error) {
-    if (error !== 'cancel') {
-      console.error('删除回测记录失败:', error)
+    if (error !== "cancel") {
+      console.error("删除回测记录失败:", error);
     }
   }
-}
+};
 
 const cancelBacktest = async () => {
   try {
-    await backtestStore.cancelBacktest(route.params.id as string)
-    ElMessage.success('回测已取消')
+    await backtestStore.cancelBacktest(route.params.id as string);
+    ElMessage.success("回测已取消");
   } catch (error) {
-    console.error('取消回测失败:', error)
-    ElMessage.error('取消回测失败')
+    console.error("取消回测失败:", error);
+    ElMessage.error("取消回测失败");
   }
-}
+};
 
 const refreshResults = async () => {
   try {
-    loading.value = true
-    await backtestStore.fetchBacktestById(route.params.id as string)
+    loading.value = true;
+    await backtestStore.fetchBacktestById(route.params.id as string);
   } catch (error) {
-    console.error('刷新结果失败:', error)
+    console.error("刷新结果失败:", error);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 const handleTabClick = (tab: any) => {
-  if (tab.props.name === 'trades') {
-    loadTrades()
+  if (tab.props.name === "trades") {
+    loadTrades();
   }
-}
+};
 
 const loadTrades = async () => {
   try {
-    await backtestStore.fetchBacktestTrades(route.params.id as string)
+    await backtestStore.fetchBacktestTrades(route.params.id as string);
   } catch (error) {
-    console.error('加载交易记录失败:', error)
+    console.error("加载交易记录失败:", error);
   }
-}
+};
 
 const exportTrades = async () => {
   try {
-    await backtestStore.exportBacktestTrades(route.params.id as string)
-    ElMessage.success('交易记录导出成功')
+    await backtestStore.exportBacktestTrades(route.params.id as string);
+    ElMessage.success("交易记录导出成功");
   } catch (error) {
-    console.error('导出交易记录失败:', error)
-    ElMessage.error('导出交易记录失败')
+    console.error("导出交易记录失败:", error);
+    ElMessage.error("导出交易记录失败");
   }
-}
+};
 
 const handleTradeSizeChange = (size: number) => {
-  backtestStore.setTradePagination({ limit: size })
-  loadTrades()
-}
+  backtestStore.setTradePagination({ limit: size });
+  loadTrades();
+};
 
 const handleTradeCurrentChange = (page: number) => {
-  backtestStore.setTradePagination({ page })
-  loadTrades()
-}
+  backtestStore.setTradePagination({ page });
+  loadTrades();
+};
 
 const refreshLogs = async () => {
   try {
-    logsLoading.value = true
-    const result = await backtestStore.fetchBacktestLogs(route.params.id as string)
-    logs.value = result.logs || []
+    logsLoading.value = true;
+    const result = await backtestStore.fetchBacktestLogs(
+      route.params.id as string,
+    );
+    logs.value = result.logs || [];
   } catch (error) {
-    console.error('获取日志失败:', error)
+    console.error("获取日志失败:", error);
   } finally {
-    logsLoading.value = false
+    logsLoading.value = false;
   }
-}
+};
 
 const getStatusType = (status: string) => {
   const types: Record<string, string> = {
-    pending: 'info',
-    running: 'warning',
-    completed: 'success',
-    failed: 'danger',
-    cancelled: 'info'
-  }
-  return types[status] || 'info'
-}
+    pending: "info",
+    running: "warning",
+    completed: "success",
+    failed: "danger",
+    cancelled: "info",
+  };
+  return types[status] || "info";
+};
 
 const getStatusText = (status: string) => {
   const texts: Record<string, string> = {
-    pending: '等待中',
-    running: '运行中',
-    completed: '已完成',
-    failed: '失败',
-    cancelled: '已取消'
-  }
-  return texts[status] || status
-}
+    pending: "等待中",
+    running: "运行中",
+    completed: "已完成",
+    failed: "失败",
+    cancelled: "已取消",
+  };
+  return texts[status] || status;
+};
 
 const getPerformanceClass = (value: number) => {
-  return value > 0 ? 'positive' : value < 0 ? 'negative' : ''
-}
+  return value > 0 ? "positive" : value < 0 ? "negative" : "";
+};
 
 const getLogType = (level: string) => {
   const types: Record<string, string> = {
-    error: 'danger',
-    warning: 'warning',
-    info: 'info',
-    debug: 'info'
-  }
-  return types[level] || 'info'
-}
+    error: "danger",
+    warning: "warning",
+    info: "info",
+    debug: "info",
+  };
+  return types[level] || "info";
+};
 
 const formatPercent = (value: number) => {
-  return `${(value * 100).toFixed(2)}%`
-}
+  return `${(value * 100).toFixed(2)}%`;
+};
 
 const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('zh-CN', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2
-  }).format(value)
-}
+  return new Intl.NumberFormat("zh-CN", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+  }).format(value);
+};
 
 const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleString('zh-CN')
-}
+  return new Date(dateString).toLocaleString("zh-CN");
+};
 
 const formatDuration = (seconds: number) => {
-  const hours = Math.floor(seconds / 3600)
-  const minutes = Math.floor((seconds % 3600) / 60)
-  const secs = seconds % 60
-  
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+
   if (hours > 0) {
-    return `${hours}小时${minutes}分钟${secs}秒`
+    return `${hours}小时${minutes}分钟${secs}秒`;
   } else if (minutes > 0) {
-    return `${minutes}分钟${secs}秒`
+    return `${minutes}分钟${secs}秒`;
   } else {
-    return `${secs}秒`
+    return `${secs}秒`;
   }
-}
+};
 
 // 自动刷新
 const startAutoRefresh = () => {
-  if (backtest.value?.status === 'running') {
+  if (backtest.value?.status === "running") {
     refreshInterval = setInterval(async () => {
-      await refreshResults()
-      if (backtest.value?.status !== 'running') {
-        stopAutoRefresh()
+      await refreshResults();
+      if (backtest.value?.status !== "running") {
+        stopAutoRefresh();
       }
-    }, 5000)
+    }, 5000);
   }
-}
+};
 
 const stopAutoRefresh = () => {
   if (refreshInterval) {
-    clearInterval(refreshInterval)
-    refreshInterval = null
+    clearInterval(refreshInterval);
+    refreshInterval = null;
   }
-}
+};
 
 // 生命周期
 onMounted(async () => {
   try {
-    await backtestStore.fetchBacktestById(route.params.id as string)
-    startAutoRefresh()
-    await refreshLogs()
+    await backtestStore.fetchBacktestById(route.params.id as string);
+    startAutoRefresh();
+    await refreshLogs();
   } catch (error) {
-    console.error('获取回测结果失败:', error)
-    ElMessage.error('获取回测结果失败')
+    console.error("获取回测结果失败:", error);
+    ElMessage.error("获取回测结果失败");
   }
-})
+});
 
 onUnmounted(() => {
-  stopAutoRefresh()
-})
+  stopAutoRefresh();
+});
 </script>
 
 <style scoped>
@@ -983,37 +1027,37 @@ onUnmounted(() => {
   .backtest-result-container {
     padding: 10px;
   }
-  
+
   .header-content {
     flex-direction: column;
     gap: 16px;
     align-items: flex-start;
   }
-  
+
   .status-content {
     flex-direction: column;
     gap: 16px;
   }
-  
+
   .progress-section {
     min-width: 100%;
   }
-  
+
   .performance-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .metrics-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .chart-header,
   .trades-header {
     flex-direction: column;
     gap: 12px;
     align-items: flex-start;
   }
-  
+
   .status-info {
     flex-direction: column;
     align-items: flex-start;

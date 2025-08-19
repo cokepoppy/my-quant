@@ -4,7 +4,7 @@
       <h2>系统设置</h2>
       <el-button type="primary" @click="handleSave">保存设置</el-button>
     </div>
-    
+
     <el-row :gutter="20">
       <el-col :span="24">
         <el-tabs v-model="activeTab">
@@ -26,7 +26,10 @@
                   <el-select v-model="basicSettings.timezone">
                     <el-option label="Asia/Shanghai" value="Asia/Shanghai" />
                     <el-option label="UTC" value="UTC" />
-                    <el-option label="America/New_York" value="America/New_York" />
+                    <el-option
+                      label="America/New_York"
+                      value="America/New_York"
+                    />
                   </el-select>
                 </el-form-item>
                 <el-form-item label="语言">
@@ -45,7 +48,7 @@
               </el-form>
             </el-card>
           </el-tab-pane>
-          
+
           <!-- 交易设置 -->
           <el-tab-pane label="交易设置" name="trading">
             <el-card>
@@ -66,7 +69,7 @@
                     :step="0.001"
                     :precision="3"
                   />
-                  <span style="margin-left: 10px;">%</span>
+                  <span style="margin-left: 10px">%</span>
                 </el-form-item>
                 <el-form-item label="最小交易量">
                   <el-input-number
@@ -95,7 +98,7 @@
                           :step="0.1"
                           :precision="1"
                         />
-                        <span style="margin-left: 10px;">%</span>
+                        <span style="margin-left: 10px">%</span>
                       </el-form-item>
                     </el-col>
                     <el-col :span="8">
@@ -107,7 +110,7 @@
                           :step="0.1"
                           :precision="1"
                         />
-                        <span style="margin-left: 10px;">%</span>
+                        <span style="margin-left: 10px">%</span>
                       </el-form-item>
                     </el-col>
                     <el-col :span="8">
@@ -119,7 +122,7 @@
                           :step="0.1"
                           :precision="1"
                         />
-                        <span style="margin-left: 10px;">%</span>
+                        <span style="margin-left: 10px">%</span>
                       </el-form-item>
                     </el-col>
                   </el-row>
@@ -127,7 +130,7 @@
               </el-form>
             </el-card>
           </el-tab-pane>
-          
+
           <!-- 通知设置 -->
           <el-tab-pane label="通知设置" name="notification">
             <el-card>
@@ -167,9 +170,9 @@
                     show-password
                   />
                 </el-form-item>
-                
+
                 <el-divider />
-                
+
                 <el-form-item label="短信通知">
                   <el-switch v-model="notificationSettings.smsEnabled" />
                 </el-form-item>
@@ -183,11 +186,13 @@
                     <el-option label="Twilio" value="twilio" />
                   </el-select>
                 </el-form-item>
-                
+
                 <el-divider />
-                
+
                 <el-form-item label="通知类型">
-                  <el-checkbox-group v-model="notificationSettings.notificationTypes">
+                  <el-checkbox-group
+                    v-model="notificationSettings.notificationTypes"
+                  >
                     <el-checkbox label="trade">交易通知</el-checkbox>
                     <el-checkbox label="risk">风险警告</el-checkbox>
                     <el-checkbox label="system">系统通知</el-checkbox>
@@ -197,7 +202,7 @@
               </el-form>
             </el-card>
           </el-tab-pane>
-          
+
           <!-- API设置 -->
           <el-tab-pane label="API设置" name="api">
             <el-card>
@@ -252,7 +257,7 @@
               </el-form>
             </el-card>
           </el-tab-pane>
-          
+
           <!-- 数据库设置 -->
           <el-tab-pane label="数据库设置" name="database">
             <el-card>
@@ -311,18 +316,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ref, reactive, onMounted } from "vue";
+import { ElMessage } from "element-plus";
 
-const activeTab = ref('basic')
+const activeTab = ref("basic");
 
 const basicSettings = reactive({
-  systemName: '量化交易系统',
-  systemDescription: '专业的量化交易平台',
-  timezone: 'Asia/Shanghai',
-  language: 'zh-CN',
-  theme: 'light'
-})
+  systemName: "量化交易系统",
+  systemDescription: "专业的量化交易平台",
+  timezone: "Asia/Shanghai",
+  language: "zh-CN",
+  theme: "light",
+});
 
 const tradingSettings = reactive({
   defaultLeverage: 1,
@@ -331,87 +336,87 @@ const tradingSettings = reactive({
   maxPositions: 10,
   maxRiskPerTrade: 2,
   maxDailyRisk: 5,
-  maxDrawdown: 10
-})
+  maxDrawdown: 10,
+});
 
 const notificationSettings = reactive({
   emailEnabled: false,
-  smtpHost: '',
+  smtpHost: "",
   smtpPort: 587,
-  emailUser: '',
-  emailPassword: '',
+  emailUser: "",
+  emailPassword: "",
   smsEnabled: false,
-  smsProvider: 'aliyun',
-  notificationTypes: ['trade', 'risk']
-})
+  smsProvider: "aliyun",
+  notificationTypes: ["trade", "risk"],
+});
 
 const apiSettings = reactive({
-  dataSource: 'binance',
-  apiKey: '',
-  apiSecret: '',
+  dataSource: "binance",
+  apiKey: "",
+  apiSecret: "",
   requestsPerMinute: 1200,
-  requestsPerHour: 72000
-})
+  requestsPerHour: 72000,
+});
 
 const databaseSettings = reactive({
-  type: 'postgresql',
-  host: 'localhost',
+  type: "postgresql",
+  host: "localhost",
   port: 5432,
-  database: 'quant_trading',
-  username: 'quant',
-  password: '',
+  database: "quant_trading",
+  username: "quant",
+  password: "",
   poolSize: 10,
-  backupStrategy: 'daily'
-})
+  backupStrategy: "daily",
+});
 
 const originalSettings = reactive({
   basic: { ...basicSettings },
   trading: { ...tradingSettings },
   notification: { ...notificationSettings },
   api: { ...apiSettings },
-  database: { ...databaseSettings }
-})
+  database: { ...databaseSettings },
+});
 
 const fetchSettings = async () => {
   try {
     // TODO: 从API获取设置
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   } catch (error) {
-    ElMessage.error('获取设置失败')
+    ElMessage.error("获取设置失败");
   }
-}
+};
 
 const handleSave = async () => {
   try {
     // TODO: 调用API保存设置
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
     // 更新原始设置
-    Object.assign(originalSettings.basic, basicSettings)
-    Object.assign(originalSettings.trading, tradingSettings)
-    Object.assign(originalSettings.notification, notificationSettings)
-    Object.assign(originalSettings.api, apiSettings)
-    Object.assign(originalSettings.database, databaseSettings)
-    
-    ElMessage.success('设置保存成功')
+    Object.assign(originalSettings.basic, basicSettings);
+    Object.assign(originalSettings.trading, tradingSettings);
+    Object.assign(originalSettings.notification, notificationSettings);
+    Object.assign(originalSettings.api, apiSettings);
+    Object.assign(originalSettings.database, databaseSettings);
+
+    ElMessage.success("设置保存成功");
   } catch (error) {
-    ElMessage.error('设置保存失败')
+    ElMessage.error("设置保存失败");
   }
-}
+};
 
 const testApiConnection = async () => {
   try {
     // TODO: 测试API连接
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    ElMessage.success('API连接测试成功')
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    ElMessage.success("API连接测试成功");
   } catch (error) {
-    ElMessage.error('API连接测试失败')
+    ElMessage.error("API连接测试失败");
   }
-}
+};
 
 onMounted(() => {
-  fetchSettings()
-})
+  fetchSettings();
+});
 </script>
 
 <style scoped>

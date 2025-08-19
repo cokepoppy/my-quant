@@ -4,8 +4,8 @@
     <div class="page-header">
       <div class="header-content">
         <div class="header-left">
-          <h1>{{ strategy?.name || '策略详情' }}</h1>
-          <p>{{ strategy?.description || '加载中...' }}</p>
+          <h1>{{ strategy?.name || "策略详情" }}</h1>
+          <p>{{ strategy?.description || "加载中..." }}</p>
         </div>
         <div class="header-right">
           <el-button @click="backToList">
@@ -23,7 +23,9 @@
             </el-button>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item command="duplicate">复制策略</el-dropdown-item>
+                <el-dropdown-item command="duplicate"
+                  >复制策略</el-dropdown-item
+                >
                 <el-dropdown-item command="export">导出策略</el-dropdown-item>
                 <el-dropdown-item command="logs">查看日志</el-dropdown-item>
                 <el-dropdown-item divided command="delete" class="text-danger">
@@ -66,7 +68,7 @@
             </div>
           </el-card>
         </el-col>
-        
+
         <el-col :span="8">
           <el-card>
             <template #header>
@@ -89,7 +91,9 @@
                   停止策略
                 </el-button>
                 <el-button
-                  v-else-if="strategy.status === 'stopped' || strategy.status === 'draft'"
+                  v-else-if="
+                    strategy.status === 'stopped' || strategy.status === 'draft'
+                  "
                   type="success"
                   @click="startStrategy"
                   :loading="loading"
@@ -110,7 +114,7 @@
             </div>
           </el-card>
         </el-col>
-        
+
         <el-col :span="8">
           <el-card>
             <template #header>
@@ -119,13 +123,19 @@
             <div v-if="strategy.performance" class="performance-overview">
               <div class="performance-item">
                 <label>总收益</label>
-                <span :class="getPerformanceClass(strategy.performance.totalReturn)">
+                <span
+                  :class="getPerformanceClass(strategy.performance.totalReturn)"
+                >
                   {{ formatPercent(strategy.performance.totalReturn) }}
                 </span>
               </div>
               <div class="performance-item">
                 <label>年化收益</label>
-                <span :class="getPerformanceClass(strategy.performance.annualizedReturn)">
+                <span
+                  :class="
+                    getPerformanceClass(strategy.performance.annualizedReturn)
+                  "
+                >
                   {{ formatPercent(strategy.performance.annualizedReturn) }}
                 </span>
               </div>
@@ -193,14 +203,23 @@
                 <el-table-column prop="description" label="描述" />
                 <el-table-column prop="required" label="必填" width="80">
                   <template #default="{ row }">
-                    <el-tag :type="row.required ? 'success' : 'info'" size="small">
-                      {{ row.required ? '是' : '否' }}
+                    <el-tag
+                      :type="row.required ? 'success' : 'info'"
+                      size="small"
+                    >
+                      {{ row.required ? "是" : "否" }}
                     </el-tag>
                   </template>
                 </el-table-column>
                 <el-table-column label="范围" width="120">
                   <template #default="{ row }">
-                    <span v-if="row.type === 'number' && row.min !== undefined && row.max !== undefined">
+                    <span
+                      v-if="
+                        row.type === 'number' &&
+                        row.min !== undefined &&
+                        row.max !== undefined
+                      "
+                    >
                       {{ row.min }} - {{ row.max }}
                     </span>
                     <span v-else>-</span>
@@ -273,18 +292,26 @@
             <div class="performance-container">
               <div class="performance-header">
                 <h3>性能分析</h3>
-                <el-button @click="refreshPerformance" :loading="performanceLoading">
+                <el-button
+                  @click="refreshPerformance"
+                  :loading="performanceLoading"
+                >
                   <el-icon><refresh /></el-icon>
                   刷新数据
                 </el-button>
               </div>
-              
+
               <div v-if="strategy.performance" class="performance-content">
                 <el-row :gutter="20">
                   <el-col :span="8">
                     <div class="metric-card">
                       <div class="metric-title">总收益</div>
-                      <div class="metric-value" :class="getPerformanceClass(strategy.performance.totalReturn)">
+                      <div
+                        class="metric-value"
+                        :class="
+                          getPerformanceClass(strategy.performance.totalReturn)
+                        "
+                      >
                         {{ formatPercent(strategy.performance.totalReturn) }}
                       </div>
                     </div>
@@ -292,15 +319,26 @@
                   <el-col :span="8">
                     <div class="metric-card">
                       <div class="metric-title">年化收益</div>
-                      <div class="metric-value" :class="getPerformanceClass(strategy.performance.annualizedReturn)">
-                        {{ formatPercent(strategy.performance.annualizedReturn) }}
+                      <div
+                        class="metric-value"
+                        :class="
+                          getPerformanceClass(
+                            strategy.performance.annualizedReturn,
+                          )
+                        "
+                      >
+                        {{
+                          formatPercent(strategy.performance.annualizedReturn)
+                        }}
                       </div>
                     </div>
                   </el-col>
                   <el-col :span="8">
                     <div class="metric-card">
                       <div class="metric-title">夏普比率</div>
-                      <div class="metric-value">{{ strategy.performance.sharpeRatio.toFixed(2) }}</div>
+                      <div class="metric-value">
+                        {{ strategy.performance.sharpeRatio.toFixed(2) }}
+                      </div>
                     </div>
                   </el-col>
                 </el-row>
@@ -309,25 +347,36 @@
                   <el-col :span="6">
                     <div class="metric-card">
                       <div class="metric-title">胜率</div>
-                      <div class="metric-value">{{ formatPercent(strategy.performance.winRate) }}</div>
+                      <div class="metric-value">
+                        {{ formatPercent(strategy.performance.winRate) }}
+                      </div>
                     </div>
                   </el-col>
                   <el-col :span="6">
                     <div class="metric-card">
                       <div class="metric-title">盈亏比</div>
-                      <div class="metric-value">{{ strategy.performance.profitFactor.toFixed(2) }}</div>
+                      <div class="metric-value">
+                        {{ strategy.performance.profitFactor.toFixed(2) }}
+                      </div>
                     </div>
                   </el-col>
                   <el-col :span="6">
                     <div class="metric-card">
                       <div class="metric-title">总交易次数</div>
-                      <div class="metric-value">{{ strategy.performance.totalTrades }}</div>
+                      <div class="metric-value">
+                        {{ strategy.performance.totalTrades }}
+                      </div>
                     </div>
                   </el-col>
                   <el-col :span="6">
                     <div class="metric-card">
                       <div class="metric-title">平均交易收益</div>
-                      <div class="metric-value" :class="getPerformanceClass(strategy.performance.averageTrade)">
+                      <div
+                        class="metric-value"
+                        :class="
+                          getPerformanceClass(strategy.performance.averageTrade)
+                        "
+                      >
                         {{ formatPercent(strategy.performance.averageTrade) }}
                       </div>
                     </div>
@@ -358,7 +407,11 @@
               <div class="logs-header">
                 <h3>运行日志</h3>
                 <div class="logs-actions">
-                  <el-select v-model="logLevel" placeholder="日志级别" size="small">
+                  <el-select
+                    v-model="logLevel"
+                    placeholder="日志级别"
+                    size="small"
+                  >
                     <el-option label="全部" value="" />
                     <el-option label="错误" value="error" />
                     <el-option label="警告" value="warning" />
@@ -371,7 +424,7 @@
                   </el-button>
                 </div>
               </div>
-              
+
               <div class="logs-content">
                 <div v-if="logs.length === 0" class="no-logs">
                   <el-empty description="暂无日志" :image-size="60" />
@@ -384,7 +437,9 @@
                     :class="`log-${log.level}`"
                   >
                     <div class="log-meta">
-                      <span class="log-time">{{ formatDate(log.timestamp) }}</span>
+                      <span class="log-time">{{
+                        formatDate(log.timestamp)
+                      }}</span>
                       <el-tag :type="getLogType(log.level)" size="small">
                         {{ log.level.toUpperCase() }}
                       </el-tag>
@@ -402,9 +457,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ref, onMounted, computed } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { ElMessage, ElMessageBox } from "element-plus";
 import {
   ArrowLeft,
   Edit,
@@ -414,240 +469,247 @@ import {
   RefreshRight,
   DocumentCopy,
   Check,
-  Refresh
-} from '@element-plus/icons-vue'
-import { useStrategyStore } from '@/stores/strategy'
-import type { Strategy } from '@/types/strategy'
+  Refresh,
+} from "@element-plus/icons-vue";
+import { useStrategyStore } from "@/stores/strategy";
+import type { Strategy } from "@/types/strategy";
 
-const route = useRoute()
-const router = useRouter()
-const strategyStore = useStrategyStore()
+const route = useRoute();
+const router = useRouter();
+const strategyStore = useStrategyStore();
 
 // 响应式数据
-const strategy = computed(() => strategyStore.currentStrategy)
-const isLoading = computed(() => strategyStore.isLoading)
-const activeTab = ref('code')
-const performanceLoading = ref(false)
-const logsLoading = ref(false)
-const logLevel = ref('')
-const logs = ref<any[]>([])
+const strategy = computed(() => strategyStore.currentStrategy);
+const isLoading = computed(() => strategyStore.isLoading);
+const activeTab = ref("code");
+const performanceLoading = ref(false);
+const logsLoading = ref(false);
+const logLevel = ref("");
+const logs = ref<any[]>([]);
 
 // 方法
 const backToList = () => {
-  router.push('/strategies')
-}
+  router.push("/strategies");
+};
 
 const editStrategy = () => {
-  router.push(`/strategies/${route.params.id}/edit`)
-}
+  router.push(`/strategies/${route.params.id}/edit`);
+};
 
 const startStrategy = async () => {
   try {
-    await strategyStore.startStrategyById(route.params.id as string)
+    await strategyStore.startStrategyById(route.params.id as string);
   } catch (error) {
-    console.error('启动策略失败:', error)
+    console.error("启动策略失败:", error);
   }
-}
+};
 
 const stopStrategy = async () => {
   try {
-    await strategyStore.stopStrategyById(route.params.id as string)
+    await strategyStore.stopStrategyById(route.params.id as string);
   } catch (error) {
-    console.error('停止策略失败:', error)
+    console.error("停止策略失败:", error);
   }
-}
+};
 
 const handleAction = (command: string) => {
   switch (command) {
-    case 'duplicate':
-      duplicateStrategy()
-      break
-    case 'export':
-      exportStrategy()
-      break
-    case 'logs':
-      activeTab.value = 'logs'
-      break
-    case 'delete':
-      deleteStrategy()
-      break
+    case "duplicate":
+      duplicateStrategy();
+      break;
+    case "export":
+      exportStrategy();
+      break;
+    case "logs":
+      activeTab.value = "logs";
+      break;
+    case "delete":
+      deleteStrategy();
+      break;
   }
-}
+};
 
 const duplicateStrategy = async () => {
   try {
     const newStrategy = {
       ...strategy.value,
       name: `${strategy.value.name} (复制)`,
-      status: 'draft' as const,
+      status: "draft" as const,
       id: undefined,
       createdAt: undefined,
       updatedAt: undefined,
-      lastRunAt: undefined
-    }
-    await strategyStore.createNewStrategy(newStrategy)
-    ElMessage.success('策略复制成功')
+      lastRunAt: undefined,
+    };
+    await strategyStore.createNewStrategy(newStrategy);
+    ElMessage.success("策略复制成功");
   } catch (error) {
-    console.error('复制策略失败:', error)
+    console.error("复制策略失败:", error);
   }
-}
+};
 
 const exportStrategy = () => {
-  const dataStr = JSON.stringify(strategy.value, null, 2)
-  const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr)
-  
-  const exportFileDefaultName = `${strategy.value.name}.json`
-  
-  const linkElement = document.createElement('a')
-  linkElement.setAttribute('href', dataUri)
-  linkElement.setAttribute('download', exportFileDefaultName)
-  linkElement.click()
-}
+  const dataStr = JSON.stringify(strategy.value, null, 2);
+  const dataUri =
+    "data:application/json;charset=utf-8," + encodeURIComponent(dataStr);
+
+  const exportFileDefaultName = `${strategy.value.name}.json`;
+
+  const linkElement = document.createElement("a");
+  linkElement.setAttribute("href", dataUri);
+  linkElement.setAttribute("download", exportFileDefaultName);
+  linkElement.click();
+};
 
 const deleteStrategy = async () => {
   try {
     await ElMessageBox.confirm(
-      '确定要删除这个策略吗？此操作不可撤销。',
-      '删除策略',
+      "确定要删除这个策略吗？此操作不可撤销。",
+      "删除策略",
       {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning',
-      }
-    )
-    
-    await strategyStore.deleteStrategyById(route.params.id as string)
-    ElMessage.success('策略删除成功')
-    router.push('/strategies')
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      },
+    );
+
+    await strategyStore.deleteStrategyById(route.params.id as string);
+    ElMessage.success("策略删除成功");
+    router.push("/strategies");
   } catch (error) {
-    if (error !== 'cancel') {
-      console.error('删除策略失败:', error)
+    if (error !== "cancel") {
+      console.error("删除策略失败:", error);
     }
   }
-}
+};
 
 const copyCode = () => {
-  navigator.clipboard.writeText(strategy.value.code).then(() => {
-    ElMessage.success('代码已复制到剪贴板')
-  }).catch(() => {
-    ElMessage.error('复制失败')
-  })
-}
+  navigator.clipboard
+    .writeText(strategy.value.code)
+    .then(() => {
+      ElMessage.success("代码已复制到剪贴板");
+    })
+    .catch(() => {
+      ElMessage.error("复制失败");
+    });
+};
 
 const validateCode = async () => {
   try {
     const result = await strategyStore.validateStrategyCode({
       code: strategy.value.code,
       language: strategy.value.language,
-      type: strategy.value.type
-    })
-    
+      type: strategy.value.type,
+    });
+
     if (result.isValid) {
-      ElMessage.success('代码验证通过')
+      ElMessage.success("代码验证通过");
     } else {
-      ElMessage.error('代码验证失败: ' + result.errors.join(', '))
+      ElMessage.error("代码验证失败: " + result.errors.join(", "));
     }
   } catch (error) {
-    console.error('验证代码失败:', error)
-    ElMessage.error('验证代码失败')
+    console.error("验证代码失败:", error);
+    ElMessage.error("验证代码失败");
   }
-}
+};
 
 const handleTabClick = (tab: any) => {
-  if (tab.props.name === 'logs') {
-    refreshLogs()
-  } else if (tab.props.name === 'performance') {
-    refreshPerformance()
+  if (tab.props.name === "logs") {
+    refreshLogs();
+  } else if (tab.props.name === "performance") {
+    refreshPerformance();
   }
-}
+};
 
 const refreshPerformance = async () => {
   try {
-    performanceLoading.value = true
-    await strategyStore.fetchStrategyPerformance(route.params.id as string)
+    performanceLoading.value = true;
+    await strategyStore.fetchStrategyPerformance(route.params.id as string);
   } catch (error) {
-    console.error('获取性能数据失败:', error)
+    console.error("获取性能数据失败:", error);
   } finally {
-    performanceLoading.value = false
+    performanceLoading.value = false;
   }
-}
+};
 
 const refreshLogs = async () => {
   try {
-    logsLoading.value = true
-    const result = await strategyStore.fetchStrategyLogs(route.params.id as string, {
-      level: logLevel.value
-    })
-    logs.value = result.logs || []
+    logsLoading.value = true;
+    const result = await strategyStore.fetchStrategyLogs(
+      route.params.id as string,
+      {
+        level: logLevel.value,
+      },
+    );
+    logs.value = result.logs || [];
   } catch (error) {
-    console.error('获取日志失败:', error)
+    console.error("获取日志失败:", error);
   } finally {
-    logsLoading.value = false
+    logsLoading.value = false;
   }
-}
+};
 
 const getTypeText = (type: string) => {
   const types: Record<string, string> = {
-    trend: '趋势策略',
-    momentum: '动量策略',
-    mean_reversion: '均值回归策略',
-    arbitrage: '套利策略',
-    custom: '自定义策略'
-  }
-  return types[type] || type
-}
+    trend: "趋势策略",
+    momentum: "动量策略",
+    mean_reversion: "均值回归策略",
+    arbitrage: "套利策略",
+    custom: "自定义策略",
+  };
+  return types[type] || type;
+};
 
 const getStatusType = (status: string) => {
   const types: Record<string, string> = {
-    active: 'success',
-    draft: 'info',
-    stopped: 'warning',
-    error: 'danger'
-  }
-  return types[status] || 'info'
-}
+    active: "success",
+    draft: "info",
+    stopped: "warning",
+    error: "danger",
+  };
+  return types[status] || "info";
+};
 
 const getStatusText = (status: string) => {
   const texts: Record<string, string> = {
-    active: '运行中',
-    draft: '草稿',
-    stopped: '已停止',
-    error: '错误'
-  }
-  return texts[status] || status
-}
+    active: "运行中",
+    draft: "草稿",
+    stopped: "已停止",
+    error: "错误",
+  };
+  return texts[status] || status;
+};
 
 const getPerformanceClass = (value: number) => {
-  return value > 0 ? 'positive' : value < 0 ? 'negative' : ''
-}
+  return value > 0 ? "positive" : value < 0 ? "negative" : "";
+};
 
 const getLogType = (level: string) => {
   const types: Record<string, string> = {
-    error: 'danger',
-    warning: 'warning',
-    info: 'info',
-    debug: 'info'
-  }
-  return types[level] || 'info'
-}
+    error: "danger",
+    warning: "warning",
+    info: "info",
+    debug: "info",
+  };
+  return types[level] || "info";
+};
 
 const formatPercent = (value: number) => {
-  return `${(value * 100).toFixed(2)}%`
-}
+  return `${(value * 100).toFixed(2)}%`;
+};
 
 const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleString('zh-CN')
-}
+  return new Date(dateString).toLocaleString("zh-CN");
+};
 
 // 生命周期
 onMounted(async () => {
   try {
-    await strategyStore.fetchStrategyById(route.params.id as string)
+    await strategyStore.fetchStrategyById(route.params.id as string);
   } catch (error) {
-    console.error('获取策略详情失败:', error)
-    ElMessage.error('获取策略详情失败')
+    console.error("获取策略详情失败:", error);
+    ElMessage.error("获取策略详情失败");
   }
-})
+});
 </script>
 
 <style scoped>
@@ -790,7 +852,7 @@ onMounted(async () => {
 }
 
 .code-editor {
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
   font-size: 14px;
 }
 
@@ -976,30 +1038,30 @@ onMounted(async () => {
   .strategy-detail-container {
     padding: 10px;
   }
-  
+
   .header-content {
     flex-direction: column;
     gap: 16px;
     align-items: flex-start;
   }
-  
+
   .header-right {
     width: 100%;
     justify-content: flex-start;
   }
-  
+
   .performance-overview,
   .metrics-row {
     flex-direction: column;
   }
-  
+
   .performance-header,
   .logs-header {
     flex-direction: column;
     gap: 12px;
     align-items: flex-start;
   }
-  
+
   .code-header {
     flex-direction: column;
     gap: 12px;

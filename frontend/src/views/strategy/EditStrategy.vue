@@ -4,14 +4,9 @@
       <h2>编辑策略</h2>
       <el-button @click="$router.go(-1)">返回</el-button>
     </div>
-    
+
     <el-card v-loading="loading">
-      <el-form
-        ref="formRef"
-        :model="form"
-        :rules="rules"
-        label-width="120px"
-      >
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="120px">
         <el-form-item label="策略名称" prop="name">
           <el-input
             v-model="form.name"
@@ -20,7 +15,7 @@
             show-word-limit
           />
         </el-form-item>
-        
+
         <el-form-item label="策略描述" prop="description">
           <el-input
             v-model="form.description"
@@ -31,7 +26,7 @@
             show-word-limit
           />
         </el-form-item>
-        
+
         <el-form-item label="策略类型" prop="type">
           <el-select v-model="form.type" placeholder="请选择策略类型">
             <el-option label="趋势跟踪" value="trend" />
@@ -41,7 +36,7 @@
             <el-option label="机器学习" value="machine_learning" />
           </el-select>
         </el-form-item>
-        
+
         <el-form-item label="交易品种" prop="symbol">
           <el-select
             v-model="form.symbol"
@@ -56,7 +51,7 @@
             <el-option label="DOT/USDT" value="DOT/USDT" />
           </el-select>
         </el-form-item>
-        
+
         <el-form-item label="时间周期" prop="timeframe">
           <el-select v-model="form.timeframe" placeholder="请选择时间周期">
             <el-option label="1分钟" value="1m" />
@@ -68,7 +63,7 @@
             <el-option label="1天" value="1d" />
           </el-select>
         </el-form-item>
-        
+
         <el-form-item label="初始资金" prop="initialCapital">
           <el-input-number
             v-model="form.initialCapital"
@@ -77,9 +72,9 @@
             :step="100"
             :precision="2"
           />
-          <span style="margin-left: 10px;">USDT</span>
+          <span style="margin-left: 10px">USDT</span>
         </el-form-item>
-        
+
         <el-form-item label="风险参数">
           <el-row :gutter="20">
             <el-col :span="8">
@@ -91,7 +86,7 @@
                   :step="1"
                   :precision="0"
                 />
-                <span style="margin-left: 10px;">%</span>
+                <span style="margin-left: 10px">%</span>
               </el-form-item>
             </el-col>
             <el-col :span="8">
@@ -103,7 +98,7 @@
                   :step="0.1"
                   :precision="1"
                 />
-                <span style="margin-left: 10px;">%</span>
+                <span style="margin-left: 10px">%</span>
               </el-form-item>
             </el-col>
             <el-col :span="8">
@@ -115,12 +110,12 @@
                   :step="0.1"
                   :precision="1"
                 />
-                <span style="margin-left: 10px;">%</span>
+                <span style="margin-left: 10px">%</span>
               </el-form-item>
             </el-col>
           </el-row>
         </el-form-item>
-        
+
         <el-form-item label="策略代码" prop="code">
           <div class="code-editor">
             <el-input
@@ -131,7 +126,7 @@
             />
           </div>
         </el-form-item>
-        
+
         <el-form-item label="状态" prop="status">
           <el-select v-model="form.status" placeholder="请选择状态">
             <el-option label="开发中" value="development" />
@@ -140,13 +135,16 @@
             <el-option label="已停止" value="stopped" />
           </el-select>
         </el-form-item>
-        
+
         <el-form-item>
           <el-button type="primary" @click="handleSubmit">保存修改</el-button>
           <el-button @click="handleReset">重置</el-button>
           <el-button @click="handleBacktest">回测</el-button>
-          <el-button @click="handleDeploy" :disabled="form.status === 'production'">
-            {{ form.status === 'production' ? '已部署' : '部署' }}
+          <el-button
+            @click="handleDeploy"
+            :disabled="form.status === 'production'"
+          >
+            {{ form.status === "production" ? "已部署" : "部署" }}
           </el-button>
         </el-form-item>
       </el-form>
@@ -155,143 +153,161 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
+import { ref, reactive, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { ElMessage, type FormInstance, type FormRules } from "element-plus";
 
-const route = useRoute()
-const router = useRouter()
-const formRef = ref<FormInstance>()
-const loading = ref(false)
+const route = useRoute();
+const router = useRouter();
+const formRef = ref<FormInstance>();
+const loading = ref(false);
 
 const form = reactive({
-  name: '',
-  description: '',
-  type: '',
-  symbol: '',
-  timeframe: '',
+  name: "",
+  description: "",
+  type: "",
+  symbol: "",
+  timeframe: "",
   initialCapital: 10000,
   maxPosition: 10,
   stopLoss: 2,
   takeProfit: 3,
-  code: '',
-  status: 'development'
-})
+  code: "",
+  status: "development",
+});
 
-const originalForm = reactive({ ...form })
+const originalForm = reactive({ ...form });
 
 const rules: FormRules = {
   name: [
-    { required: true, message: '请输入策略名称', trigger: 'blur' },
-    { min: 2, max: 50, message: '策略名称长度在 2 到 50 个字符', trigger: 'blur' }
+    { required: true, message: "请输入策略名称", trigger: "blur" },
+    {
+      min: 2,
+      max: 50,
+      message: "策略名称长度在 2 到 50 个字符",
+      trigger: "blur",
+    },
   ],
   description: [
-    { required: true, message: '请输入策略描述', trigger: 'blur' },
-    { max: 500, message: '策略描述最多500个字符', trigger: 'blur' }
+    { required: true, message: "请输入策略描述", trigger: "blur" },
+    { max: 500, message: "策略描述最多500个字符", trigger: "blur" },
   ],
-  type: [
-    { required: true, message: '请选择策略类型', trigger: 'change' }
-  ],
-  symbol: [
-    { required: true, message: '请选择交易品种', trigger: 'change' }
-  ],
-  timeframe: [
-    { required: true, message: '请选择时间周期', trigger: 'change' }
-  ],
+  type: [{ required: true, message: "请选择策略类型", trigger: "change" }],
+  symbol: [{ required: true, message: "请选择交易品种", trigger: "change" }],
+  timeframe: [{ required: true, message: "请选择时间周期", trigger: "change" }],
   initialCapital: [
-    { required: true, message: '请输入初始资金', trigger: 'blur' },
-    { type: 'number', min: 100, message: '初始资金不能少于100', trigger: 'blur' }
+    { required: true, message: "请输入初始资金", trigger: "blur" },
+    {
+      type: "number",
+      min: 100,
+      message: "初始资金不能少于100",
+      trigger: "blur",
+    },
   ],
   maxPosition: [
-    { required: true, message: '请输入最大仓位', trigger: 'blur' },
-    { type: 'number', min: 1, max: 100, message: '最大仓位在1-100之间', trigger: 'blur' }
+    { required: true, message: "请输入最大仓位", trigger: "blur" },
+    {
+      type: "number",
+      min: 1,
+      max: 100,
+      message: "最大仓位在1-100之间",
+      trigger: "blur",
+    },
   ],
   stopLoss: [
-    { required: true, message: '请输入止损比例', trigger: 'blur' },
-    { type: 'number', min: 0.1, max: 10, message: '止损比例在0.1-10之间', trigger: 'blur' }
+    { required: true, message: "请输入止损比例", trigger: "blur" },
+    {
+      type: "number",
+      min: 0.1,
+      max: 10,
+      message: "止损比例在0.1-10之间",
+      trigger: "blur",
+    },
   ],
   takeProfit: [
-    { required: true, message: '请输入止盈比例', trigger: 'blur' },
-    { type: 'number', min: 0.1, max: 20, message: '止盈比例在0.1-20之间', trigger: 'blur' }
+    { required: true, message: "请输入止盈比例", trigger: "blur" },
+    {
+      type: "number",
+      min: 0.1,
+      max: 20,
+      message: "止盈比例在0.1-20之间",
+      trigger: "blur",
+    },
   ],
-  code: [
-    { required: true, message: '请输入策略代码', trigger: 'blur' }
-  ],
-  status: [
-    { required: true, message: '请选择状态', trigger: 'change' }
-  ]
-}
+  code: [{ required: true, message: "请输入策略代码", trigger: "blur" }],
+  status: [{ required: true, message: "请选择状态", trigger: "change" }],
+};
 
 const fetchStrategy = async () => {
-  loading.value = true
+  loading.value = true;
   try {
     // TODO: 从API获取策略详情
-    const strategyId = route.params.id as string
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
+    const strategyId = route.params.id as string;
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
     // 模拟数据
     Object.assign(form, {
-      name: '示例策略',
-      description: '这是一个示例策略',
-      type: 'trend',
-      symbol: 'BTC/USDT',
-      timeframe: '1h',
+      name: "示例策略",
+      description: "这是一个示例策略",
+      type: "trend",
+      symbol: "BTC/USDT",
+      timeframe: "1h",
       initialCapital: 10000,
       maxPosition: 10,
       stopLoss: 2,
       takeProfit: 3,
-      code: '// 策略代码\nfunction strategy() {\n  // TODO: 实现策略逻辑\n}',
-      status: 'development'
-    })
-    
-    Object.assign(originalForm, form)
+      code: "// 策略代码\nfunction strategy() {\n  // TODO: 实现策略逻辑\n}",
+      status: "development",
+    });
+
+    Object.assign(originalForm, form);
   } catch (error) {
-    ElMessage.error('获取策略详情失败')
+    ElMessage.error("获取策略详情失败");
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 const handleSubmit = async () => {
-  if (!formRef.value) return
-  
+  if (!formRef.value) return;
+
   try {
-    await formRef.value.validate()
-    
+    await formRef.value.validate();
+
     // TODO: 调用API更新策略
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    ElMessage.success('策略更新成功')
-    router.push('/strategies')
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    ElMessage.success("策略更新成功");
+    router.push("/strategies");
   } catch (error) {
-    console.error('Form validation failed:', error)
+    console.error("Form validation failed:", error);
   }
-}
+};
 
 const handleReset = () => {
-  Object.assign(form, originalForm)
-}
+  Object.assign(form, originalForm);
+};
 
 const handleBacktest = () => {
   // TODO: 实现回测逻辑
-  ElMessage.info('回测功能开发中')
-}
+  ElMessage.info("回测功能开发中");
+};
 
 const handleDeploy = async () => {
   try {
     // TODO: 调用API部署策略
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    form.status = 'production'
-    ElMessage.success('策略部署成功')
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    form.status = "production";
+    ElMessage.success("策略部署成功");
   } catch (error) {
-    ElMessage.error('策略部署失败')
+    ElMessage.error("策略部署失败");
   }
-}
+};
 
 onMounted(() => {
-  fetchStrategy()
-})
+  fetchStrategy();
+});
 </script>
 
 <style scoped>
@@ -319,7 +335,7 @@ onMounted(() => {
 
 .code-editor :deep(.el-textarea__inner) {
   border: none;
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
   font-size: 14px;
   line-height: 1.5;
   resize: none;

@@ -2,13 +2,13 @@
   <div id="app">
     <!-- 路由视图 -->
     <router-view />
-    
+
     <!-- 全局加载动画 -->
     <div v-if="appStore.isLoading" class="global-loading">
       <el-icon class="loading-icon"><loading /></el-icon>
       <span>加载中...</span>
     </div>
-    
+
     <!-- 全局消息提示 -->
     <div class="global-notifications">
       <transition-group name="notification" tag="div">
@@ -17,9 +17,14 @@
           :key="notification.id"
           :class="['notification-item', notification.type]"
         >
-          <el-icon><component :is="getNotificationIcon(notification.type)" /></el-icon>
+          <el-icon
+            ><component :is="getNotificationIcon(notification.type)"
+          /></el-icon>
           <span>{{ notification.message }}</span>
-          <el-icon class="close-icon" @click="appStore.removeNotification(notification.id)">
+          <el-icon
+            class="close-icon"
+            @click="appStore.removeNotification(notification.id)"
+          >
             <close />
           </el-icon>
         </div>
@@ -29,20 +34,20 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import { useAuthStore } from '@/stores/auth'
-import { useAppStore } from '@/stores/app'
-import { 
-  Loading, 
-  SuccessFilled, 
-  WarningFilled, 
+import { onMounted } from "vue";
+import { useAuthStore } from "@/stores/auth";
+import { useAppStore } from "@/stores/app";
+import {
+  Loading,
+  SuccessFilled,
+  WarningFilled,
   CircleCloseFilled,
   InfoFilled,
-  Close
-} from '@element-plus/icons-vue'
+  Close,
+} from "@element-plus/icons-vue";
 
-const authStore = useAuthStore()
-const appStore = useAppStore()
+const authStore = useAuthStore();
+const appStore = useAppStore();
 
 // 获取通知图标
 const getNotificationIcon = (type: string) => {
@@ -50,32 +55,31 @@ const getNotificationIcon = (type: string) => {
     success: SuccessFilled,
     warning: WarningFilled,
     error: CircleCloseFilled,
-    info: InfoFilled
-  }
-  return iconMap[type] || InfoFilled
-}
+    info: InfoFilled,
+  };
+  return iconMap[type] || InfoFilled;
+};
 
 // 初始化应用
 onMounted(async () => {
-  console.log('=== App.vue onMounted 开始 ===')
+  console.log("=== App.vue onMounted 开始 ===");
   try {
-    console.log('开始初始化认证状态...')
+    console.log("开始初始化认证状态...");
     // 初始化认证状态
-    await authStore.initializeAuth()
-    console.log('认证状态初始化完成')
-    
+    await authStore.initializeAuth();
+    console.log("认证状态初始化完成");
+
     // 初始化应用配置
-    await appStore.initializeApp()
-    console.log('应用配置初始化完成')
-    
+    await appStore.initializeApp();
+    console.log("应用配置初始化完成");
+
     // 设置主题
-    appStore.applyTheme()
-    console.log('主题设置完成')
-    
+    appStore.applyTheme();
+    console.log("主题设置完成");
   } catch (error) {
-    console.error('App initialization failed:', error)
+    console.error("App initialization failed:", error);
   }
-})
+});
 </script>
 
 <style>
@@ -87,7 +91,9 @@ onMounted(async () => {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+    Cantarell, sans-serif;
   font-size: 14px;
   line-height: 1.6;
   color: #333;
@@ -141,8 +147,12 @@ body {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* 全局通知样式 */
@@ -225,35 +235,85 @@ body {
   text-align: right;
 }
 
-.mt-1 { margin-top: 0.25rem; }
-.mt-2 { margin-top: 0.5rem; }
-.mt-3 { margin-top: 1rem; }
-.mt-4 { margin-top: 1.5rem; }
-.mt-5 { margin-top: 3rem; }
+.mt-1 {
+  margin-top: 0.25rem;
+}
+.mt-2 {
+  margin-top: 0.5rem;
+}
+.mt-3 {
+  margin-top: 1rem;
+}
+.mt-4 {
+  margin-top: 1.5rem;
+}
+.mt-5 {
+  margin-top: 3rem;
+}
 
-.mb-1 { margin-bottom: 0.25rem; }
-.mb-2 { margin-bottom: 0.5rem; }
-.mb-3 { margin-bottom: 1rem; }
-.mb-4 { margin-bottom: 1.5rem; }
-.mb-5 { margin-bottom: 3rem; }
+.mb-1 {
+  margin-bottom: 0.25rem;
+}
+.mb-2 {
+  margin-bottom: 0.5rem;
+}
+.mb-3 {
+  margin-bottom: 1rem;
+}
+.mb-4 {
+  margin-bottom: 1.5rem;
+}
+.mb-5 {
+  margin-bottom: 3rem;
+}
 
-.ml-1 { margin-left: 0.25rem; }
-.ml-2 { margin-left: 0.5rem; }
-.ml-3 { margin-left: 1rem; }
-.ml-4 { margin-left: 1.5rem; }
-.ml-5 { margin-left: 3rem; }
+.ml-1 {
+  margin-left: 0.25rem;
+}
+.ml-2 {
+  margin-left: 0.5rem;
+}
+.ml-3 {
+  margin-left: 1rem;
+}
+.ml-4 {
+  margin-left: 1.5rem;
+}
+.ml-5 {
+  margin-left: 3rem;
+}
 
-.mr-1 { margin-right: 0.25rem; }
-.mr-2 { margin-right: 0.5rem; }
-.mr-3 { margin-right: 1rem; }
-.mr-4 { margin-right: 1.5rem; }
-.mr-5 { margin-right: 3rem; }
+.mr-1 {
+  margin-right: 0.25rem;
+}
+.mr-2 {
+  margin-right: 0.5rem;
+}
+.mr-3 {
+  margin-right: 1rem;
+}
+.mr-4 {
+  margin-right: 1.5rem;
+}
+.mr-5 {
+  margin-right: 3rem;
+}
 
-.p-1 { padding: 0.25rem; }
-.p-2 { padding: 0.5rem; }
-.p-3 { padding: 1rem; }
-.p-4 { padding: 1.5rem; }
-.p-5 { padding: 3rem; }
+.p-1 {
+  padding: 0.25rem;
+}
+.p-2 {
+  padding: 0.5rem;
+}
+.p-3 {
+  padding: 1rem;
+}
+.p-4 {
+  padding: 1.5rem;
+}
+.p-5 {
+  padding: 3rem;
+}
 
 .flex {
   display: flex;
@@ -404,20 +464,38 @@ body {
 
 /* 响应式工具类 */
 @media (max-width: 640px) {
-  .sm\:hidden { display: none; }
-  .sm\:flex { display: flex; }
-  .sm\:text-center { text-align: center; }
+  .sm\:hidden {
+    display: none;
+  }
+  .sm\:flex {
+    display: flex;
+  }
+  .sm\:text-center {
+    text-align: center;
+  }
 }
 
 @media (max-width: 768px) {
-  .md\:hidden { display: none; }
-  .md\:flex { display: flex; }
-  .md\:text-center { text-align: center; }
+  .md\:hidden {
+    display: none;
+  }
+  .md\:flex {
+    display: flex;
+  }
+  .md\:text-center {
+    text-align: center;
+  }
 }
 
 @media (max-width: 1024px) {
-  .lg\:hidden { display: none; }
-  .lg\:flex { display: flex; }
-  .lg\:text-center { text-align: center; }
+  .lg\:hidden {
+    display: none;
+  }
+  .lg\:flex {
+    display: flex;
+  }
+  .lg\:text-center {
+    text-align: center;
+  }
 }
 </style>

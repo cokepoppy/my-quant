@@ -9,7 +9,12 @@
         clearable
         @input="handleSearch"
       />
-      <el-select v-model="selectedCategory" placeholder="选择分类" clearable @change="handleSearch">
+      <el-select
+        v-model="selectedCategory"
+        placeholder="选择分类"
+        clearable
+        @change="handleSearch"
+      >
         <el-option label="全部分类" value="" />
         <el-option label="趋势策略" value="trend" />
         <el-option label="动量策略" value="momentum" />
@@ -18,7 +23,12 @@
         <el-option label="高频交易" value="high_frequency" />
         <el-option label="机器学习" value="machine_learning" />
       </el-select>
-      <el-select v-model="selectedDifficulty" placeholder="选择难度" clearable @change="handleSearch">
+      <el-select
+        v-model="selectedDifficulty"
+        placeholder="选择难度"
+        clearable
+        @change="handleSearch"
+      >
         <el-option label="全部难度" value="" />
         <el-option label="初级" value="beginner" />
         <el-option label="中级" value="intermediate" />
@@ -45,7 +55,10 @@
               <el-tag size="small" :type="getCategoryType(template.category)">
                 {{ getCategoryText(template.category) }}
               </el-tag>
-              <el-tag size="small" :type="getDifficultyType(template.difficulty)">
+              <el-tag
+                size="small"
+                :type="getDifficultyType(template.difficulty)"
+              >
                 {{ getDifficultyText(template.difficulty) }}
               </el-tag>
               <el-tag size="small" type="info">{{ template.language }}</el-tag>
@@ -61,11 +74,11 @@
             />
           </div>
         </div>
-        
+
         <div class="template-description">
           {{ template.description }}
         </div>
-        
+
         <div class="template-parameters">
           <div class="parameter-count">
             <el-icon><setting /></el-icon>
@@ -76,7 +89,7 @@
             {{ template.usageCount }} 次使用
           </div>
         </div>
-        
+
         <div class="template-tags">
           <el-tag
             v-for="tag in template.tags"
@@ -87,7 +100,7 @@
             {{ tag }}
           </el-tag>
         </div>
-        
+
         <div class="template-footer">
           <div class="template-stats">
             <div class="stat-item">
@@ -95,7 +108,11 @@
               <div class="stat-value">{{ formatDate(template.createdAt) }}</div>
             </div>
           </div>
-          <el-button type="primary" size="small" @click.stop="selectTemplate(template)">
+          <el-button
+            type="primary"
+            size="small"
+            @click.stop="selectTemplate(template)"
+          >
             使用模板
           </el-button>
         </div>
@@ -122,12 +139,12 @@
             <el-tag type="info">{{ selectedTemplate.language }}</el-tag>
           </div>
         </div>
-        
+
         <div class="preview-description">
           <h3>策略描述</h3>
           <p>{{ selectedTemplate.description }}</p>
         </div>
-        
+
         <div class="preview-parameters">
           <h3>策略参数</h3>
           <el-table :data="selectedTemplate.parameters" size="small">
@@ -141,13 +158,19 @@
             <el-table-column prop="required" label="必填" width="80">
               <template #default="{ row }">
                 <el-tag :type="row.required ? 'success' : 'info'" size="small">
-                  {{ row.required ? '是' : '否' }}
+                  {{ row.required ? "是" : "否" }}
                 </el-tag>
               </template>
             </el-table-column>
             <el-table-column label="范围" width="120">
               <template #default="{ row }">
-                <span v-if="row.type === 'number' && row.min !== undefined && row.max !== undefined">
+                <span
+                  v-if="
+                    row.type === 'number' &&
+                    row.min !== undefined &&
+                    row.max !== undefined
+                  "
+                >
                   {{ row.min }} - {{ row.max }}
                 </span>
                 <span v-else>-</span>
@@ -155,7 +178,7 @@
             </el-table-column>
           </el-table>
         </div>
-        
+
         <div class="preview-code">
           <h3>策略代码</h3>
           <el-input
@@ -167,7 +190,7 @@
           />
         </div>
       </div>
-      
+
       <template #footer>
         <el-button @click="closePreview">关闭</el-button>
         <el-button type="primary" @click="confirmSelectTemplate">
@@ -179,129 +202,130 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
-import { Search, Setting, User } from '@element-plus/icons-vue'
-import type { StrategyTemplate } from '@/types/strategy'
+import { ref, computed, onMounted } from "vue";
+import { ElMessage } from "element-plus";
+import { Search, Setting, User } from "@element-plus/icons-vue";
+import type { StrategyTemplate } from "@/types/strategy";
 
 interface Props {
-  templates: StrategyTemplate[]
+  templates: StrategyTemplate[];
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
 const emit = defineEmits<{
-  select: [template: StrategyTemplate]
-  cancel: []
-}>()
+  select: [template: StrategyTemplate];
+  cancel: [];
+}>();
 
 // 响应式数据
-const searchQuery = ref('')
-const selectedCategory = ref('')
-const selectedDifficulty = ref('')
-const showPreviewDialog = ref(false)
-const selectedTemplate = ref<StrategyTemplate | null>(null)
+const searchQuery = ref("");
+const selectedCategory = ref("");
+const selectedDifficulty = ref("");
+const showPreviewDialog = ref(false);
+const selectedTemplate = ref<StrategyTemplate | null>(null);
 
 // 计算属性
 const filteredTemplates = computed(() => {
-  let filtered = props.templates
+  let filtered = props.templates;
 
   if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter(template => 
-      template.name.toLowerCase().includes(query) ||
-      template.description.toLowerCase().includes(query) ||
-      template.tags.some(tag => tag.toLowerCase().includes(query))
-    )
+    const query = searchQuery.value.toLowerCase();
+    filtered = filtered.filter(
+      (template) =>
+        template.name.toLowerCase().includes(query) ||
+        template.description.toLowerCase().includes(query) ||
+        template.tags.some((tag) => tag.toLowerCase().includes(query)),
+    );
   }
 
   if (selectedCategory.value) {
-    filtered = filtered.filter(template => 
-      template.category === selectedCategory.value
-    )
+    filtered = filtered.filter(
+      (template) => template.category === selectedCategory.value,
+    );
   }
 
   if (selectedDifficulty.value) {
-    filtered = filtered.filter(template => 
-      template.difficulty === selectedDifficulty.value
-    )
+    filtered = filtered.filter(
+      (template) => template.difficulty === selectedDifficulty.value,
+    );
   }
 
-  return filtered
-})
+  return filtered;
+});
 
 // 方法
 const handleSearch = () => {
   // 搜索逻辑已在计算属性中处理
-}
+};
 
 const selectTemplate = (template: StrategyTemplate) => {
-  selectedTemplate.value = template
-  showPreviewDialog.value = true
-}
+  selectedTemplate.value = template;
+  showPreviewDialog.value = true;
+};
 
 const closePreview = () => {
-  showPreviewDialog.value = false
-  selectedTemplate.value = null
-}
+  showPreviewDialog.value = false;
+  selectedTemplate.value = null;
+};
 
 const confirmSelectTemplate = () => {
   if (selectedTemplate.value) {
-    emit('select', selectedTemplate.value)
-    closePreview()
+    emit("select", selectedTemplate.value);
+    closePreview();
   }
-}
+};
 
 const getCategoryType = (category: string) => {
   const types: Record<string, string> = {
-    trend: 'success',
-    momentum: 'warning',
-    mean_reversion: 'info',
-    arbitrage: 'danger',
-    high_frequency: 'primary',
-    machine_learning: 'purple'
-  }
-  return types[category] || 'info'
-}
+    trend: "success",
+    momentum: "warning",
+    mean_reversion: "info",
+    arbitrage: "danger",
+    high_frequency: "primary",
+    machine_learning: "purple",
+  };
+  return types[category] || "info";
+};
 
 const getCategoryText = (category: string) => {
   const texts: Record<string, string> = {
-    trend: '趋势策略',
-    momentum: '动量策略',
-    mean_reversion: '均值回归',
-    arbitrage: '套利策略',
-    high_frequency: '高频交易',
-    machine_learning: '机器学习'
-  }
-  return texts[category] || category
-}
+    trend: "趋势策略",
+    momentum: "动量策略",
+    mean_reversion: "均值回归",
+    arbitrage: "套利策略",
+    high_frequency: "高频交易",
+    machine_learning: "机器学习",
+  };
+  return texts[category] || category;
+};
 
 const getDifficultyType = (difficulty: string) => {
   const types: Record<string, string> = {
-    beginner: 'success',
-    intermediate: 'warning',
-    advanced: 'danger'
-  }
-  return types[difficulty] || 'info'
-}
+    beginner: "success",
+    intermediate: "warning",
+    advanced: "danger",
+  };
+  return types[difficulty] || "info";
+};
 
 const getDifficultyText = (difficulty: string) => {
   const texts: Record<string, string> = {
-    beginner: '初级',
-    intermediate: '中级',
-    advanced: '高级'
-  }
-  return texts[difficulty] || difficulty
-}
+    beginner: "初级",
+    intermediate: "中级",
+    advanced: "高级",
+  };
+  return texts[difficulty] || difficulty;
+};
 
 const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('zh-CN')
-}
+  return new Date(dateString).toLocaleDateString("zh-CN");
+};
 
 // 生命周期
 onMounted(() => {
   // 可以在这里添加一些初始化逻辑
-})
+});
 </script>
 
 <style scoped>
@@ -489,7 +513,7 @@ onMounted(() => {
 }
 
 .code-preview {
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
   font-size: 13px;
   background-color: #f8f9fa;
   border: 1px solid #e9ecef;
@@ -501,35 +525,35 @@ onMounted(() => {
   .template-list-container {
     padding: 10px;
   }
-  
+
   .filter-section {
     flex-direction: column;
     gap: 12px;
   }
-  
+
   .filter-section .el-select {
     width: 100%;
   }
-  
+
   .template-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .template-header {
     flex-direction: column;
     gap: 12px;
   }
-  
+
   .template-rating {
     text-align: left;
   }
-  
+
   .template-footer {
     flex-direction: column;
     gap: 12px;
     align-items: stretch;
   }
-  
+
   .preview-meta {
     flex-direction: column;
     gap: 4px;
