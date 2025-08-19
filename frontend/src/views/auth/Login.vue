@@ -79,6 +79,10 @@ import type { LoginData } from '@/types/auth'
 const router = useRouter()
 const authStore = useAuthStore()
 
+console.log('=== 登录页面加载 ===')
+console.log('authStore:', authStore)
+console.log('router:', router)
+
 // 表单引用
 const loginFormRef = ref<FormInstance>()
 
@@ -103,14 +107,22 @@ const loginRules: FormRules = {
 
 // 处理登录
 const handleLogin = async () => {
+  console.log('=== 登录按钮被点击 ===')
   if (!loginFormRef.value) return
+  
+  console.log('=== 登录调试信息 ===')
+  console.log('表单数据:', JSON.stringify(loginForm, null, 2))
   
   try {
     // 验证表单
+    console.log('开始验证表单...')
     await loginFormRef.value.validate()
+    console.log('表单验证通过')
     
     // 调用登录接口
+    console.log('调用登录接口...')
     await authStore.login(loginForm)
+    console.log('登录接口调用成功')
     
     // 登录成功，跳转到首页
     await router.push('/')
@@ -118,6 +130,7 @@ const handleLogin = async () => {
   } catch (error) {
     // 错误处理已在store中完成
     console.error('Login failed:', error)
+    console.error('错误详情:', JSON.stringify(error, null, 2))
   }
 }
 </script>

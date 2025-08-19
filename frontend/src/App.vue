@@ -57,15 +57,20 @@ const getNotificationIcon = (type: string) => {
 
 // 初始化应用
 onMounted(async () => {
+  console.log('=== App.vue onMounted 开始 ===')
   try {
+    console.log('开始初始化认证状态...')
     // 初始化认证状态
     await authStore.initializeAuth()
+    console.log('认证状态初始化完成')
     
     // 初始化应用配置
     await appStore.initializeApp()
+    console.log('应用配置初始化完成')
     
     // 设置主题
     appStore.applyTheme()
+    console.log('主题设置完成')
     
   } catch (error) {
     console.error('App initialization failed:', error)

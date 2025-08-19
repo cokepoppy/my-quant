@@ -95,7 +95,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { useAuthStore } from '@/stores/auth'
@@ -116,6 +116,12 @@ const registerForm = reactive<RegisterData & { agreeTerms: boolean }>({
   role: 'user',
   agreeTerms: false
 })
+
+// 监听 agreeTerms 变化
+watch(() => registerForm.agreeTerms, (newValue) => {
+  console.log('agreeTerms 变化:', newValue)
+  console.log('agreeTerms 类型:', typeof newValue)
+}, { immediate: true })
 
 // 表单验证规则
 const registerRules: FormRules = {
@@ -155,13 +161,8 @@ const registerRules: FormRules = {
   ],
   agreeTerms: [
     { 
-      validator: (rule, value, callback) => {
-        if (!value) {
-          callback(new Error('请先同意服务条款和隐私政策'))
-        } else {
-          callback()
-        }
-      },
+      required: true,
+      message: '请先同意服务条款和隐私政策',
       trigger: 'change'
     }
   ]
@@ -171,15 +172,26 @@ const registerRules: FormRules = {
 const handleRegister = async () => {
   if (!registerFormRef.value) return
   
+  console.log('=== 注册调试信息 ===')
+  console.log('表单数据:', JSON.stringify(registerForm, null, 2))
+  console.log('agreeTerms 值:', registerForm.agreeTerms)
+  console.log('agreeTerms 类型:', typeof registerForm.agreeTerms)
+  
   try {
     // 验证表单
-    await registerFormRef.value.validate()
+    console.log('开始验证表单...')
+    const validation = await registerFormRef.value.validate()
+    console.log('表单验证结果:', validation)
+    console.log('表单验证通过')
     
     // 准备注册数据，移除 agreeTerms 字段
     const { agreeTerms, ...registerData } = registerForm
+    console.log('准备发送的注册数据:', JSON.stringify(registerData, null, 2))
     
     // 调用注册接口
+    console.log('调用注册接口...')
     await authStore.register(registerData)
+    console.log('注册接口调用成功')
     
     // 注册成功，跳转到首页
     await router.push('/')
@@ -187,6 +199,7 @@ const handleRegister = async () => {
   } catch (error) {
     // 错误处理已在store中完成
     console.error('Registration failed:', error)
+    console.error('错误详情:', JSON.stringify(error, null, 2))
   }
 }
 

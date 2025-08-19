@@ -48,6 +48,8 @@ if (import.meta.env.DEV) {
   console.log('🚀 Vue app started in development mode')
   console.log('📍 Router:', router)
   console.log('📍 Pinia:', pinia)
+  console.log('📍 Current URL:', window.location.href)
+  console.log('📍 Current path:', window.location.pathname)
 }
 
 // 生产环境配置

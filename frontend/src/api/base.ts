@@ -30,14 +30,21 @@ api.interceptors.response.use(
   (response) => {
     const { data } = response
     
+    console.log('=== API响应拦截器 ===')
+    console.log('请求URL:', response.config.url)
+    console.log('响应数据:', data)
+    
     // 如果返回的是二进制数据（如文件下载），直接返回
     if (response.config.responseType === 'blob') {
       return response
     }
     
     if (data.success) {
-      return data
+      console.log('响应成功，返回的数据:', data.data !== undefined ? data.data : data)
+      // 如果有 data 属性，返回 data.data，否则返回整个 data
+      return data.data !== undefined ? data.data : data
     } else {
+      console.error('响应失败:', data.message)
       ElMessage.error(data.message || '请求失败')
       return Promise.reject(new Error(data.message || '请求失败'))
     }
