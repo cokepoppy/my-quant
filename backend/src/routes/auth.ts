@@ -69,12 +69,20 @@ router.post('/register', [
     { expiresIn: config.JWT_EXPIRES_IN }
   );
 
+  // Generate refresh token
+  const refreshToken = jwt.sign(
+    { id: user.id, email: user.email, username: user.username, role: user.role },
+    config.JWT_SECRET,
+    { expiresIn: '30d' } // Refresh token expires in 30 days
+  );
+
   res.status(201).json({
     success: true,
     message: 'User registered successfully',
     data: {
       user,
-      token
+      token,
+      refreshToken
     }
   });
 }));
@@ -118,6 +126,13 @@ router.post('/login', [
     { expiresIn: config.JWT_EXPIRES_IN }
   );
 
+  // Generate refresh token (same as token for now, but could have different expiration)
+  const refreshToken = jwt.sign(
+    { id: user.id, email: user.email, username: user.username, role: user.role },
+    config.JWT_SECRET,
+    { expiresIn: '30d' } // Refresh token expires in 30 days
+  );
+
   // Update last login
   await prisma.user.update({
     where: { id: user.id },
@@ -134,7 +149,8 @@ router.post('/login', [
         username: user.username,
         role: user.role
       },
-      token
+      token,
+      refreshToken
     }
   });
 }));

@@ -26,7 +26,7 @@ export const config = {
   RATE_LIMIT_MAX_REQUESTS: process.env.RATE_LIMIT_MAX_REQUESTS || 100,
   
   // CORS
-  CORS_ORIGIN: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  CORS_ORIGIN: process.env.CORS_ORIGIN || 'http://localhost:3001',
   
   // Logging
   LOG_LEVEL: process.env.LOG_LEVEL || 'info',
