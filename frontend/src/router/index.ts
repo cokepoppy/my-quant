@@ -7,7 +7,15 @@ const routes = [
   {
     path: "/",
     name: "Dashboard",
-    component: () => import("@/views/Dashboard.vue"),
+    component: () => import("@/views/dashboard/EnhancedDashboard.vue"),
+    meta: {
+      requiresAuth: true,
+      title: "量化交易控制台",
+    },
+  },
+  {
+    path: "/dashboard",
+    redirect: "/",
     meta: {
       requiresAuth: true,
       title: "仪表板",
@@ -96,6 +104,24 @@ const routes = [
     },
   },
   {
+    path: "/strategies/:id/performance",
+    name: "StrategyPerformance",
+    component: () => import("@/views/strategy/StrategyPerformance.vue"),
+    meta: {
+      requiresAuth: true,
+      title: "策略性能",
+    },
+  },
+  {
+    path: "/strategies/:id/logs",
+    name: "StrategyLogs",
+    component: () => import("@/views/strategy/StrategyLogs.vue"),
+    meta: {
+      requiresAuth: true,
+      title: "策略日志",
+    },
+  },
+  {
     path: "/backtest",
     name: "Backtest",
     component: () => import("@/views/backtest/Backtest.vue"),
@@ -120,6 +146,24 @@ const routes = [
     meta: {
       requiresAuth: true,
       title: "交易管理",
+    },
+  },
+  {
+    path: "/accounts",
+    name: "Accounts",
+    component: () => import("@/views/accounts/Accounts.vue"),
+    meta: {
+      requiresAuth: true,
+      title: "账户管理",
+    },
+  },
+  {
+    path: "/market",
+    name: "MarketData",
+    component: () => import("@/views/market/MarketData.vue"),
+    meta: {
+      requiresAuth: true,
+      title: "市场数据",
     },
   },
   {

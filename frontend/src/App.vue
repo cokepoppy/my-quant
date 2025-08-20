@@ -48,6 +48,8 @@ import {
 
 // Import Bloomberg theme
 import "./styles/bloomberg-theme.css";
+import "./styles/premium.css";
+import "./styles/premium-enhanced.css";
 
 const authStore = useAuthStore();
 const appStore = useAppStore();

@@ -5,7 +5,7 @@
       <el-button @click="$router.go(-1)">返回</el-button>
     </div>
 
-    <el-card v-loading="loading">
+    <el-card>
       <el-form ref="formRef" :model="form" :rules="rules" label-width="120px">
         <el-form-item label="策略名称" prop="name">
           <el-input
@@ -127,40 +127,72 @@
           </div>
         </el-form-item>
 
-        <el-form-item label="状态" prop="status">
-          <el-select v-model="form.status" placeholder="请选择状态">
-            <el-option label="开发中" value="development" />
-            <el-option label="测试中" value="testing" />
-            <el-option label="已上线" value="production" />
-            <el-option label="已停止" value="stopped" />
-          </el-select>
-        </el-form-item>
-
         <el-form-item>
-          <el-button type="primary" @click="handleSubmit">保存修改</el-button>
+          <el-button type="primary" @click="handleSubmit" :loading="saving"
+            >保存策略</el-button
+          >
           <el-button @click="handleReset">重置</el-button>
           <el-button @click="handleBacktest">回测</el-button>
-          <el-button
-            @click="handleDeploy"
-            :disabled="form.status === 'production'"
-          >
-            {{ form.status === "production" ? "已部署" : "部署" }}
-          </el-button>
+          <el-button @click="handlePreview">预览</el-button>
         </el-form-item>
       </el-form>
     </el-card>
+
+    <!-- 预览对话框 -->
+    <el-dialog v-model="previewVisible" title="策略预览" width="80%">
+      <div class="preview-content">
+        <h4>基本信息</h4>
+        <el-descriptions :column="2" border>
+          <el-descriptions-item label="策略名称">{{
+            form.name
+          }}</el-descriptions-item>
+          <el-descriptions-item label="策略类型">{{
+            getTypeText(form.type)
+          }}</el-descriptions-item>
+          <el-descriptions-item label="交易品种">{{
+            form.symbol
+          }}</el-descriptions-item>
+          <el-descriptions-item label="时间周期">{{
+            form.timeframe
+          }}</el-descriptions-item>
+          <el-descriptions-item label="初始资金"
+            >${{ form.initialCapital.toLocaleString() }}</el-descriptions-item
+          >
+          <el-descriptions-item label="最大仓位"
+            >{{ form.maxPosition }}%</el-descriptions-item
+          >
+        </el-descriptions>
+
+        <h4 style="margin-top: 20px">策略描述</h4>
+        <p>{{ form.description }}</p>
+
+        <h4 style="margin-top: 20px">风险参数</h4>
+        <el-descriptions :column="3" border>
+          <el-descriptions-item label="止损比例"
+            >{{ form.stopLoss }}%</el-descriptions-item
+          >
+          <el-descriptions-item label="止盈比例"
+            >{{ form.takeProfit }}%</el-descriptions-item
+          >
+        </el-descriptions>
+      </div>
+      <template #footer>
+        <el-button @click="previewVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { ElMessage, type FormInstance, type FormRules } from "element-plus";
 
-const route = useRoute();
 const router = useRouter();
+const route = useRoute();
 const formRef = ref<FormInstance>();
-const loading = ref(false);
+const saving = ref(false);
+const previewVisible = ref(false);
 
 const form = reactive({
   name: "",
@@ -173,7 +205,6 @@ const form = reactive({
   stopLoss: 2,
   takeProfit: 3,
   code: "",
-  status: "development",
 });
 
 const originalForm = reactive({ ...form });
@@ -235,36 +266,56 @@ const rules: FormRules = {
     },
   ],
   code: [{ required: true, message: "请输入策略代码", trigger: "blur" }],
-  status: [{ required: true, message: "请选择状态", trigger: "change" }],
 };
 
 const fetchStrategy = async () => {
-  loading.value = true;
   try {
-    // TODO: 从API获取策略详情
+    // TODO: 根据路由参数获取策略详情
     const strategyId = route.params.id as string;
-    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     // 模拟数据
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    // 填充表单数据
     Object.assign(form, {
-      name: "示例策略",
-      description: "这是一个示例策略",
+      name: "BTC趋势跟踪策略",
+      description:
+        "基于移动平均线的趋势跟踪策略，当短期均线上穿长期均线时买入，下穿时卖出。",
       type: "trend",
       symbol: "BTC/USDT",
       timeframe: "1h",
       initialCapital: 10000,
-      maxPosition: 10,
+      maxPosition: 20,
       stopLoss: 2,
       takeProfit: 3,
-      code: "// 策略代码\nfunction strategy() {\n  // TODO: 实现策略逻辑\n}",
-      status: "development",
+      code: `// BTC趋势跟踪策略
+const strategy = {
+  name: 'BTC趋势跟踪策略',
+  timeframe: '1h',
+  symbols: ['BTC/USDT'],
+  
+  init: function() {
+    this.shortMA = this.MA(20);
+    this.longMA = this.MA(50);
+  },
+  
+  onTick: function() {
+    const shortMA = this.shortMA.value();
+    const longMA = this.longMA.value();
+    
+    if (shortMA > longMA && !this.hasPosition()) {
+      this.buy('BTC/USDT', 0.1);
+    } else if (shortMA < longMA && this.hasPosition()) {
+      this.sell('BTC/USDT', 0.1);
+    }
+  }
+};`,
     });
 
+    // 保存原始数据
     Object.assign(originalForm, form);
   } catch (error) {
     ElMessage.error("获取策略详情失败");
-  } finally {
-    loading.value = false;
   }
 };
 
@@ -274,18 +325,23 @@ const handleSubmit = async () => {
   try {
     await formRef.value.validate();
 
+    saving.value = true;
+
     // TODO: 调用API更新策略
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     ElMessage.success("策略更新成功");
-    router.push("/strategies");
+    router.push(`/strategies/${route.params.id}`);
   } catch (error) {
     console.error("Form validation failed:", error);
+  } finally {
+    saving.value = false;
   }
 };
 
 const handleReset = () => {
   Object.assign(form, originalForm);
+  ElMessage.info("表单已重置");
 };
 
 const handleBacktest = () => {
@@ -293,18 +349,23 @@ const handleBacktest = () => {
   ElMessage.info("回测功能开发中");
 };
 
-const handleDeploy = async () => {
-  try {
-    // TODO: 调用API部署策略
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    form.status = "production";
-    ElMessage.success("策略部署成功");
-  } catch (error) {
-    ElMessage.error("策略部署失败");
-  }
+const handlePreview = () => {
+  previewVisible.value = true;
 };
 
+const getTypeText = (type: string) => {
+  const texts: Record<string, string> = {
+    trend: "趋势跟踪",
+    momentum: "动量策略",
+    mean_reversion: "均值回归",
+    arbitrage: "套利策略",
+    high_frequency: "高频交易",
+    machine_learning: "机器学习",
+  };
+  return texts[type] || type;
+};
+
+// 生命周期
 onMounted(() => {
   fetchStrategy();
 });
@@ -339,5 +400,29 @@ onMounted(() => {
   font-size: 14px;
   line-height: 1.5;
   resize: none;
+}
+
+.preview-content h4 {
+  margin: 0 0 12px 0;
+  color: #333;
+}
+
+.preview-content p {
+  margin: 0 0 12px 0;
+  color: #666;
+  line-height: 1.5;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .edit-strategy {
+    padding: 10px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
 }
 </style>

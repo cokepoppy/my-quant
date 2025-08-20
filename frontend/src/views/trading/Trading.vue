@@ -424,10 +424,24 @@ onMounted(() => {
 
 <style scoped>
 .trading {
-  padding: 16px;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  padding: 20px;
+  background: var(--gradient-primary);
   min-height: 100vh;
-  color: #e0e0e0;
+  color: var(--text-primary);
+  position: relative;
+}
+
+.trading::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 10% 20%, rgba(0, 122, 255, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 90% 80%, rgba(0, 212, 170, 0.05) 0%, transparent 50%);
+  pointer-events: none;
 }
 
 .page-header {
@@ -435,39 +449,62 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl);
+  box-shadow: var(--shadow-glass);
+  transition: all var(--transition-smooth) var(--transition-spring);
+}
+
+.page-header:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-premium-lg);
 }
 
 .page-header h2 {
   margin: 0;
-  color: #ffffff;
-  font-weight: 600;
+  color: var(--text-primary);
+  font-weight: 700;
+  font-size: 28px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .balance-info,
 .positions-info,
 .orders-info {
-  padding: 10px 0;
+  padding: 20px;
+  position: relative;
+  z-index: 1;
 }
 
 .total-balance {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #eee;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--glass-border);
 }
 
 .total-balance .label {
-  font-size: 14px;
-  color: #b0b0b0;
+  font-size: 16px;
+  color: var(--text-secondary);
+  font-weight: 500;
 }
 
 .total-balance .value {
-  font-size: 24px;
-  font-weight: bold;
-  color: #ffffff;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-primary);
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(135deg, var(--text-primary), var(--market-up));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .balance-detail .item,
@@ -476,7 +513,17 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
+  padding: 10px 0;
+  border-radius: var(--radius-lg);
+  transition: all var(--transition-smooth) var(--transition-spring);
+}
+
+.balance-detail .item:hover,
+.position-item:hover,
+.order-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateX(5px);
 }
 
 .balance-detail .item:last-child,
@@ -488,50 +535,75 @@ onMounted(() => {
 .item .label,
 .position-item .label,
 .order-item .label {
-  font-size: 13px;
-  color: #b0b0b0;
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 500;
 }
 
 .item .value,
 .position-item .value,
 .order-item .value {
-  font-size: 14px;
-  font-weight: 500;
-  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
 .profit {
-  color: #00d4aa !important;
-  font-weight: 600;
+  color: var(--market-up) !important;
+  font-weight: 700;
+  text-shadow: 0 0 10px rgba(0, 212, 170, 0.3);
 }
 
 .loss {
-  color: #ff4757 !important;
-  font-weight: 600;
+  color: var(--market-down) !important;
+  font-weight: 700;
+  text-shadow: 0 0 10px rgba(255, 59, 48, 0.3);
 }
 
-/* 添加卡片悬停效果 */
+/* 卡片样式 */
 .el-card {
-  background: rgba(255, 255, 255, 0.05) !important;
-  backdrop-filter: blur(10px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
-  transition: all 0.3s ease !important;
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-xl) !important;
+  box-shadow: var(--shadow-glass) !important;
+  transition: all var(--transition-smooth) var(--transition-spring) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.el-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.el-card:hover::before {
+  left: 100%;
 }
 
 .el-card:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4) !important;
+  transform: translateY(-4px) !important;
+  box-shadow: var(--shadow-premium-lg) !important;
+  border-color: var(--border-glow-primary) !important;
 }
 
 .el-card__header {
-  background: rgba(255, 255, 255, 0.02) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(10px) !important;
+  border-bottom: 1px solid var(--glass-border) !important;
+  padding: var(--space-lg) !important;
 }
 
 .el-card__header span {
-  color: #ffffff !important;
-  font-weight: 600 !important;
+  color: var(--text-primary) !important;
+  font-weight: var(--font-semibold) !important;
+  font-size: var(--font-lg) !important;
 }
 
 /* 表格样式优化 */

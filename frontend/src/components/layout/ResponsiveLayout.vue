@@ -76,6 +76,14 @@
           <el-icon><money /></el-icon>
           <span>交易管理</span>
         </el-menu-item>
+        <el-menu-item index="/accounts">
+          <el-icon><wallet /></el-icon>
+          <span>账户管理</span>
+        </el-menu-item>
+        <el-menu-item index="/market">
+          <el-icon><data-line /></el-icon>
+          <span>市场数据</span>
+        </el-menu-item>
         <el-menu-item index="/backtest">
           <el-icon><video-play /></el-icon>
           <span>回测分析</span>
@@ -210,6 +218,7 @@ import {
   Monitor,
   Setting,
   Money,
+  Wallet,
   VideoPlay,
   DataLine,
   Operation,

@@ -1,11 +1,14 @@
 <template>
   <div class="users">
-    <div class="page-header">
-      <h2>用户管理</h2>
-      <el-button type="primary" @click="handleAdd">添加用户</el-button>
+    <div class="page-header animate-fade-in">
+      <h2 class="text-gradient-primary">用户管理</h2>
+      <el-button type="primary" @click="handleAdd" class="premium-button primary">
+        <el-icon><plus /></el-icon>
+        添加用户
+      </el-button>
     </div>
 
-    <el-card>
+    <el-card class="premium-card fade-in">
       <el-form :model="searchForm" inline>
         <el-form-item label="用户名">
           <el-input
@@ -34,8 +37,8 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleSearch">搜索</el-button>
-          <el-button @click="handleReset">重置</el-button>
+          <el-button type="primary" @click="handleSearch" class="premium-button">搜索</el-button>
+          <el-button @click="handleReset" class="premium-button">重置</el-button>
         </el-form-item>
       </el-form>
 
@@ -44,6 +47,7 @@
         :data="tableData"
         style="width: 100%"
         border
+        class="premium-table"
       >
         <el-table-column prop="id" label="ID" width="80" />
         <el-table-column prop="username" label="用户名" />
@@ -66,16 +70,17 @@
         <el-table-column prop="createdAt" label="创建时间" width="180" />
         <el-table-column label="操作" width="200">
           <template #default="{ row }">
-            <el-button size="small" @click="handleEdit(row)">编辑</el-button>
+            <el-button size="small" @click="handleEdit(row)" class="premium-button">编辑</el-button>
             <el-button
               size="small"
               :type="row.status === 'active' ? 'danger' : 'success'"
               @click="handleToggleStatus(row)"
+              class="premium-button"
             >
               {{ row.status === "active" ? "禁用" : "启用" }}
             </el-button>
             <el-button size="small" type="danger" @click="handleDelete(row)"
-              >删除</el-button
+              class="premium-button danger">删除</el-button
             >
           </template>
         </el-table-column>
@@ -99,6 +104,7 @@
       v-model="dialogVisible"
       :title="dialogType === 'add' ? '添加用户' : '编辑用户'"
       width="500px"
+      class="premium-modal"
     >
       <el-form
         ref="formRef"
@@ -130,8 +136,8 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSave">确定</el-button>
+        <el-button @click="dialogVisible = false" class="premium-button">取消</el-button>
+        <el-button type="primary" @click="handleSave" class="premium-button primary">确定</el-button>
       </template>
     </el-dialog>
   </div>
@@ -350,6 +356,22 @@ onMounted(() => {
 <style scoped>
 .users {
   padding: 20px;
+  background: var(--gradient-primary);
+  min-height: 100vh;
+  position: relative;
+}
+
+.users::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 10% 20%, rgba(0, 122, 255, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 90% 80%, rgba(0, 212, 170, 0.05) 0%, transparent 50%);
+  pointer-events: none;
 }
 
 .page-header {
@@ -357,15 +379,46 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl);
+  box-shadow: var(--shadow-glass);
+  transition: all var(--transition-smooth) var(--transition-spring);
+}
+
+.page-header:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-premium-lg);
 }
 
 .page-header h2 {
   margin: 0;
-  color: #333;
+  color: var(--text-primary);
+  font-weight: 700;
+  font-size: 28px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .pagination {
   margin-top: 20px;
   text-align: right;
+  position: relative;
+  z-index: 1;
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-glass);
+  transition: all var(--transition-smooth) var(--transition-spring);
+}
+
+.pagination:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-premium-lg);
 }
 </style>

@@ -125,11 +125,11 @@
     <!-- 策略列表 -->
     <div class="strategy-list">
       <el-card>
-        <div v-if="isLoading" class="loading-container">
+        <div v-if="isLoading" class="loading-container fade-in">
           <el-skeleton :rows="5" animated />
         </div>
 
-        <div v-else-if="strategies.length === 0" class="empty-container">
+        <div v-else-if="strategies.length === 0" class="empty-container fade-in">
           <el-empty description="暂无策略">
             <el-button type="primary" @click="createStrategy">
               创建第一个策略
@@ -139,9 +139,10 @@
 
         <div v-else>
           <div
-            v-for="strategy in strategies"
+            v-for="(strategy, index) in strategies"
             :key="strategy.id"
             class="strategy-item"
+            :class="`fade-in delay-${index}`"
           >
             <div class="strategy-content">
               <div class="strategy-info">
@@ -345,11 +346,11 @@ const fetchTemplates = async () => {
 };
 
 const viewStrategy = (id: string) => {
-  router.push(`/strategy/${id}`);
+  router.push(`/strategies/${id}`);
 };
 
 const editStrategy = (id: string) => {
-  router.push(`/strategy/${id}/edit`);
+  router.push(`/strategies/${id}/edit`);
 };
 
 const startStrategy = async (id: string) => {
@@ -371,10 +372,10 @@ const stopStrategy = async (id: string) => {
 const handleAction = (command: string, id: string) => {
   switch (command) {
     case "performance":
-      router.push(`/strategy/${id}/performance`);
+      router.push(`/strategies/${id}/performance`);
       break;
     case "logs":
-      router.push(`/strategy/${id}/logs`);
+      router.push(`/strategies/${id}/logs`);
       break;
     case "duplicate":
       duplicateStrategy(id);
@@ -472,7 +473,7 @@ const handleCreateSubmit = async (data: Partial<Strategy>) => {
   try {
     await strategyStore.createNewStrategy(data);
     showCreateDialog.value = false;
-    router.push(`/strategy/${strategyStore.strategies[0].id}`);
+    router.push(`/strategies/${strategyStore.strategies[0].id}`);
   } catch (error) {
     console.error("创建策略失败:", error);
   }
@@ -485,7 +486,7 @@ const handleCloseCreateDialog = () => {
 const handleTemplateSelect = async (template: StrategyTemplate) => {
   try {
     showTemplateDialog.value = false;
-    router.push(`/strategy/create?template=${template.id}`);
+    router.push(`/strategies/create?template=${template.id}`);
   } catch (error) {
     console.error("选择模板失败:", error);
   }
@@ -544,29 +545,61 @@ onMounted(async () => {
 <style scoped>
 .strategy-list-container {
   padding: 20px;
+  background: var(--gradient-primary);
+  min-height: 100vh;
+  position: relative;
+}
+
+.strategy-list-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 10% 20%, rgba(0, 122, 255, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 90% 80%, rgba(0, 212, 170, 0.05) 0%, transparent 50%);
+  pointer-events: none;
 }
 
 .page-header {
   margin-bottom: 30px;
+  position: relative;
+  z-index: 1;
 }
 
 .header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl);
+  box-shadow: var(--shadow-glass);
+  transition: all var(--transition-smooth) var(--transition-spring);
+}
+
+.header-content:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-premium-lg);
 }
 
 .header-left h1 {
   margin: 0 0 8px 0;
-  font-size: 28px;
-  font-weight: 600;
-  color: #333;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .header-left p {
   margin: 0;
-  color: #666;
+  color: var(--text-secondary);
   font-size: 16px;
+  font-weight: 400;
 }
 
 .header-right {
@@ -576,44 +609,90 @@ onMounted(async () => {
 
 .stats-section {
   margin-bottom: 30px;
+  position: relative;
+  z-index: 1;
 }
 
 .stat-card {
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-glass);
+  transition: all var(--transition-smooth) var(--transition-spring);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--btn-primary), var(--market-up), var(--market-down));
+  animation: shimmer 2s linear infinite;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-premium-lg);
 }
 
 .stat-content {
   display: flex;
   align-items: center;
   gap: 16px;
+  padding: var(--space-lg);
 }
 
 .stat-icon {
   width: 60px;
   height: 60px;
-  border-radius: 12px;
+  border-radius: var(--radius-xl);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 24px;
   color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-icon::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s ease;
+}
+
+.stat-icon:hover::before {
+  left: 100%;
 }
 
 .stat-icon.total {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--btn-primary) 0%, #4a90e2 100%);
+  box-shadow: var(--glow-primary);
 }
 
 .stat-icon.active {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  background: linear-gradient(135deg, var(--market-up) 0%, #00a885 100%);
+  box-shadow: var(--glow-success);
 }
 
 .stat-icon.draft {
-  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  background: linear-gradient(135deg, var(--market-volatile) 0%, #e07f00 100%);
+  box-shadow: var(--glow-warning);
 }
 
 .stat-icon.stopped {
-  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+  background: linear-gradient(135deg, var(--text-tertiary) 0%, var(--text-muted) 100%);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
 }
 
 .stat-info {
@@ -621,42 +700,79 @@ onMounted(async () => {
 }
 
 .stat-number {
-  font-size: 32px;
+  font-size: 36px;
   font-weight: 700;
-  color: #333;
+  color: var(--text-primary);
   line-height: 1;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .stat-label {
-  color: #666;
+  color: var(--text-secondary);
   font-size: 14px;
   margin-top: 4px;
+  font-weight: 500;
 }
 
 .filter-section {
   margin-bottom: 30px;
+  position: relative;
+  z-index: 1;
 }
 
 .filter-form {
   margin: 0;
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-glass);
+  transition: all var(--transition-smooth) var(--transition-spring);
+}
+
+.filter-form:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-premium-lg);
 }
 
 .strategy-list {
   margin-bottom: 30px;
+  position: relative;
+  z-index: 1;
 }
 
 .loading-container {
   padding: 20px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-glass);
 }
 
 .empty-container {
   padding: 60px 20px;
   text-align: center;
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-glass);
 }
 
 .strategy-item {
   padding: 20px 0;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--glass-border);
+  transition: all var(--transition-smooth) var(--transition-spring);
+}
+
+.strategy-item:hover {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: var(--radius-lg);
+  margin: 0 -20px;
+  padding-left: 20px;
+  padding-right: 20px;
 }
 
 .strategy-item:last-child {
@@ -683,14 +799,15 @@ onMounted(async () => {
 
 .strategy-header h3 {
   margin: 0;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .strategy-description {
   margin: 0 0 12px 0;
-  color: #666;
+  color: var(--text-secondary);
   font-size: 14px;
   line-height: 1.5;
 }
@@ -706,8 +823,9 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 4px;
-  color: #666;
+  color: var(--text-secondary);
   font-size: 12px;
+  font-weight: 500;
 }
 
 .strategy-tags {
@@ -718,6 +836,16 @@ onMounted(async () => {
 
 .strategy-tag {
   margin-right: 0;
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  transition: all var(--transition-smooth) var(--transition-spring);
+}
+
+.strategy-tag:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .strategy-actions {
@@ -729,10 +857,202 @@ onMounted(async () => {
 .pagination-container {
   padding: 20px 0 0 0;
   text-align: center;
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-glass);
+  transition: all var(--transition-smooth) var(--transition-spring);
+}
+
+.pagination-container:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-premium-lg);
 }
 
 .text-danger {
-  color: #f56c6c;
+  color: var(--market-down);
+}
+
+/* 动画效果 */
+.fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.slide-in {
+  animation: slideIn 0.6s ease-out;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-50px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.scale-in {
+  animation: scaleIn 0.4s ease-out;
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* 延迟动画效果 */
+.delay-0 { animation-delay: 0.1s; }
+.delay-1 { animation-delay: 0.2s; }
+.delay-2 { animation-delay: 0.3s; }
+.delay-3 { animation-delay: 0.4s; }
+.delay-4 { animation-delay: 0.5s; }
+.delay-5 { animation-delay: 0.6s; }
+.delay-6 { animation-delay: 0.7s; }
+.delay-7 { animation-delay: 0.8s; }
+.delay-8 { animation-delay: 0.9s; }
+.delay-9 { animation-delay: 1.0s; }
+
+/* Element Plus 组件样式覆盖 */
+.dark .el-card {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-xl) !important;
+  box-shadow: var(--shadow-glass) !important;
+  transition: all var(--transition-smooth) var(--transition-spring) !important;
+}
+
+.dark .el-card:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: var(--shadow-premium-lg) !important;
+}
+
+.dark .el-button {
+  background: var(--gradient-glass) !important;
+  backdrop-filter: blur(10px) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-lg) !important;
+  font-weight: var(--font-semibold) !important;
+  transition: all var(--transition-smooth) var(--transition-spring) !important;
+}
+
+.dark .el-button:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: var(--glow-primary) !important;
+  border-color: var(--border-glow-primary) !important;
+}
+
+.dark .el-button--primary {
+  background: var(--btn-primary) !important;
+  border-color: var(--btn-primary) !important;
+}
+
+.dark .el-button--primary:hover {
+  background: var(--btn-primary-hover) !important;
+  box-shadow: var(--glow-primary) !important;
+}
+
+.dark .el-input__inner {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(10px) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-lg) !important;
+  color: var(--text-primary) !important;
+  transition: all var(--transition-smooth) var(--transition-spring) !important;
+}
+
+.dark .el-input__inner:focus {
+  border-color: var(--border-glow-primary) !important;
+  box-shadow: var(--glow-primary) !important;
+}
+
+.dark .el-select .el-input__inner {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(10px) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
+}
+
+.dark .el-select-dropdown {
+  background: var(--gradient-surface) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-xl) !important;
+  box-shadow: var(--shadow-premium-lg) !important;
+}
+
+.dark .el-select-dropdown__item {
+  color: var(--text-primary) !important;
+  transition: all var(--transition-smooth) var(--transition-spring) !important;
+}
+
+.dark .el-select-dropdown__item:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: var(--text-primary) !important;
+}
+
+.dark .el-tag {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(10px) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-lg) !important;
+  color: var(--text-primary) !important;
+  transition: all var(--transition-smooth) var(--transition-spring) !important;
+}
+
+.dark .el-tag:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+.dark .el-table {
+  background: transparent !important;
+  color: var(--text-primary) !important;
+}
+
+.dark .el-table th {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(10px) !important;
+  border-bottom: 1px solid var(--glass-border) !important;
+  color: var(--text-secondary) !important;
+  font-weight: var(--font-semibold) !important;
+}
+
+.dark .el-table td {
+  background: transparent !important;
+  border-bottom: 1px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
+}
+
+.dark .el-table tr:hover td {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.dark .el-dialog {
+  background: var(--gradient-surface) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-xl) !important;
+  box-shadow: var(--shadow-premium-lg) !important;
+}
+
+.dark .el-dialog__header {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(10px) !important;
+  border-bottom: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0 !important;
+}
+
+.dark .el-dialog__title {
+  color: var(--text-primary) !important;
+  font-weight: var(--font-semibold) !important;
+}
+
+.dark .el-dialog__body {
+  background: transparent !important;
+  color: var(--text-primary) !important;
 }
 
 /* 响应式设计 */

@@ -52,6 +52,7 @@ declare module 'vue' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     StrategyForm: typeof import('./src/components/forms/StrategyForm.vue')['default']
+    StrategyPerformanceChart: typeof import('./src/components/charts/StrategyPerformanceChart.vue')['default']
     TemplateList: typeof import('./src/components/strategy/TemplateList.vue')['default']
     TradingChart: typeof import('./src/components/charts/TradingChart.vue')['default']
   }

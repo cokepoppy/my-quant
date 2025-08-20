@@ -1,814 +1,532 @@
 <template>
-  <div class="strategy-detail-container">
-    <!-- 页面头部 -->
+  <div class="strategy-detail">
     <div class="page-header">
-      <div class="header-content">
-        <div class="header-left">
-          <h1>{{ strategy?.name || "策略详情" }}</h1>
-          <p>{{ strategy?.description || "加载中..." }}</p>
-        </div>
-        <div class="header-right">
-          <el-button @click="backToList">
-            <el-icon><arrow-left /></el-icon>
-            返回列表
-          </el-button>
-          <el-button type="primary" @click="editStrategy">
-            <el-icon><edit /></el-icon>
-            编辑策略
-          </el-button>
-          <el-dropdown @command="handleAction">
-            <el-button>
-              操作
-              <el-icon class="el-icon--right"><arrow-down /></el-icon>
-            </el-button>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item command="duplicate"
-                  >复制策略</el-dropdown-item
-                >
-                <el-dropdown-item command="export">导出策略</el-dropdown-item>
-                <el-dropdown-item command="logs">查看日志</el-dropdown-item>
-                <el-dropdown-item divided command="delete" class="text-danger">
-                  删除策略
-                </el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
-        </div>
-      </div>
+      <h2>{{ strategy.name }} - 策略详情</h2>
+      <el-button @click="$router.go(-1)">返回</el-button>
     </div>
 
-    <!-- 策略基本信息 -->
-    <div v-if="strategy" class="strategy-info-section">
-      <el-row :gutter="20">
-        <el-col :span="8">
-          <el-card>
-            <template #header>
-              <span>基本信息</span>
-            </template>
-            <div class="info-item">
-              <label>策略类型</label>
-              <span>{{ getTypeText(strategy.type) }}</span>
+    <el-row :gutter="20">
+      <el-col :span="16">
+        <!-- 策略基本信息 -->
+        <el-card class="mb-20">
+          <template #header>
+            <div class="card-header">
+              <h3>基本信息</h3>
+              <el-button-group>
+                <el-button size="small" @click="editStrategy">编辑</el-button>
+                <el-button size="small" @click="duplicateStrategy"
+                  >复制</el-button
+                >
+                <el-button size="small" @click="exportStrategy">导出</el-button>
+              </el-button-group>
             </div>
-            <div class="info-item">
-              <label>编程语言</label>
-              <span>{{ strategy.language }}</span>
-            </div>
-            <div class="info-item">
-              <label>创建时间</label>
-              <span>{{ formatDate(strategy.createdAt) }}</span>
-            </div>
-            <div class="info-item">
-              <label>最后更新</label>
-              <span>{{ formatDate(strategy.updatedAt) }}</span>
-            </div>
-            <div class="info-item" v-if="strategy.lastRunAt">
-              <label>最后运行</label>
-              <span>{{ formatDate(strategy.lastRunAt) }}</span>
-            </div>
-          </el-card>
-        </el-col>
+          </template>
+          <el-descriptions :column="2" border>
+            <el-descriptions-item label="策略名称">{{
+              strategy.name
+            }}</el-descriptions-item>
+            <el-descriptions-item label="策略类型">
+              <el-tag :type="getTypeColor(strategy.type)">{{
+                getTypeText(strategy.type)
+              }}</el-tag>
+            </el-descriptions-item>
+            <el-descriptions-item label="交易品种">{{
+              strategy.symbol
+            }}</el-descriptions-item>
+            <el-descriptions-item label="时间周期">{{
+              strategy.timeframe
+            }}</el-descriptions-item>
+            <el-descriptions-item label="初始资金"
+              >${{
+                strategy.initialCapital.toLocaleString()
+              }}</el-descriptions-item
+            >
+            <el-descriptions-item label="状态">
+              <el-tag :type="getStatusColor(strategy.status)">{{
+                getStatusText(strategy.status)
+              }}</el-tag>
+            </el-descriptions-item>
+            <el-descriptions-item label="创建时间">{{
+              formatTime(strategy.createdAt)
+            }}</el-descriptions-item>
+            <el-descriptions-item label="最后运行">{{
+              formatTime(strategy.lastRunAt) || "未运行"
+            }}</el-descriptions-item>
+          </el-descriptions>
 
-        <el-col :span="8">
-          <el-card>
-            <template #header>
-              <span>状态控制</span>
-            </template>
-            <div class="status-control">
-              <div class="status-indicator">
-                <el-tag :type="getStatusType(strategy.status)" size="large">
-                  {{ getStatusText(strategy.status) }}
+          <div class="strategy-description">
+            <h4>策略描述</h4>
+            <p>{{ strategy.description }}</p>
+          </div>
+        </el-card>
+
+        <!-- 策略代码 -->
+        <el-card class="mb-20">
+          <template #header>
+            <div class="card-header">
+              <h3>策略代码</h3>
+              <el-button size="small" @click="copyCode">复制代码</el-button>
+            </div>
+          </template>
+          <div class="code-editor">
+            <pre><code>{{ strategy.code }}</code></pre>
+          </div>
+        </el-card>
+
+        <!-- 性能分析 -->
+        <el-card>
+          <template #header>
+            <h3>性能分析</h3>
+          </template>
+          <div v-if="strategy.performance" class="performance-grid">
+            <div class="performance-item">
+              <div class="performance-label">总收益率</div>
+              <div
+                class="performance-value"
+                :class="
+                  strategy.performance.totalReturn >= 0
+                    ? 'positive'
+                    : 'negative'
+                "
+              >
+                {{ (strategy.performance.totalReturn * 100).toFixed(2) }}%
+              </div>
+            </div>
+            <div class="performance-item">
+              <div class="performance-label">年化收益率</div>
+              <div
+                class="performance-value"
+                :class="
+                  strategy.performance.annualizedReturn >= 0
+                    ? 'positive'
+                    : 'negative'
+                "
+              >
+                {{ (strategy.performance.annualizedReturn * 100).toFixed(2) }}%
+              </div>
+            </div>
+            <div class="performance-item">
+              <div class="performance-label">夏普比率</div>
+              <div class="performance-value">
+                {{ strategy.performance.sharpeRatio.toFixed(2) }}
+              </div>
+            </div>
+            <div class="performance-item">
+              <div class="performance-label">最大回撤</div>
+              <div class="performance-value negative">
+                {{ (strategy.performance.maxDrawdown * 100).toFixed(2) }}%
+              </div>
+            </div>
+            <div class="performance-item">
+              <div class="performance-label">胜率</div>
+              <div class="performance-value">
+                {{ (strategy.performance.winRate * 100).toFixed(2) }}%
+              </div>
+            </div>
+            <div class="performance-item">
+              <div class="performance-label">交易次数</div>
+              <div class="performance-value">
+                {{ strategy.performance.totalTrades }}
+              </div>
+            </div>
+          </div>
+          <div v-else class="no-performance">
+            <el-empty description="暂无性能数据" :image-size="80" />
+          </div>
+        </el-card>
+      </el-col>
+
+      <el-col :span="8">
+        <!-- 操作面板 -->
+        <el-card class="mb-20">
+          <template #header>
+            <h3>操作面板</h3>
+          </template>
+          <div class="action-panel">
+            <el-button
+              v-if="
+                strategy.status === 'stopped' || strategy.status === 'draft'
+              "
+              type="success"
+              size="large"
+              @click="startStrategy"
+              style="width: 100%; margin-bottom: 10px"
+            >
+              启动策略
+            </el-button>
+            <el-button
+              v-if="strategy.status === 'active'"
+              type="warning"
+              size="large"
+              @click="stopStrategy"
+              style="width: 100%; margin-bottom: 10px"
+            >
+              停止策略
+            </el-button>
+            <el-button
+              type="primary"
+              size="large"
+              @click="runBacktest"
+              style="width: 100%; margin-bottom: 10px"
+            >
+              回测策略
+            </el-button>
+            <el-button size="large" @click="viewLogs" style="width: 100%">
+              查看日志
+            </el-button>
+          </div>
+        </el-card>
+
+        <!-- 风险参数 -->
+        <el-card class="mb-20">
+          <template #header>
+            <h3>风险参数</h3>
+          </template>
+          <el-descriptions :column="1" border>
+            <el-descriptions-item label="最大仓位"
+              >{{ strategy.maxPosition }}%</el-descriptions-item
+            >
+            <el-descriptions-item label="止损比例"
+              >{{ strategy.stopLoss }}%</el-descriptions-item
+            >
+            <el-descriptions-item label="止盈比例"
+              >{{ strategy.takeProfit }}%</el-descriptions-item
+            >
+          </el-descriptions>
+        </el-card>
+
+        <!-- 最近交易 -->
+        <el-card>
+          <template #header>
+            <div class="card-header">
+              <h3>最近交易</h3>
+              <el-button size="small" @click="refreshTrades">刷新</el-button>
+            </div>
+          </template>
+          <div v-if="recentTrades.length > 0" class="recent-trades">
+            <div
+              v-for="trade in recentTrades"
+              :key="trade.id"
+              class="trade-item"
+            >
+              <div class="trade-header">
+                <span class="trade-symbol">{{ trade.symbol }}</span>
+                <el-tag
+                  :type="trade.type === 'buy' ? 'success' : 'danger'"
+                  size="small"
+                >
+                  {{ trade.type === "buy" ? "买入" : "卖出" }}
                 </el-tag>
               </div>
-              <div class="control-buttons">
-                <el-button
-                  v-if="strategy.status === 'active'"
-                  type="warning"
-                  @click="stopStrategy"
-                  :loading="loading"
-                >
-                  <el-icon><video-pause /></el-icon>
-                  停止策略
-                </el-button>
-                <el-button
-                  v-else-if="
-                    strategy.status === 'stopped' || strategy.status === 'draft'
-                  "
-                  type="success"
-                  @click="startStrategy"
-                  :loading="loading"
-                >
-                  <el-icon><video-play /></el-icon>
-                  启动策略
-                </el-button>
-                <el-button
-                  v-else-if="strategy.status === 'error'"
-                  type="primary"
-                  @click="startStrategy"
-                  :loading="loading"
-                >
-                  <el-icon><refresh-right /></el-icon>
-                  重启策略
-                </el-button>
+              <div class="trade-details">
+                <span class="trade-price">${{ trade.price }}</span>
+                <span class="trade-amount">{{ trade.amount }}</span>
+                <span class="trade-time">{{
+                  formatTime(trade.timestamp)
+                }}</span>
               </div>
             </div>
-          </el-card>
-        </el-col>
-
-        <el-col :span="8">
-          <el-card>
-            <template #header>
-              <span>性能概览</span>
-            </template>
-            <div v-if="strategy.performance" class="performance-overview">
-              <div class="performance-item">
-                <label>总收益</label>
-                <span
-                  :class="getPerformanceClass(strategy.performance.totalReturn)"
-                >
-                  {{ formatPercent(strategy.performance.totalReturn) }}
-                </span>
-              </div>
-              <div class="performance-item">
-                <label>年化收益</label>
-                <span
-                  :class="
-                    getPerformanceClass(strategy.performance.annualizedReturn)
-                  "
-                >
-                  {{ formatPercent(strategy.performance.annualizedReturn) }}
-                </span>
-              </div>
-              <div class="performance-item">
-                <label>夏普比率</label>
-                <span>{{ strategy.performance.sharpeRatio.toFixed(2) }}</span>
-              </div>
-              <div class="performance-item">
-                <label>最大回撤</label>
-                <span class="negative">
-                  {{ formatPercent(strategy.performance.maxDrawdown) }}
-                </span>
-              </div>
-            </div>
-            <div v-else class="no-performance">
-              <el-empty description="暂无性能数据" :image-size="60" />
-            </div>
-          </el-card>
-        </el-col>
-      </el-row>
-    </div>
-
-    <!-- 标签页 -->
-    <div class="tabs-section">
-      <el-tabs v-model="activeTab" @tab-click="handleTabClick">
-        <el-tab-pane label="策略代码" name="code">
-          <el-card>
-            <div class="code-container">
-              <div class="code-header">
-                <h3>策略代码</h3>
-                <div class="code-actions">
-                  <el-button @click="copyCode">
-                    <el-icon><document-copy /></el-icon>
-                    复制代码
-                  </el-button>
-                  <el-button @click="validateCode">
-                    <el-icon><check /></el-icon>
-                    验证代码
-                  </el-button>
-                </div>
-              </div>
-              <el-input
-                v-model="strategy.code"
-                type="textarea"
-                :rows="25"
-                readonly
-                class="code-editor"
-              />
-            </div>
-          </el-card>
-        </el-tab-pane>
-
-        <el-tab-pane label="策略参数" name="parameters">
-          <el-card>
-            <div class="parameters-container">
-              <h3>策略参数</h3>
-              <el-table :data="strategy.parameters" stripe>
-                <el-table-column prop="name" label="参数名" width="150" />
-                <el-table-column prop="type" label="类型" width="100">
-                  <template #default="{ row }">
-                    <el-tag size="small">{{ row.type }}</el-tag>
-                  </template>
-                </el-table-column>
-                <el-table-column prop="value" label="当前值" width="120" />
-                <el-table-column prop="description" label="描述" />
-                <el-table-column prop="required" label="必填" width="80">
-                  <template #default="{ row }">
-                    <el-tag
-                      :type="row.required ? 'success' : 'info'"
-                      size="small"
-                    >
-                      {{ row.required ? "是" : "否" }}
-                    </el-tag>
-                  </template>
-                </el-table-column>
-                <el-table-column label="范围" width="120">
-                  <template #default="{ row }">
-                    <span
-                      v-if="
-                        row.type === 'number' &&
-                        row.min !== undefined &&
-                        row.max !== undefined
-                      "
-                    >
-                      {{ row.min }} - {{ row.max }}
-                    </span>
-                    <span v-else>-</span>
-                  </template>
-                </el-table-column>
-              </el-table>
-            </div>
-          </el-card>
-        </el-tab-pane>
-
-        <el-tab-pane label="交易配置" name="config">
-          <el-card>
-            <div class="config-container">
-              <h3>交易配置</h3>
-              <el-descriptions :column="2" border>
-                <el-descriptions-item label="交易标的">
-                  <el-tag
-                    v-for="symbol in strategy.config.symbols"
-                    :key="symbol"
-                    size="small"
-                    class="config-tag"
-                  >
-                    {{ symbol }}
-                  </el-tag>
-                </el-descriptions-item>
-                <el-descriptions-item label="时间周期">
-                  {{ strategy.config.timeframe }}
-                </el-descriptions-item>
-                <el-descriptions-item label="交易所">
-                  {{ strategy.config.execution.exchange }}
-                </el-descriptions-item>
-                <el-descriptions-item label="账户类型">
-                  {{ strategy.config.execution.accountType }}
-                </el-descriptions-item>
-                <el-descriptions-item label="杠杆倍数">
-                  {{ strategy.config.execution.leverage }}x
-                </el-descriptions-item>
-                <el-descriptions-item label="滑点">
-                  {{ strategy.config.execution.slippage }}%
-                </el-descriptions-item>
-              </el-descriptions>
-
-              <h4>风险管理</h4>
-              <el-descriptions :column="2" border>
-                <el-descriptions-item label="最大持仓">
-                  {{ strategy.config.riskManagement.maxPositionSize }}%
-                </el-descriptions-item>
-                <el-descriptions-item label="最大回撤">
-                  {{ strategy.config.riskManagement.maxDrawdown }}%
-                </el-descriptions-item>
-                <el-descriptions-item label="止损比例">
-                  {{ strategy.config.riskManagement.stopLoss }}%
-                </el-descriptions-item>
-                <el-descriptions-item label="止盈比例">
-                  {{ strategy.config.riskManagement.takeProfit }}%
-                </el-descriptions-item>
-                <el-descriptions-item label="单笔风险">
-                  {{ strategy.config.riskManagement.riskPerTrade }}%
-                </el-descriptions-item>
-                <el-descriptions-item label="最大相关性">
-                  {{ strategy.config.riskManagement.maxCorrelation }}
-                </el-descriptions-item>
-              </el-descriptions>
-            </div>
-          </el-card>
-        </el-tab-pane>
-
-        <el-tab-pane label="性能分析" name="performance">
-          <el-card>
-            <div class="performance-container">
-              <div class="performance-header">
-                <h3>性能分析</h3>
-                <el-button
-                  @click="refreshPerformance"
-                  :loading="performanceLoading"
-                >
-                  <el-icon><refresh /></el-icon>
-                  刷新数据
-                </el-button>
-              </div>
-
-              <div v-if="strategy.performance" class="performance-content">
-                <el-row :gutter="20">
-                  <el-col :span="8">
-                    <div class="metric-card">
-                      <div class="metric-title">总收益</div>
-                      <div
-                        class="metric-value"
-                        :class="
-                          getPerformanceClass(strategy.performance.totalReturn)
-                        "
-                      >
-                        {{ formatPercent(strategy.performance.totalReturn) }}
-                      </div>
-                    </div>
-                  </el-col>
-                  <el-col :span="8">
-                    <div class="metric-card">
-                      <div class="metric-title">年化收益</div>
-                      <div
-                        class="metric-value"
-                        :class="
-                          getPerformanceClass(
-                            strategy.performance.annualizedReturn,
-                          )
-                        "
-                      >
-                        {{
-                          formatPercent(strategy.performance.annualizedReturn)
-                        }}
-                      </div>
-                    </div>
-                  </el-col>
-                  <el-col :span="8">
-                    <div class="metric-card">
-                      <div class="metric-title">夏普比率</div>
-                      <div class="metric-value">
-                        {{ strategy.performance.sharpeRatio.toFixed(2) }}
-                      </div>
-                    </div>
-                  </el-col>
-                </el-row>
-
-                <el-row :gutter="20" class="metrics-row">
-                  <el-col :span="6">
-                    <div class="metric-card">
-                      <div class="metric-title">胜率</div>
-                      <div class="metric-value">
-                        {{ formatPercent(strategy.performance.winRate) }}
-                      </div>
-                    </div>
-                  </el-col>
-                  <el-col :span="6">
-                    <div class="metric-card">
-                      <div class="metric-title">盈亏比</div>
-                      <div class="metric-value">
-                        {{ strategy.performance.profitFactor.toFixed(2) }}
-                      </div>
-                    </div>
-                  </el-col>
-                  <el-col :span="6">
-                    <div class="metric-card">
-                      <div class="metric-title">总交易次数</div>
-                      <div class="metric-value">
-                        {{ strategy.performance.totalTrades }}
-                      </div>
-                    </div>
-                  </el-col>
-                  <el-col :span="6">
-                    <div class="metric-card">
-                      <div class="metric-title">平均交易收益</div>
-                      <div
-                        class="metric-value"
-                        :class="
-                          getPerformanceClass(strategy.performance.averageTrade)
-                        "
-                      >
-                        {{ formatPercent(strategy.performance.averageTrade) }}
-                      </div>
-                    </div>
-                  </el-col>
-                </el-row>
-
-                <div class="charts-section">
-                  <h4>收益曲线</h4>
-                  <div class="chart-placeholder">
-                    <el-empty description="图表开发中" :image-size="100" />
-                  </div>
-                </div>
-              </div>
-              <div v-else class="no-performance">
-                <el-empty description="暂无性能数据" :image-size="80">
-                  <el-button type="primary" @click="startStrategy">
-                    启动策略开始交易
-                  </el-button>
-                </el-empty>
-              </div>
-            </div>
-          </el-card>
-        </el-tab-pane>
-
-        <el-tab-pane label="运行日志" name="logs">
-          <el-card>
-            <div class="logs-container">
-              <div class="logs-header">
-                <h3>运行日志</h3>
-                <div class="logs-actions">
-                  <el-select
-                    v-model="logLevel"
-                    placeholder="日志级别"
-                    size="small"
-                  >
-                    <el-option label="全部" value="" />
-                    <el-option label="错误" value="error" />
-                    <el-option label="警告" value="warning" />
-                    <el-option label="信息" value="info" />
-                    <el-option label="调试" value="debug" />
-                  </el-select>
-                  <el-button @click="refreshLogs" :loading="logsLoading">
-                    <el-icon><refresh /></el-icon>
-                    刷新
-                  </el-button>
-                </div>
-              </div>
-
-              <div class="logs-content">
-                <div v-if="logs.length === 0" class="no-logs">
-                  <el-empty description="暂无日志" :image-size="60" />
-                </div>
-                <div v-else class="log-list">
-                  <div
-                    v-for="log in logs"
-                    :key="log.id"
-                    class="log-item"
-                    :class="`log-${log.level}`"
-                  >
-                    <div class="log-meta">
-                      <span class="log-time">{{
-                        formatDate(log.timestamp)
-                      }}</span>
-                      <el-tag :type="getLogType(log.level)" size="small">
-                        {{ log.level.toUpperCase() }}
-                      </el-tag>
-                    </div>
-                    <div class="log-message">{{ log.message }}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </el-card>
-        </el-tab-pane>
-      </el-tabs>
-    </div>
+          </div>
+          <div v-else class="no-trades">
+            <el-empty description="暂无交易记录" :image-size="60" />
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { ElMessage, ElMessageBox } from "element-plus";
-import {
-  ArrowLeft,
-  Edit,
-  ArrowDown,
-  VideoPlay,
-  VideoPause,
-  RefreshRight,
-  DocumentCopy,
-  Check,
-  Refresh,
-} from "@element-plus/icons-vue";
-import { useStrategyStore } from "@/stores/strategy";
-import type { Strategy } from "@/types/strategy";
+import { ref, reactive, onMounted } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import { ElMessage } from "element-plus";
 
-const route = useRoute();
 const router = useRouter();
-const strategyStore = useStrategyStore();
+const route = useRoute();
 
-// 响应式数据
-const strategy = computed(() => strategyStore.currentStrategy);
-const isLoading = computed(() => strategyStore.isLoading);
-const activeTab = ref("code");
-const performanceLoading = ref(false);
-const logsLoading = ref(false);
-const logLevel = ref("");
-const logs = ref<any[]>([]);
+// 策略数据
+const strategy = reactive({
+  id: "1",
+  name: "BTC趋势跟踪策略",
+  description:
+    "基于移动平均线的趋势跟踪策略，当短期均线上穿长期均线时买入，下穿时卖出。",
+  type: "trend",
+  symbol: "BTC/USDT",
+  timeframe: "1h",
+  initialCapital: 10000,
+  maxPosition: 20,
+  stopLoss: 2,
+  takeProfit: 3,
+  status: "active",
+  code: `// BTC趋势跟踪策略
+const strategy = {
+  name: 'BTC趋势跟踪策略',
+  timeframe: '1h',
+  symbols: ['BTC/USDT'],
+  
+  init: function() {
+    this.shortMA = this.MA(20);
+    this.longMA = this.MA(50);
+  },
+  
+  onTick: function() {
+    const shortMA = this.shortMA.value();
+    const longMA = this.longMA.value();
+    
+    if (shortMA > longMA && !this.hasPosition()) {
+      this.buy('BTC/USDT', 0.1);
+    } else if (shortMA < longMA && this.hasPosition()) {
+      this.sell('BTC/USDT', 0.1);
+    }
+  }
+};`,
+  createdAt: "2024-01-01T00:00:00Z",
+  lastRunAt: "2024-01-15T10:30:00Z",
+  performance: {
+    totalReturn: 0.1567,
+    annualizedReturn: 0.2341,
+    sharpeRatio: 1.23,
+    maxDrawdown: 0.0892,
+    winRate: 0.6234,
+    totalTrades: 45,
+  },
+});
+
+// 最近交易
+const recentTrades = ref([
+  {
+    id: "1",
+    symbol: "BTC/USDT",
+    type: "buy",
+    price: "45000",
+    amount: "0.1",
+    timestamp: "2024-01-15T10:30:00Z",
+  },
+  {
+    id: "2",
+    symbol: "BTC/USDT",
+    type: "sell",
+    price: "45200",
+    amount: "0.1",
+    timestamp: "2024-01-15T11:00:00Z",
+  },
+]);
 
 // 方法
-const backToList = () => {
-  router.push("/strategies");
-};
-
 const editStrategy = () => {
-  router.push(`/strategies/${route.params.id}/edit`);
+  router.push(`/strategies/${strategy.id}/edit`);
 };
 
-const startStrategy = async () => {
-  try {
-    await strategyStore.startStrategyById(route.params.id as string);
-  } catch (error) {
-    console.error("启动策略失败:", error);
-  }
-};
-
-const stopStrategy = async () => {
-  try {
-    await strategyStore.stopStrategyById(route.params.id as string);
-  } catch (error) {
-    console.error("停止策略失败:", error);
-  }
-};
-
-const handleAction = (command: string) => {
-  switch (command) {
-    case "duplicate":
-      duplicateStrategy();
-      break;
-    case "export":
-      exportStrategy();
-      break;
-    case "logs":
-      activeTab.value = "logs";
-      break;
-    case "delete":
-      deleteStrategy();
-      break;
-  }
-};
-
-const duplicateStrategy = async () => {
-  try {
-    const newStrategy = {
-      ...strategy.value,
-      name: `${strategy.value.name} (复制)`,
-      status: "draft" as const,
-      id: undefined,
-      createdAt: undefined,
-      updatedAt: undefined,
-      lastRunAt: undefined,
-    };
-    await strategyStore.createNewStrategy(newStrategy);
-    ElMessage.success("策略复制成功");
-  } catch (error) {
-    console.error("复制策略失败:", error);
-  }
+const duplicateStrategy = () => {
+  ElMessage.success("策略复制成功");
 };
 
 const exportStrategy = () => {
-  const dataStr = JSON.stringify(strategy.value, null, 2);
+  const dataStr = JSON.stringify(strategy, null, 2);
   const dataUri =
     "data:application/json;charset=utf-8," + encodeURIComponent(dataStr);
 
-  const exportFileDefaultName = `${strategy.value.name}.json`;
+  const exportFileDefaultName = `${strategy.name}.json`;
 
   const linkElement = document.createElement("a");
   linkElement.setAttribute("href", dataUri);
   linkElement.setAttribute("download", exportFileDefaultName);
   linkElement.click();
-};
 
-const deleteStrategy = async () => {
-  try {
-    await ElMessageBox.confirm(
-      "确定要删除这个策略吗？此操作不可撤销。",
-      "删除策略",
-      {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning",
-      },
-    );
-
-    await strategyStore.deleteStrategyById(route.params.id as string);
-    ElMessage.success("策略删除成功");
-    router.push("/strategies");
-  } catch (error) {
-    if (error !== "cancel") {
-      console.error("删除策略失败:", error);
-    }
-  }
+  ElMessage.success("策略导出成功");
 };
 
 const copyCode = () => {
-  navigator.clipboard
-    .writeText(strategy.value.code)
-    .then(() => {
-      ElMessage.success("代码已复制到剪贴板");
-    })
-    .catch(() => {
-      ElMessage.error("复制失败");
-    });
+  navigator.clipboard.writeText(strategy.code);
+  ElMessage.success("代码已复制到剪贴板");
 };
 
-const validateCode = async () => {
+const startStrategy = async () => {
   try {
-    const result = await strategyStore.validateStrategyCode({
-      code: strategy.value.code,
-      language: strategy.value.language,
-      type: strategy.value.type,
-    });
-
-    if (result.isValid) {
-      ElMessage.success("代码验证通过");
-    } else {
-      ElMessage.error("代码验证失败: " + result.errors.join(", "));
-    }
+    // TODO: 调用API启动策略
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    strategy.status = "active";
+    ElMessage.success("策略启动成功");
   } catch (error) {
-    console.error("验证代码失败:", error);
-    ElMessage.error("验证代码失败");
+    ElMessage.error("策略启动失败");
   }
 };
 
-const handleTabClick = (tab: any) => {
-  if (tab.props.name === "logs") {
-    refreshLogs();
-  } else if (tab.props.name === "performance") {
-    refreshPerformance();
-  }
-};
-
-const refreshPerformance = async () => {
+const stopStrategy = async () => {
   try {
-    performanceLoading.value = true;
-    await strategyStore.fetchStrategyPerformance(route.params.id as string);
+    // TODO: 调用API停止策略
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    strategy.status = "stopped";
+    ElMessage.success("策略停止成功");
   } catch (error) {
-    console.error("获取性能数据失败:", error);
-  } finally {
-    performanceLoading.value = false;
+    ElMessage.error("策略停止失败");
   }
 };
 
-const refreshLogs = async () => {
+const runBacktest = () => {
+  router.push(`/backtest?strategy=${strategy.id}`);
+};
+
+const viewLogs = () => {
+  router.push(`/strategies/${strategy.id}/logs`);
+};
+
+const refreshTrades = async () => {
   try {
-    logsLoading.value = true;
-    const result = await strategyStore.fetchStrategyLogs(
-      route.params.id as string,
-      {
-        level: logLevel.value,
-      },
-    );
-    logs.value = result.logs || [];
+    // TODO: 调用API刷新交易记录
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    ElMessage.success("交易记录已刷新");
   } catch (error) {
-    console.error("获取日志失败:", error);
-  } finally {
-    logsLoading.value = false;
+    ElMessage.error("刷新失败");
   }
+};
+
+// 工具函数
+const getTypeColor = (type: string) => {
+  const colors: Record<string, string> = {
+    trend: "success",
+    momentum: "warning",
+    mean_reversion: "info",
+    arbitrage: "danger",
+  };
+  return colors[type] || "info";
 };
 
 const getTypeText = (type: string) => {
-  const types: Record<string, string> = {
-    trend: "趋势策略",
+  const texts: Record<string, string> = {
+    trend: "趋势跟踪",
     momentum: "动量策略",
-    mean_reversion: "均值回归策略",
+    mean_reversion: "均值回归",
     arbitrage: "套利策略",
-    custom: "自定义策略",
   };
-  return types[type] || type;
+  return texts[type] || type;
 };
 
-const getStatusType = (status: string) => {
-  const types: Record<string, string> = {
+const getStatusColor = (status: string) => {
+  const colors: Record<string, string> = {
     active: "success",
-    draft: "info",
     stopped: "warning",
+    draft: "info",
     error: "danger",
   };
-  return types[status] || "info";
+  return colors[status] || "info";
 };
 
 const getStatusText = (status: string) => {
   const texts: Record<string, string> = {
     active: "运行中",
-    draft: "草稿",
     stopped: "已停止",
+    draft: "草稿",
     error: "错误",
   };
   return texts[status] || status;
 };
 
-const getPerformanceClass = (value: number) => {
-  return value > 0 ? "positive" : value < 0 ? "negative" : "";
-};
-
-const getLogType = (level: string) => {
-  const types: Record<string, string> = {
-    error: "danger",
-    warning: "warning",
-    info: "info",
-    debug: "info",
-  };
-  return types[level] || "info";
-};
-
-const formatPercent = (value: number) => {
-  return `${(value * 100).toFixed(2)}%`;
-};
-
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleString("zh-CN");
+const formatTime = (timeString: string) => {
+  return new Date(timeString).toLocaleString("zh-CN");
 };
 
 // 生命周期
 onMounted(async () => {
   try {
-    await strategyStore.fetchStrategyById(route.params.id as string);
+    // TODO: 根据路由参数获取策略详情
+    const strategyId = route.params.id as string;
+    // await fetchStrategyDetails(strategyId)
   } catch (error) {
-    console.error("获取策略详情失败:", error);
     ElMessage.error("获取策略详情失败");
   }
 });
 </script>
 
 <style scoped>
-.strategy-detail-container {
+.strategy-detail {
   padding: 20px;
 }
 
 .page-header {
-  margin-bottom: 30px;
-}
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-
-.header-left h1 {
-  margin: 0 0 8px 0;
-  font-size: 28px;
-  font-weight: 600;
-  color: #333;
-}
-
-.header-left p {
-  margin: 0;
-  color: #666;
-  font-size: 16px;
-}
-
-.header-right {
-  display: flex;
-  gap: 12px;
-}
-
-.strategy-info-section {
-  margin-bottom: 30px;
-}
-
-.info-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 20px;
 }
 
-.info-item:last-child {
-  border-bottom: none;
-}
-
-.info-item label {
-  font-weight: 500;
-  color: #666;
-}
-
-.info-item span {
+.page-header h2 {
+  margin: 0;
   color: #333;
 }
 
-.status-control {
-  text-align: center;
+.mb-20 {
+  margin-bottom: 20px;
 }
 
-.status-indicator {
-  margin-bottom: 16px;
-}
-
-.control-buttons {
+.card-header {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.performance-overview {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.card-header h3 {
+  margin: 0;
+  color: #333;
+}
+
+.strategy-description {
+  margin-top: 20px;
+}
+
+.strategy-description h4 {
+  margin: 0 0 8px 0;
+  color: #333;
+}
+
+.strategy-description p {
+  margin: 0;
+  color: #666;
+  line-height: 1.5;
+}
+
+.code-editor {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+  padding: 16px;
+  overflow-x: auto;
+}
+
+.code-editor pre {
+  margin: 0;
+  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.code-editor code {
+  font-family: inherit;
+}
+
+.performance-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
 }
 
 .performance-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid #f0f0f0;
+  text-align: center;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
 }
 
-.performance-item:last-child {
-  border-bottom: none;
-}
-
-.performance-item label {
-  font-weight: 500;
+.performance-label {
+  font-size: 14px;
   color: #666;
+  margin-bottom: 8px;
 }
 
-.performance-item span {
+.performance-value {
+  font-size: 18px;
   font-weight: 600;
+  color: #333;
 }
 
 .positive {
@@ -820,251 +538,76 @@ onMounted(async () => {
 }
 
 .no-performance {
+  padding: 40px;
   text-align: center;
-  padding: 20px;
 }
 
-.tabs-section {
-  margin-bottom: 30px;
-}
-
-.code-container {
-  margin-bottom: 20px;
-}
-
-.code-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.code-header h3 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: #333;
-}
-
-.code-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.code-editor {
-  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
-  font-size: 14px;
-}
-
-.parameters-container,
-.config-container {
-  margin-bottom: 20px;
-}
-
-.parameters-container h3,
-.config-container h3,
-.config-container h4 {
-  margin: 0 0 16px 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: #333;
-}
-
-.config-container h4 {
-  font-size: 16px;
-  margin-top: 24px;
-}
-
-.config-tag {
-  margin-right: 4px;
-  margin-bottom: 4px;
-}
-
-.performance-container {
-  margin-bottom: 20px;
-}
-
-.performance-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
-
-.performance-header h3 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: #333;
-}
-
-.performance-content {
+.action-panel {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 10px;
 }
 
-.metric-card {
+.recent-trades {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.trade-item {
+  padding: 12px;
   background: #f8f9fa;
   border-radius: 8px;
-  padding: 16px;
-  text-align: center;
+  border-left: 3px solid #409eff;
 }
 
-.metric-title {
-  font-size: 14px;
-  color: #666;
+.trade-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 8px;
 }
 
-.metric-value {
-  font-size: 24px;
+.trade-symbol {
   font-weight: 600;
   color: #333;
 }
 
-.metrics-row {
-  margin-top: 16px;
-}
-
-.charts-section {
-  margin-top: 24px;
-}
-
-.charts-section h4 {
-  margin: 0 0 16px 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #333;
-}
-
-.chart-placeholder {
-  background: #f8f9fa;
-  border-radius: 8px;
-  padding: 40px;
-  text-align: center;
-}
-
-.logs-container {
-  margin-bottom: 20px;
-}
-
-.logs-header {
+.trade-details {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
-}
-
-.logs-header h3 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: #333;
-}
-
-.logs-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.logs-content {
-  max-height: 400px;
-  overflow-y: auto;
-}
-
-.no-logs {
-  text-align: center;
-  padding: 40px;
-}
-
-.log-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.log-item {
-  padding: 12px;
-  border-radius: 6px;
-  border-left: 4px solid #e9ecef;
-}
-
-.log-error {
-  border-left-color: #f56c6c;
-  background-color: #fef2f2;
-}
-
-.log-warning {
-  border-left-color: #e6a23c;
-  background-color: #fffbeb;
-}
-
-.log-info {
-  border-left-color: #409eff;
-  background-color: #eff6ff;
-}
-
-.log-debug {
-  border-left-color: #909399;
-  background-color: #f3f4f6;
-}
-
-.log-meta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 4px;
-}
-
-.log-time {
   font-size: 12px;
   color: #666;
 }
 
-.log-message {
+.trade-price {
+  font-weight: 600;
   color: #333;
-  font-size: 14px;
-  line-height: 1.4;
 }
 
-.text-danger {
-  color: #f56c6c;
+.trade-time {
+  color: #999;
+}
+
+.no-trades {
+  padding: 20px;
+  text-align: center;
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .strategy-detail-container {
+  .strategy-detail {
     padding: 10px;
   }
 
-  .header-content {
-    flex-direction: column;
-    gap: 16px;
-    align-items: flex-start;
+  .performance-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 
-  .header-right {
-    width: 100%;
-    justify-content: flex-start;
-  }
-
-  .performance-overview,
-  .metrics-row {
+  .page-header {
     flex-direction: column;
-  }
-
-  .performance-header,
-  .logs-header {
-    flex-direction: column;
-    gap: 12px;
-    align-items: flex-start;
-  }
-
-  .code-header {
-    flex-direction: column;
-    gap: 12px;
+    gap: 10px;
     align-items: flex-start;
   }
 }
