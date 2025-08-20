@@ -46,6 +46,9 @@ import {
   Close,
 } from "@element-plus/icons-vue";
 
+// Import Bloomberg theme
+import "./styles/bloomberg-theme.css";
+
 const authStore = useAuthStore();
 const appStore = useAppStore();
 
@@ -94,10 +97,10 @@ body {
   font-family:
     -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
     Cantarell, sans-serif;
-  font-size: 14px;
-  line-height: 1.6;
-  color: #333;
-  background-color: #f5f5f5;
+  font-size: var(--font-base);
+  line-height: var(--leading-normal);
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
 }
 
 #app {
@@ -106,22 +109,22 @@ body {
 
 /* 滚动条样式 */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 3px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 3px;
+  background: var(--border-secondary);
+  border-radius: var(--radius-sm);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+  background: var(--border-tertiary);
 }
 
 /* 全局加载动画 */
@@ -177,19 +180,21 @@ body {
 }
 
 .notification-item.success {
-  background: linear-gradient(135deg, #67c23a, #85ce61);
+  background: linear-gradient(135deg, var(--market-up), #00a885);
+  box-shadow: var(--glow-success);
 }
 
 .notification-item.warning {
-  background: linear-gradient(135deg, #e6a23c, #ebb563);
+  background: linear-gradient(135deg, var(--market-volatile), #e07f00);
 }
 
 .notification-item.error {
-  background: linear-gradient(135deg, #f56c6c, #f78989);
+  background: linear-gradient(135deg, var(--market-down), #e02e24);
+  box-shadow: var(--glow-danger);
 }
 
 .notification-item.info {
-  background: linear-gradient(135deg, #409eff, #66b1ff);
+  background: linear-gradient(135deg, var(--status-info), #0056b3);
 }
 
 .notification-item .close-icon {
@@ -357,67 +362,67 @@ body {
 }
 
 .text-primary {
-  color: #409eff;
+  color: var(--btn-primary);
 }
 
 .text-success {
-  color: #67c23a;
+  color: var(--market-up);
 }
 
 .text-warning {
-  color: #e6a23c;
+  color: var(--market-volatile);
 }
 
 .text-danger {
-  color: #f56c6c;
+  color: var(--market-down);
 }
 
 .text-info {
-  color: #909399;
+  color: var(--status-info);
 }
 
 .text-muted {
-  color: #909399;
+  color: var(--text-muted);
 }
 
 .bg-primary {
-  background-color: #409eff;
+  background-color: var(--btn-primary);
 }
 
 .bg-success {
-  background-color: #67c23a;
+  background-color: var(--market-up);
 }
 
 .bg-warning {
-  background-color: #e6a23c;
+  background-color: var(--market-volatile);
 }
 
 .bg-danger {
-  background-color: #f56c6c;
+  background-color: var(--market-down);
 }
 
 .bg-info {
-  background-color: #909399;
+  background-color: var(--status-info);
 }
 
 .border {
-  border: 1px solid #dcdfe6;
+  border: 1px solid var(--border-primary);
 }
 
 .border-top {
-  border-top: 1px solid #dcdfe6;
+  border-top: 1px solid var(--border-primary);
 }
 
 .border-bottom {
-  border-bottom: 1px solid #dcdfe6;
+  border-bottom: 1px solid var(--border-primary);
 }
 
 .border-left {
-  border-left: 1px solid #dcdfe6;
+  border-left: 1px solid var(--border-primary);
 }
 
 .border-right {
-  border-right: 1px solid #dcdfe6;
+  border-right: 1px solid var(--border-primary);
 }
 
 .rounded {
@@ -433,15 +438,15 @@ body {
 }
 
 .shadow {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
 }
 
 .shadow-lg {
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-lg);
 }
 
 .transition {
-  transition: all 0.3s ease;
+  transition: all var(--transition-normal) var(--ease-out);
 }
 
 .cursor-pointer {

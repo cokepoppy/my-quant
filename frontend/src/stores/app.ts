@@ -13,7 +13,7 @@ export const useAppStore = defineStore("app", () => {
   // 状态
   const isLoading = ref(false);
   const notifications = ref<Notification[]>([]);
-  const theme = ref<"light" | "dark" | "auto">("light");
+  const theme = ref<"light" | "dark" | "auto">("dark");
   const language = ref("zh-CN");
   const sidebarCollapsed = ref(false);
   const pageHeader = ref({
