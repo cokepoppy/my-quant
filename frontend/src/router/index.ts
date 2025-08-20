@@ -7,7 +7,7 @@ const routes = [
   {
     path: "/",
     name: "Dashboard",
-    component: () => import("@/views/dashboard/EnhancedDashboard.vue"),
+    component: () => import("@/views/Dashboard.vue"),
     meta: {
       requiresAuth: true,
       title: "量化交易控制台",

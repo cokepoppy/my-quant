@@ -23,9 +23,13 @@ const props = withDefaults(defineProps<Props>(), {
   realtime: false
 })
 
+const emit = defineEmits<{
+  'update:data': [data: Props['data']]
+}>()
+
 const chartContainer = ref<HTMLElement>()
 let chart: echarts.ECharts | null = null
-let updateInterval: any = null
+let updateInterval: number | null = null
 
 // Initialize chart
 const initChart = () => {
@@ -220,16 +224,20 @@ onMounted(() => {
         const lastValue = props.data[props.data.length - 1].value
         const newValue = lastValue + (Math.random() - 0.5) * 100
         
-        props.data.push({
+        // Create a new array instead of mutating props
+        const newData = [...props.data, {
           timestamp: new Date(),
           value: newValue,
           benchmark: props.data[0].value
-        })
+        }]
         
         // Keep only last 50 data points
-        if (props.data.length > 50) {
-          props.data.shift()
+        if (newData.length > 50) {
+          newData.shift()
         }
+        
+        // Emit update event
+        emit('update:data', newData)
       }
     }, 2000)
   }

@@ -168,10 +168,10 @@
               </div>
             </template>
             <div class="chart-container">
-              <PerformanceChart
+              <StrategyPerformanceChart
                 :data="performance.equityCurve"
                 :height="400"
-                :period="chartPeriod"
+                :realtime="false"
               />
             </div>
           </el-card>
@@ -190,7 +190,7 @@
               </div>
             </template>
             <div class="chart-container">
-              <MonthlyReturnsChart
+              <ProfitDistributionChart
                 :data="performance.monthlyReturns"
                 :height="300"
               />
@@ -205,7 +205,7 @@
               </div>
             </template>
             <div class="chart-container">
-              <ReturnsDistributionChart
+              <ProfitDistributionChart
                 :data="performance.returnsDistribution"
                 :height="300"
               />
@@ -255,9 +255,8 @@ import {
   Download,
   Document,
 } from '@element-plus/icons-vue';
-import PerformanceChart from '@/components/charts/PerformanceChart.vue';
-import MonthlyReturnsChart from '@/components/charts/MonthlyReturnsChart.vue';
-import ReturnsDistributionChart from '@/components/charts/ReturnsDistributionChart.vue';
+import StrategyPerformanceChart from '@/components/charts/StrategyPerformanceChart.vue';
+import ProfitDistributionChart from '@/components/charts/ProfitDistributionChart.vue';
 
 const route = useRoute();
 const router = useRouter();

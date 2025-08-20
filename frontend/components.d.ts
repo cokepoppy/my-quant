@@ -7,6 +7,7 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
+    AssetCurveChart: typeof import('./src/components/charts/AssetCurveChart.vue')['default']
     ElAlert: typeof import('element-plus/es')['ElAlert']
     ElAvatar: typeof import('element-plus/es')['ElAvatar']
     ElBadge: typeof import('element-plus/es')['ElBadge']
@@ -21,6 +22,7 @@ declare module 'vue' {
     ElDescriptionsItem: typeof import('element-plus/es')['ElDescriptionsItem']
     ElDialog: typeof import('element-plus/es')['ElDialog']
     ElDivider: typeof import('element-plus/es')['ElDivider']
+    ElDrawer: typeof import('element-plus/es')['ElDrawer']
     ElDropdown: typeof import('element-plus/es')['ElDropdown']
     ElDropdownItem: typeof import('element-plus/es')['ElDropdownItem']
     ElDropdownMenu: typeof import('element-plus/es')['ElDropdownMenu']
@@ -48,13 +50,17 @@ declare module 'vue' {
     ElTag: typeof import('element-plus/es')['ElTag']
     ElTooltip: typeof import('element-plus/es')['ElTooltip']
     InteractiveDashboard: typeof import('./src/components/layout/InteractiveDashboard.vue')['default']
+    ProfitDistributionChart: typeof import('./src/components/charts/ProfitDistributionChart.vue')['default']
     ResponsiveLayout: typeof import('./src/components/layout/ResponsiveLayout.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    SidebarNav: typeof import('./src/components/layout/SidebarNav.vue')['default']
     StrategyForm: typeof import('./src/components/forms/StrategyForm.vue')['default']
     StrategyPerformanceChart: typeof import('./src/components/charts/StrategyPerformanceChart.vue')['default']
+    TabSystem: typeof import('./src/components/layout/TabSystem.vue')['default']
     TemplateList: typeof import('./src/components/strategy/TemplateList.vue')['default']
     TradingChart: typeof import('./src/components/charts/TradingChart.vue')['default']
+    V3Layout: typeof import('./src/components/layout/V3Layout.vue')['default']
   }
   export interface ComponentCustomProperties {
     vLoading: typeof import('element-plus/es')['ElLoadingDirective']

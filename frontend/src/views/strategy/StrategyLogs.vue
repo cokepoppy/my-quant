@@ -166,7 +166,7 @@
 
           <div v-else class="log-entries">
             <div
-              v-for="(log, index) in paginatedLogs"
+              v-for="log in paginatedLogs"
               :key="log.id"
               class="log-entry"
               :class="[
@@ -246,12 +246,11 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import {
   Refresh,
   Download,
-  Info,
+  InfoFilled,
   Message,
   Warning,
   CircleClose,
-  Dangerous,
-  Document,
+    Document,
   CopyDocument,
   ArrowUp,
   ArrowDown,
