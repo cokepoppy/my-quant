@@ -48,16 +48,26 @@
         class="tab-pane"
         :class="{ active: activeTabId === tab.id }"
       >
-        <component :is="tab.component" v-bind="tab.props" />
+        <component :is="getComponent(tab.component)" v-bind="tab.props" />
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, markRaw } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Close, MoreFilled } from '@element-plus/icons-vue'
+
+// 组件映射
+const componentMap = {
+  'DashboardOverview': markRaw(() => import('@/views/DashboardOverview.vue')),
+  'StrategyList': markRaw(() => import('@/views/strategy/StrategyList.vue')),
+  'CreateStrategy': markRaw(() => import('@/views/strategy/CreateStrategy.vue')),
+  'BacktestSettings': markRaw(() => import('@/views/BacktestSettings.vue')),
+  'TradingPanel': markRaw(() => import('@/views/TradingPanel.vue')),
+  'Monitoring': markRaw(() => import('@/views/monitoring/Monitoring.vue'))
+}
 
 interface Tab {
   id: string
@@ -243,6 +253,14 @@ const updateTab = (tabId: string, updates: Partial<Tab>) => {
 // 检查标签页是否存在
 const hasTab = (tabId: string) => {
   return tabs.value.some(t => t.id === tabId)
+}
+
+// 解析组件
+const getComponent = (component: any) => {
+  if (typeof component === 'string') {
+    return componentMap[component] || component
+  }
+  return component
 }
 
 // 暴露方法给父组件

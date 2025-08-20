@@ -458,12 +458,12 @@ const connectionIcon = computed(() => {
 const handleNavClick = (item: string) => {
   // 根据导航项创建对应的页签
   const tabComponents: Record<string, any> = {
-    'dashboard': () => import('@/views/DashboardOverview.vue'),
-    'strategies': () => import('@/views/strategy/StrategyList.vue'),
-    'strategy-editor': () => import('@/views/strategy/CreateStrategy.vue'),
-    'backtest': () => import('@/views/BacktestSettings.vue'),
-    'trading': () => import('@/views/TradingPanel.vue'),
-    'risk-control': () => import('@/views/monitoring/Monitoring.vue')
+    'dashboard': 'DashboardOverview',
+    'strategies': 'StrategyList',
+    'strategy-editor': 'CreateStrategy',
+    'backtest': 'BacktestSettings',
+    'trading': 'TradingPanel',
+    'risk-control': 'Monitoring'
   }
 
   const tabTitles: Record<string, string> = {
