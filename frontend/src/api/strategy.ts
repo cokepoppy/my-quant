@@ -15,11 +15,21 @@ export const getStrategies = async (params?: {
 }) => {
   const response = await get<{
     strategies: Strategy[];
-    total: number;
-    page: number;
-    limit: number;
+    pagination: {
+      total: number;
+      page: number;
+      limit: number;
+      pages: number;
+    };
   }>("/strategies", { params });
-  return response;
+  
+  // 转换后端响应格式为前端期望的格式
+  return {
+    strategies: response.strategies,
+    total: response.pagination.total,
+    page: response.pagination.page,
+    limit: response.pagination.limit,
+  };
 };
 
 // 获取策略详情

@@ -48,6 +48,7 @@ import {
 
 // Import Bloomberg theme
 import "./styles/bloomberg-theme.css";
+import "./styles/bright-theme.css";
 import "./styles/premium.css";
 import "./styles/premium-enhanced.css";
 
@@ -107,6 +108,50 @@ body {
 
 #app {
   min-height: 100vh;
+}
+
+/* 应用明亮主题 */
+body {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a3e 50%, #26334e 100%);
+  min-height: 100vh;
+}
+
+/* 全局卡片增强 */
+.stat-card,
+.chart-card,
+.performance-card,
+.activity-card {
+  background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover,
+.chart-card:hover,
+.performance-card:hover,
+.activity-card:hover {
+  border-color: rgba(0, 136, 255, 0.5);
+  box-shadow: 0 0 25px rgba(0, 136, 255, 0.4), 0 0 50px rgba(0, 136, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+/* 文字增强 */
+.stat-value {
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.positive {
+  color: #00e6b8 !important;
+  text-shadow: 0 0 8px rgba(0, 230, 184, 0.3);
+}
+
+.negative {
+  color: #ff4757 !important;
+  text-shadow: 0 0 8px rgba(255, 71, 87, 0.3);
 }
 
 /* 滚动条样式 */

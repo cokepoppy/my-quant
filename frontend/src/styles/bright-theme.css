@@ -1,0 +1,319 @@
+/* Bright Professional Trading Theme */
+/* Enhanced visibility and readability */
+
+:root {
+  /* Core Background Colors - 更明亮的背景 */
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #242424;
+  --bg-tertiary: #2e2e2e;
+  --bg-quaternary: #383838;
+  --bg-hover: #424242;
+  --bg-active: #4a4a4a;
+
+  /* Surface Colors - 提高对比度 */
+  --surface-primary: #1e1e1e;
+  --surface-secondary: #282828;
+  --surface-elevated: #323232;
+  --surface-overlay: #3c3c3c;
+
+  /* Premium Gradient Backgrounds - 更亮的渐变 */
+  --gradient-primary: linear-gradient(135deg, #1a1a1a 0%, #2a2a3e 50%, #26334e 100%);
+  --gradient-surface: linear-gradient(135deg, #1e1e1e 0%, #323232 100%);
+  --gradient-card: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%);
+  --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 100%);
+
+  /* Premium Glow Effects - 增强发光效果 */
+  --glow-primary: 0 0 25px rgba(0, 122, 255, 0.4), 0 0 50px rgba(0, 122, 255, 0.15);
+  --glow-success: 0 0 25px rgba(0, 212, 170, 0.4), 0 0 50px rgba(0, 212, 170, 0.15);
+  --glow-danger: 0 0 25px rgba(255, 59, 48, 0.4), 0 0 50px rgba(255, 59, 48, 0.15);
+  --glow-warning: 0 0 25px rgba(255, 149, 0, 0.4), 0 0 50px rgba(255, 149, 0, 0.15);
+
+  /* Premium Border Effects - 更明显的边框 */
+  --border-glow-primary: 1px solid rgba(0, 122, 255, 0.5);
+  --border-glow-success: 1px solid rgba(0, 212, 170, 0.5);
+  --border-glow-danger: 1px solid rgba(255, 59, 48, 0.5);
+  --border-glow-warning: 1px solid rgba(255, 149, 0, 0.5);
+
+  /* Text Colors - 提高文字对比度 */
+  --text-primary: #ffffff;
+  --text-secondary: #f0f0f0;
+  --text-tertiary: #d0d0d0;
+  --text-muted: #a0a0a0;
+  --text-disabled: #808080;
+
+  /* Market Data Colors - 更鲜艳的颜色 */
+  --market-up: #00e6b8;
+  --market-down: #ff4757;
+  --market-neutral: #ffffff;
+  --market-volatile: #ffa500;
+
+  /* Trading Colors */
+  --buy-color: #00e6b8;
+  --sell-color: #ff4757;
+  --hold-color: #0088ff;
+
+  /* Status Colors */
+  --status-online: #00e6b8;
+  --status-offline: #ff4757;
+  --status-warning: #ffa500;
+  --status-info: #0088ff;
+
+  /* Interactive Elements - 更亮的按钮 */
+  --btn-primary: #0088ff;
+  --btn-primary-hover: #0066cc;
+  --btn-secondary: #505050;
+  --btn-secondary-hover: #606060;
+
+  /* Form Elements - 更明亮的输入框 */
+  --input-bg: #2a2a2a;
+  --input-border: #505050;
+  --input-focus: #0088ff;
+  --input-text: #ffffff;
+  --input-placeholder: #a0a0a0;
+
+  /* Chart Colors - 更清晰的图表颜色 */
+  --chart-grid: #404040;
+  --chart-axis: #808080;
+  --chart-line-up: #00e6b8;
+  --chart-line-down: #ff4757;
+  --chart-line-neutral: #0088ff;
+
+  /* Border Colors - 更明显的边框 */
+  --border-primary: #404040;
+  --border-secondary: #505050;
+  --border-tertiary: #606060;
+  --divider: #404040;
+
+  /* Glass morphism effect - 更明亮的玻璃效果 */
+  --glass-bg: rgba(255, 255, 255, 0.08);
+  --glass-border: rgba(255, 255, 255, 0.15);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* 应用明亮主题 */
+.bright-theme {
+  color-scheme: dark;
+}
+
+.bright-theme body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* 卡片样式增强 */
+.bright-theme .stat-card,
+.bright-theme .chart-card,
+.bright-theme .performance-card,
+.bright-theme .activity-card {
+  background: var(--gradient-card);
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.bright-theme .stat-card:hover,
+.bright-theme .chart-card:hover,
+.bright-theme .performance-card:hover,
+.bright-theme .activity-card:hover {
+  border-color: var(--border-glow-primary);
+  box-shadow: var(--glow-primary);
+  transform: translateY(-2px);
+}
+
+/* 统计卡片增强 */
+.bright-theme .stat-value {
+  color: var(--text-primary);
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.bright-theme .stat-title {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.bright-theme .stat-change.positive {
+  color: var(--market-up);
+  text-shadow: 0 0 8px rgba(0, 230, 184, 0.3);
+}
+
+.bright-theme .stat-change.negative {
+  color: var(--market-down);
+  text-shadow: 0 0 8px rgba(255, 71, 87, 0.3);
+}
+
+/* 图表标题增强 */
+.bright-theme .chart-header h3 {
+  color: var(--text-primary);
+  font-weight: 700;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+}
+
+/* 策略项目增强 */
+.bright-theme .strategy-name {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.bright-theme .strategy-type {
+  color: var(--text-tertiary);
+}
+
+.bright-theme .metric-value.positive {
+  color: var(--market-up);
+  font-weight: 700;
+  text-shadow: 0 0 5px rgba(0, 230, 184, 0.3);
+}
+
+.bright-theme .metric-value.negative {
+  color: var(--market-down);
+  font-weight: 700;
+  text-shadow: 0 0 5px rgba(255, 71, 87, 0.3);
+}
+
+/* 活动项目增强 */
+.bright-theme .activity-title {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.bright-theme .activity-description {
+  color: var(--text-tertiary);
+}
+
+.bright-theme .activity-time {
+  color: var(--text-muted);
+}
+
+/* 活动图标增强 */
+.bright-theme .activity-icon {
+  background: var(--gradient-glass);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(10px);
+}
+
+.bright-theme .activity-icon.strategy .el-icon {
+  color: var(--market-volatile);
+  filter: drop-shadow(0 0 5px rgba(255, 165, 0, 0.3));
+}
+
+.bright-theme .activity-icon.trade .el-icon {
+  color: var(--market-up);
+  filter: drop-shadow(0 0 5px rgba(0, 230, 184, 0.3));
+}
+
+.bright-theme .activity-icon.system .el-icon {
+  color: var(--btn-primary);
+  filter: drop-shadow(0 0 5px rgba(0, 136, 255, 0.3));
+}
+
+.bright-theme .activity-icon.alert .el-icon {
+  color: var(--market-down);
+  filter: drop-shadow(0 0 5px rgba(255, 71, 87, 0.3));
+}
+
+/* Element Plus 组件样式覆盖 */
+.bright-theme :deep(.el-radio-button__inner) {
+  background: var(--surface-elevated);
+  border-color: var(--border-primary);
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.bright-theme :deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
+  background: var(--btn-primary);
+  border-color: var(--btn-primary);
+  color: white;
+  box-shadow: 0 0 10px rgba(0, 136, 255, 0.3);
+}
+
+.bright-theme :deep(.el-tag) {
+  border: 1px solid var(--border-primary);
+  background: var(--gradient-glass);
+  backdrop-filter: blur(5px);
+}
+
+.bright-theme :deep(.el-button) {
+  background: var(--gradient-glass);
+  border: 1px solid var(--border-primary);
+  color: var(--text-primary);
+  backdrop-filter: blur(5px);
+  transition: all 0.3s ease;
+}
+
+.bright-theme :deep(.el-button:hover) {
+  border-color: var(--border-glow-primary);
+  box-shadow: 0 0 15px rgba(0, 136, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+/* 滚动条增强 */
+.bright-theme ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.bright-theme ::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: 5px;
+}
+
+.bright-theme ::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, var(--btn-primary), var(--market-up));
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 136, 255, 0.3);
+}
+
+.bright-theme ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, var(--btn-primary-hover), var(--market-up));
+  box-shadow: 0 0 15px rgba(0, 136, 255, 0.5);
+}
+
+/* 动画增强 */
+.bright-theme .animate-fade-in {
+  animation: brightFadeIn 0.6s ease-out;
+}
+
+@keyframes brightFadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(30px) scale(0.95); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0) scale(1); 
+  }
+}
+
+.bright-theme .animate-glow {
+  animation: brightGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes brightGlow {
+  from { 
+    box-shadow: 0 0 5px rgba(0, 136, 255, 0.2); 
+  }
+  to { 
+    box-shadow: 0 0 20px rgba(0, 136, 255, 0.4); 
+  }
+}
+
+/* 响应式增强 */
+@media (max-width: 768px) {
+  .bright-theme .stat-card,
+  .bright-theme .chart-card,
+  .bright-theme .performance-card,
+  .bright-theme .activity-card {
+    border-radius: 8px;
+    padding: 16px;
+  }
+  
+  .bright-theme .stat-value {
+    font-size: 20px;
+  }
+  
+  .bright-theme .chart-header h3 {
+    font-size: 14px;
+  }
+}

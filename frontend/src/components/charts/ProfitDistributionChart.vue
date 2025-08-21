@@ -45,19 +45,24 @@ const updateChart = () => {
     backgroundColor: 'transparent',
     tooltip: {
       trigger: 'item',
-      backgroundColor: 'var(--secondary-bg)',
-      borderColor: 'var(--border-color)',
+      backgroundColor: 'rgba(0, 0, 0, 0.95)',
+      borderColor: '#00d4aa',
+      borderWidth: 2,
       textStyle: {
-        color: 'var(--secondary-text)'
+        color: '#ffffff',
+        fontSize: 13,
+        fontWeight: 600
       },
+      extraCssText: 'box-shadow: 0 8px 32px rgba(0, 212, 170, 0.3); border-radius: 8px;',
       formatter: (params: any) => {
         const value = params.value
         const percent = params.percent
+        const valueColor = value >= 0 ? '#00d4aa' : '#ff3b30'
         return `
-          <div style="padding: 8px">
-            <div style="margin-bottom: 4px; font-weight: 600">${params.name}</div>
-            <div>贡献: <span style="color: ${value >= 0 ? 'var(--positive-color)' : 'var(--negative-color)'}">${value >= 0 ? '+' : ''}${value}%</span></div>
-            <div>占比: ${percent.toFixed(1)}%</div>
+          <div style="padding: 12px; min-width: 180px;">
+            <div style="margin-bottom: 8px; font-weight: 700; font-size: 14px; color: #00d4aa;">${params.name}</div>
+            <div style="margin-bottom: 6px;">贡献: <span style="color: ${valueColor}; font-weight: 700;">${value >= 0 ? '+' : ''}${value}%</span></div>
+            <div style="font-size: 12px; color: #e0e0e0;">占比: ${percent.toFixed(1)}%</div>
           </div>
         `
       }
@@ -67,10 +72,16 @@ const updateChart = () => {
       type: 'pie',
       radius: ['40%', '70%'],
       center: ['50%', '50%'],
-      data: data.map(item => ({
+      data: data.map((item, index) => ({
         ...item,
         itemStyle: {
-          color: item.value >= 0 ? 'var(--positive-color)' : 'var(--negative-color)'
+          color: item.value >= 0 ? 
+            ['#00d4aa', '#00b894', '#00a085', '#008876', '#007067'][index % 5] : 
+            ['#ff3b30', '#e02e24', '#cc251e', '#b71c1c', '#a01818'][index % 5],
+          borderColor: '#ffffff',
+          borderWidth: 2,
+          shadowColor: item.value >= 0 ? '#00d4aa' : '#ff3b30',
+          shadowBlur: 8
         }
       })),
       emphasis: {
@@ -84,13 +95,18 @@ const updateChart = () => {
         show: true,
         position: 'outside',
         formatter: '{b}\n{d}%',
-        color: 'var(--secondary-text)',
-        fontSize: 12
+        color: '#ffffff',
+        fontSize: 13,
+        fontWeight: 600,
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        padding: [4, 8],
+        borderRadius: 4
       },
       labelLine: {
         show: true,
         lineStyle: {
-          color: 'var(--border-color)'
+          color: '#404040',
+          width: 2
         }
       }
     }]

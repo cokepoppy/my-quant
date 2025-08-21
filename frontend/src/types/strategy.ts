@@ -3,11 +3,11 @@ export interface Strategy {
   id: string;
   name: string;
   description: string;
-  type: "trend" | "momentum" | "mean_reversion" | "arbitrage" | "custom";
+  type: "technical" | "statistical" | "ml" | "high_frequency";
   language: "python" | "javascript" | "typescript";
   code: string;
   config: StrategyConfig;
-  status: "draft" | "active" | "paused" | "stopped" | "error";
+  status: "draft" | "active" | "inactive" | "archived";
   createdAt: string;
   updatedAt: string;
   lastRunAt?: string;
@@ -125,7 +125,7 @@ export interface StrategyListResponse {
 export interface StrategyCreateRequest {
   name: string;
   description: string;
-  type: "trend" | "momentum" | "mean_reversion" | "arbitrage" | "custom";
+  type: "technical" | "statistical" | "ml" | "high_frequency";
   language: "python" | "javascript" | "typescript";
   code: string;
   config: StrategyConfig;
@@ -141,5 +141,5 @@ export interface StrategyUpdateRequest {
   config?: StrategyConfig;
   parameters?: StrategyParameter[];
   tags?: string[];
-  status?: "draft" | "active" | "paused" | "stopped" | "error";
+  status?: "draft" | "active" | "inactive" | "archived";
 }
