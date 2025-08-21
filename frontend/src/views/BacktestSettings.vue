@@ -396,35 +396,42 @@ const handleResultDialogClose = (done: Function) => {
   padding: 20px;
   height: 100%;
   overflow-y: auto;
+  background: var(--bg-primary);
 }
 
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  padding: 16px 20px;
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
 }
 
 .page-header h2 {
   margin: 0;
-  color: var(--primary-text);
-  font-size: 20px;
-  font-weight: 600;
+  color: var(--text-primary);
+  font-size: var(--font-2xl);
+  font-weight: var(--font-semibold);
 }
 
 .header-actions {
   display: flex;
-  gap: 8px;
+  gap: 12px;
 }
 
 .backtest-content {
-  background: var(--card-bg);
-  border-radius: 8px;
-  padding: 20px;
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-md);
 }
 
 .backtest-form {
-  max-width: 800px;
+  max-width: 900px;
 }
 
 .date-range {
@@ -434,18 +441,19 @@ const handleResultDialogClose = (done: Function) => {
 }
 
 .date-separator {
-  color: var(--secondary-text);
+  color: var(--text-secondary);
+  font-size: var(--font-base);
 }
 
 .unit-label {
   margin-left: 8px;
-  color: var(--muted-text);
-  font-size: 14px;
+  color: var(--text-secondary);
+  font-size: var(--font-sm);
 }
 
 .fee-settings {
   display: flex;
-  gap: 24px;
+  gap: 32px;
 }
 
 .fee-item {
@@ -455,26 +463,28 @@ const handleResultDialogClose = (done: Function) => {
 }
 
 .fee-item label {
-  min-width: 60px;
-  color: var(--secondary-text);
+  min-width: 80px;
+  color: var(--text-secondary);
+  font-size: var(--font-sm);
+  font-weight: var(--font-medium);
 }
 
 .strategy-params {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
 .param-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
 .risk-settings {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
 .risk-item {
@@ -484,137 +494,267 @@ const handleResultDialogClose = (done: Function) => {
 }
 
 .risk-item label {
-  min-width: 80px;
-  color: var(--secondary-text);
+  min-width: 100px;
+  color: var(--text-secondary);
+  font-size: var(--font-sm);
+  font-weight: var(--font-medium);
 }
 
 .output-settings {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
 .backtest-result {
-  padding: 20px;
+  padding: 24px;
 }
 
 .result-summary {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+  margin-bottom: 32px;
 }
 
 .summary-item {
   text-align: center;
-  padding: 16px;
-  background: var(--secondary-bg);
-  border-radius: 8px;
+  padding: 20px;
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
 }
 
 .summary-label {
-  font-size: 12px;
-  color: var(--muted-text);
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
   margin-bottom: 8px;
+  font-weight: var(--font-medium);
 }
 
 .summary-value {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--secondary-text);
+  font-size: var(--font-xl);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
 }
 
 .result-actions {
   display: flex;
   justify-content: center;
-  gap: 12px;
+  gap: 16px;
 }
 
 .positive {
-  color: var(--positive-color) !important;
+  color: var(--market-up) !important;
 }
 
 .negative {
-  color: var(--negative-color) !important;
+  color: var(--market-down) !important;
 }
 
 /* Element Plus 组件样式覆盖 */
 :deep(.el-form-item__label) {
-  color: var(--secondary-text);
+  color: var(--text-secondary);
+  font-weight: var(--font-medium);
+  font-size: var(--font-sm);
 }
 
 :deep(.el-input__wrapper) {
-  background: var(--card-bg);
-  border-color: var(--border-color);
+  background: var(--input-bg);
+  border-color: var(--input-border);
+  border-radius: var(--radius-md);
 }
 
 :deep(.el-input__inner) {
-  color: var(--secondary-text);
+  color: var(--input-text);
+  font-size: var(--font-base);
+}
+
+:deep(.el-input__wrapper:hover) {
+  border-color: var(--input-hover);
+}
+
+:deep(.el-input__wrapper.is-focus) {
+  border-color: var(--input-focus);
+  box-shadow: 0 0 0 2px var(--glow-primary);
 }
 
 :deep(.el-select .el-input__wrapper) {
-  background: var(--card-bg);
-  border-color: var(--border-color);
+  background: var(--input-bg);
+  border-color: var(--input-border);
 }
 
 :deep(.el-date-editor.el-input__wrapper) {
-  background: var(--card-bg);
-  border-color: var(--border-color);
+  background: var(--input-bg);
+  border-color: var(--input-border);
+}
+
+:deep(.el-input-number .el-input__wrapper) {
+  background: var(--input-bg);
+  border-color: var(--input-border);
 }
 
 :deep(.el-collapse) {
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
 }
 
 :deep(.el-collapse-item__header) {
-  background: var(--card-bg);
-  color: var(--secondary-text);
-  border-bottom: 1px solid var(--border-color);
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-primary);
+  font-size: var(--font-base);
+  font-weight: var(--font-medium);
 }
 
 :deep(.el-collapse-item__content) {
-  background: var(--card-bg);
-  color: var(--secondary-text);
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  padding: 20px;
 }
 
 :deep(.el-checkbox__label) {
-  color: var(--secondary-text);
+  color: var(--text-secondary);
+  font-size: var(--font-base);
 }
 
+:deep(.el-checkbox__input.is-checked .el-checkbox__inner) {
+  background-color: var(--btn-primary);
+  border-color: var(--btn-primary);
+}
+
+:deep(.el-checkbox__inner:hover) {
+  border-color: var(--btn-primary);
+}
+
+/* 按钮样式 */
 :deep(.el-button) {
-  background: var(--card-bg);
-  border-color: var(--border-color);
-  color: var(--secondary-text);
+  border-radius: var(--radius-md);
+  font-weight: var(--font-medium);
+  font-size: var(--font-base);
+  transition: all var(--transition-normal) var(--ease-out);
+  border: 1px solid var(--border-primary);
 }
 
 :deep(.el-button:hover) {
-  background: var(--hover-bg);
-  border-color: var(--primary-text);
-  color: var(--primary-text);
+  background: var(--bg-hover);
+  border-color: var(--border-secondary);
+  color: var(--text-primary);
 }
 
 :deep(.el-button--primary) {
-  background: var(--brand-secondary);
-  border-color: var(--brand-secondary);
-  color: var(--primary-bg);
+  background: var(--btn-primary);
+  border-color: var(--btn-primary);
+  color: white;
 }
 
+:deep(.el-button--primary:hover) {
+  background: var(--btn-primary-hover);
+  border-color: var(--btn-primary-hover);
+  box-shadow: var(--glow-primary);
+}
+
+:deep(.el-button--danger) {
+  background: var(--market-down);
+  border-color: var(--market-down);
+  color: white;
+}
+
+:deep(.el-button--danger:hover) {
+  background: #e02e24;
+  border-color: #e02e24;
+  box-shadow: var(--glow-danger);
+}
+
+:deep(.el-button .el-icon) {
+  margin-right: 4px;
+}
+
+/* 对话框样式 */
 :deep(.el-dialog) {
-  background: var(--secondary-bg);
-  border: 1px solid var(--border-color);
+  background: var(--surface-overlay);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-premium-lg);
 }
 
 :deep(.el-dialog__header) {
-  background: var(--card-bg);
-  border-bottom: 1px solid var(--border-color);
+  background: var(--surface-elevated);
+  border-bottom: 1px solid var(--border-primary);
+  padding: 20px 24px;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
 }
 
 :deep(.el-dialog__title) {
-  color: var(--primary-text);
+  color: var(--text-primary);
+  font-size: var(--font-lg);
+  font-weight: var(--font-semibold);
 }
 
 :deep(.el-dialog__body) {
-  background: var(--secondary-bg);
-  color: var(--secondary-text);
+  background: var(--bg-primary);
+  padding: 24px;
+  color: var(--text-primary);
+}
+
+:deep(.el-dialog__footer) {
+  background: var(--surface-elevated);
+  border-top: 1px solid var(--border-primary);
+  padding: 16px 24px;
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .backtest-settings {
+    padding: 12px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 12px 16px;
+  }
+
+  .page-header h2 {
+    font-size: var(--font-xl);
+  }
+
+  .backtest-content {
+    padding: 16px;
+  }
+
+  .fee-settings {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .result-summary {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+  }
+
+  .summary-item {
+    padding: 16px;
+  }
+
+  .result-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  :deep(.el-form-item__label) {
+    float: none;
+    display: block;
+    text-align: left;
+    margin-bottom: 8px;
+  }
+
+  :deep(.el-form-item__content) {
+    margin-left: 0 !important;
+  }
 }
 </style>

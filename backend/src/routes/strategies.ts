@@ -11,8 +11,14 @@ router.get('/', [
   authenticate,
   query('page').optional().isInt({ min: 1 }),
   query('limit').optional().isInt({ min: 1, max: 100 }),
-  query('status').optional().isIn(['draft', 'active', 'inactive', 'archived']),
-  query('type').optional().isIn(['technical', 'statistical', 'ml', 'high_frequency'])
+  query('status').optional().custom((value) => {
+    if (!value || value === '') return true;
+    return ['draft', 'active', 'inactive', 'archived'].includes(value);
+  }),
+  query('type').optional().custom((value) => {
+    if (!value || value === '') return true;
+    return ['technical', 'statistical', 'ml', 'high_frequency'].includes(value);
+  })
 ], asyncHandler(async (req: AuthRequest, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -32,8 +38,8 @@ router.get('/', [
     userId: req.user!.id
   };
 
-  if (status) where.status = status;
-  if (type) where.type = type;
+  if (status && status !== '') where.status = status;
+  if (type && type !== '') where.type = type;
 
   const [strategies, total] = await Promise.all([
     prisma.strategy.findMany({
