@@ -1,10 +1,10 @@
 <template>
-  <div class="enhanced-dashboard">
+  <div class="enhanced-dashboard clean-theme">
     <!-- Market Overview Header -->
-    <div class="market-header glass-enhanced animate-fade-in">
+    <div class="market-header clean-card animate-fade-in">
       <div class="header-content">
         <div class="market-title">
-          <h1 class="gradient-text">量化交易控制台</h1>
+          <h1>量化交易控制台</h1>
           <p class="market-subtitle">Quantitative Trading Console</p>
         </div>
         <div class="market-status">
@@ -25,7 +25,7 @@
             <el-icon><trend-charts /></el-icon>
           </div>
           <div class="stat-content">
-            <div class="stat-value gradient-success">+12.5%</div>
+            <div class="stat-value positive-text">+12.5%</div>
             <div class="stat-label">今日收益率</div>
           </div>
         </div>
@@ -55,7 +55,7 @@
       <!-- Left Column -->
       <div class="dashboard-column left">
         <!-- Strategy Performance Card -->
-        <div class="performance-card glass-enhanced animate-slide-in-up delay-1">
+        <div class="performance-card clean-card animate-slide-in-up delay-1">
           <div class="card-header">
             <h3>策略表现</h3>
             <div class="header-actions">
@@ -110,7 +110,7 @@
         </div>
 
         <!-- Active Strategies Card -->
-        <div class="strategies-card glass-enhanced animate-slide-in-up delay-2">
+        <div class="strategies-card clean-card animate-slide-in-up delay-2">
           <div class="card-header">
             <h3>运行中策略</h3>
             <el-button size="small" @click="showStrategyDialog" class="primary-button">
@@ -167,7 +167,7 @@
       <!-- Center Column -->
       <div class="dashboard-column center">
         <!-- Trading Chart Card -->
-        <div class="chart-card glass-enhanced animate-slide-in-up delay-1">
+        <div class="chart-card clean-card animate-slide-in-up delay-1">
           <div class="card-header">
             <h3>实时行情</h3>
             <div class="chart-controls">
@@ -221,7 +221,7 @@
         </div>
 
         <!-- Order Book Card -->
-        <div class="orderbook-card glass-enhanced animate-slide-in-up delay-2">
+        <div class="orderbook-card clean-card animate-slide-in-up delay-2">
           <div class="card-header">
             <h3>订单簿</h3>
             <div class="orderbook-summary">
@@ -270,7 +270,7 @@
       <!-- Right Column -->
       <div class="dashboard-column right">
         <!-- Quick Trade Card -->
-        <div class="quick-trade-card glass-enhanced animate-slide-in-up delay-1">
+        <div class="quick-trade-card clean-card animate-slide-in-up delay-1">
           <div class="card-header">
             <h3>快速交易</h3>
           </div>
@@ -360,7 +360,7 @@
         </div>
 
         <!-- Recent Trades Card -->
-        <div class="recent-trades-card glass-enhanced animate-slide-in-up delay-2">
+        <div class="recent-trades-card clean-card animate-slide-in-up delay-2">
           <div class="card-header">
             <h3>最近成交</h3>
           </div>
@@ -380,7 +380,7 @@
         </div>
 
         <!-- Market News Card -->
-        <div class="news-card glass-enhanced animate-slide-in-up delay-3">
+        <div class="news-card clean-card animate-slide-in-up delay-3">
           <div class="card-header">
             <h3>市场动态</h3>
           </div>
@@ -641,23 +641,24 @@ onUnmounted(() => {
   height: 100%;
   overflow-y: auto;
   background: var(--bg-primary);
+  min-height: 100vh;
 }
 
 /* Market Header */
 .market-header {
-  background: var(--surface-elevated);
+  background: var(--surface-primary);
   border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  padding: 20px;
+  border-radius: var(--radius-xl);
+  padding: 24px;
   margin-bottom: 24px;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-sm);
 }
 
 .header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .market-title h1 {
@@ -668,8 +669,8 @@ onUnmounted(() => {
 }
 
 .market-subtitle {
-  margin: 4px 0 0 0;
-  font-size: var(--font-sm);
+  margin: 8px 0 0 0;
+  font-size: var(--font-base);
   color: var(--text-secondary);
 }
 
@@ -685,6 +686,9 @@ onUnmounted(() => {
   gap: 8px;
   color: var(--text-secondary);
   font-size: var(--font-sm);
+  padding: 8px 16px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-full);
 }
 
 .status-dot {
@@ -692,7 +696,6 @@ onUnmounted(() => {
   height: 8px;
   border-radius: 50%;
   background: var(--market-up);
-  animation: pulse 2s infinite;
 }
 
 .status-indicator.online .status-dot {
@@ -703,17 +706,30 @@ onUnmounted(() => {
   font-family: var(--font-mono);
   font-size: var(--font-sm);
   color: var(--text-secondary);
+  padding: 8px 16px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-full);
 }
 
 .quick-stats {
   display: flex;
-  gap: 24px;
+  gap: 20px;
+  flex-wrap: wrap;
 }
 
 .stat-item {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
+  padding: 16px 20px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  transition: all var(--transition-normal) var(--ease-out);
+}
+
+.stat-item:hover {
+  background: var(--bg-hover);
+  transform: translateY(-2px);
 }
 
 .stat-icon {
@@ -743,12 +759,13 @@ onUnmounted(() => {
   font-size: var(--font-xl);
   font-weight: var(--font-bold);
   color: var(--text-primary);
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 
 .stat-content .stat-label {
-  font-size: var(--font-xs);
+  font-size: var(--font-sm);
   color: var(--text-secondary);
+  font-weight: var(--font-medium);
 }
 
 /* Dashboard Grid */
@@ -763,20 +780,6 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: 20px;
-}
-
-/* Bloomberg Style Card */
-.bloomberg-card {
-  background: var(--surface-elevated);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  transition: all var(--transition-normal) var(--ease-out);
-}
-
-.bloomberg-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
 }
 
 /* Card Headers */
@@ -803,10 +806,10 @@ onUnmounted(() => {
 
 /* Buttons */
 .icon-button {
-  background: var(--surface-elevated);
+  background: var(--btn-secondary);
   border: 1px solid var(--border-primary);
   color: var(--text-secondary);
-  padding: 6px;
+  padding: 8px;
   border-radius: var(--radius-md);
   transition: all var(--transition-normal) var(--ease-out);
 }
@@ -1314,18 +1317,13 @@ onUnmounted(() => {
   color: #00d4ff;
 }
 
-/* Animations */
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
+/* Simplified Animations */
 .animate-fade-in {
-  animation: fadeIn 0.5s ease-out;
+  animation: fadeIn 0.3s ease-out;
 }
 
 .animate-slide-in-up {
-  animation: slideInUp 0.6s ease-out;
+  animation: slideInUp 0.4s ease-out;
 }
 
 @keyframes fadeIn {
@@ -1336,7 +1334,7 @@ onUnmounted(() => {
 @keyframes slideInUp {
   from { 
     opacity: 0; 
-    transform: translateY(30px); 
+    transform: translateY(10px); 
   }
   to { 
     opacity: 1; 
@@ -1344,23 +1342,19 @@ onUnmounted(() => {
   }
 }
 
-.delay-1 { animation-delay: 0.1s; }
-.delay-2 { animation-delay: 0.2s; }
-.delay-3 { animation-delay: 0.3s; }
+.delay-1 { animation-delay: 0.05s; }
+.delay-2 { animation-delay: 0.1s; }
+.delay-3 { animation-delay: 0.15s; }
 
 /* Utility Classes */
-.gradient-text {
-  background: linear-gradient(135deg, #00d4ff, #00ff88);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.positive-text {
+  color: var(--market-up);
+  font-weight: var(--font-semibold);
 }
 
-.gradient-success {
-  background: linear-gradient(135deg, #00ff88, #00cc6a);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.negative-text {
+  color: var(--market-down);
+  font-weight: var(--font-semibold);
 }
 
 /* Responsive Design */
@@ -1422,26 +1416,23 @@ onUnmounted(() => {
   }
 }
 
-/* Element Plus 组件样式覆盖 */
+/* Element Plus 组件样式覆盖 - 简洁版本 */
 :deep(.el-card) {
-  background: var(--surface-elevated);
+  background: var(--surface-primary);
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-sm);
   transition: all var(--transition-normal) var(--ease-out);
 }
 
 :deep(.el-card:hover) {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-md);
 }
 
 :deep(.el-card__header) {
-  background: var(--surface-elevated);
+  background: transparent;
   border-bottom: 1px solid var(--border-primary);
   padding: 16px 20px;
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
 }
 
 :deep(.el-card__body) {
@@ -1470,16 +1461,6 @@ onUnmounted(() => {
   box-shadow: var(--glow-primary);
 }
 
-:deep(.el-select .el-input__wrapper) {
-  background: var(--input-bg);
-  border-color: var(--input-border);
-  border-radius: var(--radius-md);
-}
-
-:deep(.el-select .el-input__inner) {
-  color: var(--input-text);
-}
-
 :deep(.el-input__wrapper) {
   background: var(--input-bg);
   border-color: var(--input-border);
@@ -1496,21 +1477,26 @@ onUnmounted(() => {
 
 :deep(.el-input__wrapper.is-focus) {
   border-color: var(--input-focus);
-  box-shadow: 0 0 0 2px var(--glow-primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+:deep(.el-select .el-input__wrapper) {
+  background: var(--input-bg);
+  border-color: var(--input-border);
+  border-radius: var(--radius-md);
 }
 
 :deep(.el-dialog) {
-  background: var(--surface-overlay);
+  background: var(--surface-primary);
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-premium-lg);
+  box-shadow: var(--shadow-lg);
 }
 
 :deep(.el-dialog__header) {
-  background: var(--surface-elevated);
+  background: transparent;
   border-bottom: 1px solid var(--border-primary);
   padding: 20px 24px;
-  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
 }
 
 :deep(.el-dialog__title) {
@@ -1520,16 +1506,15 @@ onUnmounted(() => {
 }
 
 :deep(.el-dialog__body) {
-  background: var(--bg-primary);
+  background: transparent;
   padding: 24px;
   color: var(--text-primary);
 }
 
 :deep(.el-dialog__footer) {
-  background: var(--surface-elevated);
+  background: transparent;
   border-top: 1px solid var(--border-primary);
   padding: 16px 24px;
-  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
 }
 
 :deep(.el-table) {
@@ -1538,7 +1523,7 @@ onUnmounted(() => {
 }
 
 :deep(.el-table th) {
-  background: var(--surface-elevated);
+  background: var(--bg-secondary);
   border-bottom: 1px solid var(--border-primary);
   color: var(--text-secondary);
   font-weight: var(--font-semibold);

@@ -1,640 +1,678 @@
 <template>
-  <div class="edit-strategy">
-    <div class="page-header">
-      <h2>编辑策略</h2>
-      <el-button @click="$router.go(-1)">返回</el-button>
+  <div class="strategy-editor-container">
+    <div class="editor-header">
+      <h1>{{ isNew ? '创建策略' : '编辑策略' }}</h1>
+      <div class="action-buttons">
+        <el-button type="primary" @click="saveStrategy" :loading="saving">保存策略</el-button>
+        <el-button @click="cancel">取消</el-button>
+      </div>
     </div>
 
-    <el-card>
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="120px">
-        <el-form-item label="策略名称" prop="name">
-          <el-input
-            v-model="form.name"
-            placeholder="请输入策略名称"
-            maxlength="50"
-            show-word-limit
-          />
-        </el-form-item>
-
-        <el-form-item label="策略描述" prop="description">
-          <el-input
-            v-model="form.description"
-            type="textarea"
-            :rows="4"
-            placeholder="请输入策略描述"
-            maxlength="500"
-            show-word-limit
-          />
-        </el-form-item>
-
-        <el-form-item label="策略类型" prop="type">
-          <el-select v-model="form.type" placeholder="请选择策略类型">
-            <el-option label="趋势跟踪" value="trend" />
-            <el-option label="均值回归" value="mean_reversion" />
-            <el-option label="套利" value="arbitrage" />
-            <el-option label="高频交易" value="high_frequency" />
-            <el-option label="机器学习" value="machine_learning" />
-          </el-select>
-        </el-form-item>
-
-        <el-form-item label="交易品种" prop="symbol">
-          <el-select
-            v-model="form.symbol"
-            placeholder="请选择交易品种"
-            filterable
-            allow-create
-          >
-            <el-option label="BTC/USDT" value="BTC/USDT" />
-            <el-option label="ETH/USDT" value="ETH/USDT" />
-            <el-option label="BNB/USDT" value="BNB/USDT" />
-            <el-option label="ADA/USDT" value="ADA/USDT" />
-            <el-option label="DOT/USDT" value="DOT/USDT" />
-          </el-select>
-        </el-form-item>
-
-        <el-form-item label="时间周期" prop="timeframe">
-          <el-select v-model="form.timeframe" placeholder="请选择时间周期">
-            <el-option label="1分钟" value="1m" />
-            <el-option label="5分钟" value="5m" />
-            <el-option label="15分钟" value="15m" />
-            <el-option label="30分钟" value="30m" />
-            <el-option label="1小时" value="1h" />
-            <el-option label="4小时" value="4h" />
-            <el-option label="1天" value="1d" />
-          </el-select>
-        </el-form-item>
-
-        <el-form-item label="初始资金" prop="initialCapital">
-          <el-input-number
-            v-model="form.initialCapital"
-            :min="100"
-            :max="1000000"
-            :step="100"
-            :precision="2"
-          />
-          <span style="margin-left: 10px">USDT</span>
-        </el-form-item>
-
-        <el-form-item label="风险参数">
-          <el-row :gutter="20">
-            <el-col :span="8">
-              <el-form-item label="最大仓位" prop="maxPosition">
-                <el-input-number
-                  v-model="form.maxPosition"
-                  :min="1"
-                  :max="100"
-                  :step="1"
-                  :precision="0"
-                />
-                <span style="margin-left: 10px">%</span>
-              </el-form-item>
-            </el-col>
-            <el-col :span="8">
-              <el-form-item label="止损比例" prop="stopLoss">
-                <el-input-number
-                  v-model="form.stopLoss"
-                  :min="0.1"
-                  :max="10"
-                  :step="0.1"
-                  :precision="1"
-                />
-                <span style="margin-left: 10px">%</span>
-              </el-form-item>
-            </el-col>
-            <el-col :span="8">
-              <el-form-item label="止盈比例" prop="takeProfit">
-                <el-input-number
-                  v-model="form.takeProfit"
-                  :min="0.1"
-                  :max="20"
-                  :step="0.1"
-                  :precision="1"
-                />
-                <span style="margin-left: 10px">%</span>
-              </el-form-item>
-            </el-col>
-          </el-row>
-        </el-form-item>
-
-        <el-form-item label="策略代码" prop="code">
-          <div class="code-editor">
-            <el-input
-              v-model="form.code"
-              type="textarea"
-              :rows="20"
-              placeholder="请输入策略代码"
+    <el-form 
+      ref="strategyForm" 
+      :model="strategy" 
+      :rules="rules" 
+      label-position="top" 
+      class="strategy-form"
+      v-loading="loading"
+    >
+      <el-row :gutter="24">
+        <el-col :span="12">
+          <el-form-item label="策略名称" prop="name" required>
+            <el-input 
+              v-model="strategy.name" 
+              placeholder="输入策略名称" 
+              maxlength="50"
+              show-word-limit
             />
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="策略类型" prop="type" required>
+            <el-select 
+              v-model="strategy.type" 
+              placeholder="选择策略类型"
+              class="full-width"
+            >
+              <el-option v-for="type in strategyTypes" :key="type.value" :label="type.label" :value="type.value" />
+            </el-select>
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-form-item label="策略描述" prop="description">
+        <el-input 
+          v-model="strategy.description" 
+          type="textarea" 
+          :rows="4" 
+          placeholder="输入策略描述"
+          maxlength="500"
+          show-word-limit
+        />
+      </el-form-item>
+
+      <el-divider content-position="left">交易参数</el-divider>
+
+      <el-row :gutter="24">
+        <el-col :span="12">
+          <el-form-item label="交易品种" prop="symbol" required>
+            <el-select 
+              v-model="strategy.symbol" 
+              placeholder="选择交易品种"
+              class="full-width"
+              filterable
+            >
+              <el-option v-for="symbol in symbols" :key="symbol.value" :label="symbol.label" :value="symbol.value" />
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="时间周期" prop="timeframe" required>
+            <el-select 
+              v-model="strategy.timeframe" 
+              placeholder="选择时间周期"
+              class="full-width"
+            >
+              <el-option v-for="tf in timeframes" :key="tf.value" :label="tf.label" :value="tf.value" />
+            </el-select>
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-row :gutter="24">
+        <el-col :span="12">
+          <el-form-item label="初始资金" prop="initialCapital" required>
+            <el-input-number 
+              v-model="strategy.initialCapital" 
+              :min="1000" 
+              :max="10000000" 
+              :step="1000"
+              class="full-width"
+              controls-position="right"
+            />
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="手续费率 (%)" prop="commissionRate">
+            <el-input-number 
+              v-model="strategy.commissionRate" 
+              :min="0" 
+              :max="5" 
+              :step="0.01"
+              :precision="2"
+              class="full-width"
+              controls-position="right"
+            />
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-divider content-position="left">风险参数</el-divider>
+
+      <el-row :gutter="24">
+        <el-col :span="8">
+          <el-form-item label="最大仓位" prop="maxPosition" required>
+            <el-input-number 
+              v-model="strategy.maxPosition" 
+              :min="1" 
+              :max="100" 
+              :step="1"
+              class="full-width"
+              controls-position="right"
+            />
+          </el-form-item>
+        </el-col>
+        <el-col :span="8">
+          <el-form-item label="止损比例 (%)" prop="stopLossRatio">
+            <el-input-number 
+              v-model="strategy.stopLossRatio" 
+              :min="0.1" 
+              :max="20" 
+              :step="0.1"
+              :precision="1"
+              class="full-width"
+              controls-position="right"
+            />
+          </el-form-item>
+        </el-col>
+        <el-col :span="8">
+          <el-form-item label="止盈比例 (%)" prop="takeProfitRatio">
+            <el-input-number 
+              v-model="strategy.takeProfitRatio" 
+              :min="0.1" 
+              :max="100" 
+              :step="0.1"
+              :precision="1"
+              class="full-width"
+              controls-position="right"
+            />
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-form-item label="策略代码" prop="code" required>
+        <div class="code-editor-wrapper">
+          <div class="code-editor-header">
+            <span>Python 策略代码</span>
+            <div class="code-actions">
+              <el-tooltip content="代码模板">
+                <el-button size="small" @click="insertTemplate" icon="Document">模板</el-button>
+              </el-tooltip>
+              <el-tooltip content="格式化代码">
+                <el-button size="small" @click="formatCode" icon="Magic-stick">格式化</el-button>
+              </el-tooltip>
+              <el-tooltip content="全屏编辑">
+                <el-button size="small" @click="toggleFullscreen" icon="FullScreen">全屏</el-button>
+              </el-tooltip>
+            </div>
           </div>
-        </el-form-item>
+          <div class="code-editor" ref="codeEditor"></div>
+        </div>
+      </el-form-item>
+    </el-form>
 
-        <el-form-item>
-          <el-button type="primary" @click="handleSubmit" :loading="saving"
-            >保存策略</el-button
-          >
-          <el-button @click="handleReset">重置</el-button>
-          <el-button @click="handleBacktest">回测</el-button>
-          <el-button @click="handlePreview">预览</el-button>
-        </el-form-item>
-      </el-form>
-    </el-card>
-
-    <!-- 预览对话框 -->
-    <el-dialog v-model="previewVisible" title="策略预览" width="80%">
-      <div class="preview-content">
-        <h4>基本信息</h4>
-        <el-descriptions :column="2" border>
-          <el-descriptions-item label="策略名称">{{
-            form.name
-          }}</el-descriptions-item>
-          <el-descriptions-item label="策略类型">{{
-            getTypeText(form.type)
-          }}</el-descriptions-item>
-          <el-descriptions-item label="交易品种">{{
-            form.symbol
-          }}</el-descriptions-item>
-          <el-descriptions-item label="时间周期">{{
-            form.timeframe
-          }}</el-descriptions-item>
-          <el-descriptions-item label="初始资金"
-            >${{ form.initialCapital.toLocaleString() }}</el-descriptions-item
-          >
-          <el-descriptions-item label="最大仓位"
-            >{{ form.maxPosition }}%</el-descriptions-item
-          >
-        </el-descriptions>
-
-        <h4 style="margin-top: 20px">策略描述</h4>
-        <p>{{ form.description }}</p>
-
-        <h4 style="margin-top: 20px">风险参数</h4>
-        <el-descriptions :column="3" border>
-          <el-descriptions-item label="止损比例"
-            >{{ form.stopLoss }}%</el-descriptions-item
-          >
-          <el-descriptions-item label="止盈比例"
-            >{{ form.takeProfit }}%</el-descriptions-item
-          >
-        </el-descriptions>
-      </div>
+    <!-- 全屏代码编辑器对话框 -->
+    <el-dialog
+      v-model="fullscreenCodeEditor"
+      title="策略代码编辑"
+      fullscreen
+      :show-close="true"
+      :close-on-click-modal="false"
+      :close-on-press-escape="true"
+    >
+      <div class="fullscreen-editor" ref="fullscreenEditor"></div>
       <template #footer>
-        <el-button @click="previewVisible = false">关闭</el-button>
+        <div class="dialog-footer">
+          <el-button @click="fullscreenCodeEditor = false">取消</el-button>
+          <el-button type="primary" @click="applyFullscreenCode">应用代码</el-button>
+        </div>
       </template>
     </el-dialog>
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref, reactive, onMounted } from "vue";
-import { useRouter, useRoute } from "vue-router";
-import { ElMessage, type FormInstance, type FormRules } from "element-plus";
+<script>
+import { ref, reactive, onMounted, nextTick } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import { useStrategyStore } from '@/stores/strategy';
+import CodeMirror from 'codemirror';
+import 'codemirror/lib/codemirror.css';
+import 'codemirror/theme/monokai.css';
+import 'codemirror/mode/python/python';
+import 'codemirror/addon/edit/matchbrackets';
+import 'codemirror/addon/edit/closebrackets';
+import 'codemirror/addon/selection/active-line';
+import 'codemirror/addon/fold/foldgutter';
+import 'codemirror/addon/fold/foldgutter.css';
+import 'codemirror/addon/fold/brace-fold';
+import 'codemirror/addon/fold/indent-fold';
+import 'codemirror/addon/hint/show-hint';
+import 'codemirror/addon/hint/show-hint.css';
+import 'codemirror/addon/hint/python-hint';
 
-const router = useRouter();
-const route = useRoute();
-const formRef = ref<FormInstance>();
-const saving = ref(false);
-const previewVisible = ref(false);
-
-const form = reactive({
-  name: "",
-  description: "",
-  type: "",
-  symbol: "",
-  timeframe: "",
-  initialCapital: 10000,
-  maxPosition: 10,
-  stopLoss: 2,
-  takeProfit: 3,
-  code: "",
-});
-
-const originalForm = reactive({ ...form });
-
-const rules: FormRules = {
-  name: [
-    { required: true, message: "请输入策略名称", trigger: "blur" },
-    {
-      min: 2,
-      max: 50,
-      message: "策略名称长度在 2 到 50 个字符",
-      trigger: "blur",
-    },
-  ],
-  description: [
-    { required: true, message: "请输入策略描述", trigger: "blur" },
-    { max: 500, message: "策略描述最多500个字符", trigger: "blur" },
-  ],
-  type: [{ required: true, message: "请选择策略类型", trigger: "change" }],
-  symbol: [{ required: true, message: "请选择交易品种", trigger: "change" }],
-  timeframe: [{ required: true, message: "请选择时间周期", trigger: "change" }],
-  initialCapital: [
-    { required: true, message: "请输入初始资金", trigger: "blur" },
-    {
-      type: "number",
-      min: 100,
-      message: "初始资金不能少于100",
-      trigger: "blur",
-    },
-  ],
-  maxPosition: [
-    { required: true, message: "请输入最大仓位", trigger: "blur" },
-    {
-      type: "number",
-      min: 1,
-      max: 100,
-      message: "最大仓位在1-100之间",
-      trigger: "blur",
-    },
-  ],
-  stopLoss: [
-    { required: true, message: "请输入止损比例", trigger: "blur" },
-    {
-      type: "number",
-      min: 0.1,
-      max: 10,
-      message: "止损比例在0.1-10之间",
-      trigger: "blur",
-    },
-  ],
-  takeProfit: [
-    { required: true, message: "请输入止盈比例", trigger: "blur" },
-    {
-      type: "number",
-      min: 0.1,
-      max: 20,
-      message: "止盈比例在0.1-20之间",
-      trigger: "blur",
-    },
-  ],
-  code: [{ required: true, message: "请输入策略代码", trigger: "blur" }],
-};
-
-const fetchStrategy = async () => {
-  try {
-    // TODO: 根据路由参数获取策略详情
-    const strategyId = route.params.id as string;
-
-    // 模拟数据
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    // 填充表单数据
-    Object.assign(form, {
-      name: "BTC趋势跟踪策略",
-      description:
-        "基于移动平均线的趋势跟踪策略，当短期均线上穿长期均线时买入，下穿时卖出。",
-      type: "trend",
-      symbol: "BTC/USDT",
-      timeframe: "1h",
-      initialCapital: 10000,
-      maxPosition: 20,
-      stopLoss: 2,
-      takeProfit: 3,
-      code: `// BTC趋势跟踪策略
-const strategy = {
-  name: 'BTC趋势跟踪策略',
-  timeframe: '1h',
-  symbols: ['BTC/USDT'],
-  
-  init: function() {
-    this.shortMA = this.MA(20);
-    this.longMA = this.MA(50);
-  },
-  
-  onTick: function() {
-    const shortMA = this.shortMA.value();
-    const longMA = this.longMA.value();
+export default {
+  name: 'EditStrategy',
+  setup() {
+    const router = useRouter();
+    const route = useRoute();
+    const strategyStore = useStrategyStore();
+    const strategyForm = ref(null);
+    const codeEditor = ref(null);
+    const fullscreenEditor = ref(null);
+    const fullscreenCodeEditor = ref(false);
+    const isNew = ref(route.name === 'CreateStrategy');
+    const loading = ref(false);
+    const saving = ref(false);
     
-    if (shortMA > longMA && !this.hasPosition()) {
-      this.buy('BTC/USDT', 0.1);
-    } else if (shortMA < longMA && this.hasPosition()) {
-      this.sell('BTC/USDT', 0.1);
-    }
-  }
-};`,
+    let editor = null;
+    let fsEditor = null;
+
+    const strategy = reactive({
+      id: route.params.id || null,
+      name: '',
+      description: '',
+      type: '',
+      symbol: '',
+      timeframe: '',
+      initialCapital: 10000,
+      commissionRate: 0.1,
+      maxPosition: 10,
+      stopLossRatio: 2.0,
+      takeProfitRatio: 5.0,
+      code: '',
     });
 
-    // 保存原始数据
-    Object.assign(originalForm, form);
-  } catch (error) {
-    ElMessage.error("获取策略详情失败");
+    const strategyTypes = [
+      { value: 'trend_following', label: '趋势跟踪' },
+      { value: 'mean_reversion', label: '均值回归' },
+      { value: 'breakout', label: '突破策略' },
+      { value: 'statistical_arbitrage', label: '统计套利' },
+      { value: 'machine_learning', label: '机器学习' },
+      { value: 'custom', label: '自定义策略' },
+    ];
+
+    const symbols = [
+      { value: 'BTCUSDT', label: 'BTC/USDT - 比特币' },
+      { value: 'ETHUSDT', label: 'ETH/USDT - 以太坊' },
+      { value: 'BNBUSDT', label: 'BNB/USDT - 币安币' },
+      { value: '000001.SH', label: '上证指数' },
+      { value: '399001.SZ', label: '深证成指' },
+      { value: '399006.SZ', label: '创业板指' },
+    ];
+
+    const timeframes = [
+      { value: '1m', label: '1分钟' },
+      { value: '5m', label: '5分钟' },
+      { value: '15m', label: '15分钟' },
+      { value: '30m', label: '30分钟' },
+      { value: '1h', label: '1小时' },
+      { value: '4h', label: '4小时' },
+      { value: '1d', label: '日线' },
+      { value: '1w', label: '周线' },
+    ];
+
+    const rules = {
+      name: [
+        { required: true, message: '请输入策略名称', trigger: 'blur' },
+        { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
+      ],
+      type: [
+        { required: true, message: '请选择策略类型', trigger: 'change' }
+      ],
+      symbol: [
+        { required: true, message: '请选择交易品种', trigger: 'change' }
+      ],
+      timeframe: [
+        { required: true, message: '请选择时间周期', trigger: 'change' }
+      ],
+      initialCapital: [
+        { required: true, message: '请输入初始资金', trigger: 'blur' },
+        { type: 'number', min: 1000, message: '初始资金不能小于1000', trigger: 'blur' }
+      ],
+      code: [
+        { required: true, message: '请输入策略代码', trigger: 'blur' }
+      ]
+    };
+
+    // 初始化代码编辑器
+    const initCodeEditor = () => {
+      nextTick(() => {
+        if (codeEditor.value) {
+          editor = CodeMirror(codeEditor.value, {
+            mode: 'python',
+            theme: 'monokai',
+            lineNumbers: true,
+            lineWrapping: true,
+            matchBrackets: true,
+            autoCloseBrackets: true,
+            styleActiveLine: true,
+            foldGutter: true,
+            gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter'],
+            indentUnit: 4,
+            tabSize: 4,
+            indentWithTabs: false,
+            extraKeys: {
+              'Tab': 'indentMore',
+              'Shift-Tab': 'indentLess',
+              'Ctrl-Space': 'autocomplete'
+            }
+          });
+          
+          editor.setValue(strategy.code || getDefaultTemplate());
+          editor.on('change', (cm) => {
+            strategy.code = cm.getValue();
+          });
+        }
+      });
+    };
+
+    // 初始化全屏代码编辑器
+    const initFullscreenEditor = () => {
+      if (fullscreenEditor.value && !fsEditor) {
+        fsEditor = CodeMirror(fullscreenEditor.value, {
+          mode: 'python',
+          theme: 'monokai',
+          lineNumbers: true,
+          lineWrapping: true,
+          matchBrackets: true,
+          autoCloseBrackets: true,
+          styleActiveLine: true,
+          foldGutter: true,
+          gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter'],
+          indentUnit: 4,
+          tabSize: 4,
+          indentWithTabs: false,
+          extraKeys: {
+            'Tab': 'indentMore',
+            'Shift-Tab': 'indentLess',
+            'Ctrl-Space': 'autocomplete'
+          }
+        });
+        
+        fsEditor.setValue(editor ? editor.getValue() : strategy.code);
+      }
+    };
+
+    // 切换全屏代码编辑器
+    const toggleFullscreen = () => {
+      fullscreenCodeEditor.value = true;
+      nextTick(() => {
+        initFullscreenEditor();
+      });
+    };
+
+    // 应用全屏编辑器的代码
+    const applyFullscreenCode = () => {
+      if (fsEditor) {
+        const code = fsEditor.getValue();
+        strategy.code = code;
+        if (editor) {
+          editor.setValue(code);
+        }
+      }
+      fullscreenCodeEditor.value = false;
+    };
+
+    // 获取默认模板
+    const getDefaultTemplate = () => {
+      return `# 策略名称: ${strategy.name || '我的量化策略'}
+# 交易品种: ${strategy.symbol || 'BTCUSDT'}
+# 时间周期: ${strategy.timeframe || '1h'}
+
+import pandas as pd
+import numpy as np
+from strategy_base import StrategyBase
+
+class MyStrategy(StrategyBase):
+    """
+    策略描述:
+    ${strategy.description || '这是一个基本的量化交易策略模板。请在此处添加您的策略描述。'}
+    """
+    
+    def __init__(self):
+        super().__init__()
+        # 初始化策略参数
+        self.window = 20  # 移动平均窗口
+        
+    def initialize(self):
+        """策略初始化函数，在回测/实盘开始前调用"""
+        self.log("策略初始化...")
+        
+    def on_bar(self, bar):
+        """
+        K线数据处理函数，每个新的K线数据到来时调用
+        
+        参数:
+            bar: K线数据，包含open, high, low, close, volume等属性
+        """
+        # 获取历史数据
+        if len(self.data.close) < self.window:
+            return
+            
+        # 计算技术指标
+        ma_short = np.mean(self.data.close[-self.window:])
+        ma_long = np.mean(self.data.close[-self.window*2:])
+        
+        # 交易逻辑
+        if ma_short > ma_long and not self.position:
+            # 做多信号
+            self.buy(bar.close, 1)
+            self.log(f"买入信号: 价格={bar.close}")
+        elif ma_short < ma_long and self.position > 0:
+            # 平仓信号
+            self.sell(bar.close, self.position)
+            self.log(f"卖出信号: 价格={bar.close}")
+            
+    def on_order_filled(self, order):
+        """订单成交回调函数"""
+        self.log(f"订单成交: {order.direction} {order.filled_amount} @ {order.filled_price}")
+        
+    def on_stop(self):
+        """策略结束时调用"""
+        self.log("策略运行结束")
+`;
+    };
+
+    // 插入模板代码
+    const insertTemplate = () => {
+      ElMessageBox.confirm('插入模板代码将覆盖当前编辑器内容，是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        const template = getDefaultTemplate();
+        if (editor) {
+          editor.setValue(template);
+        }
+        strategy.code = template;
+      }).catch(() => {});
+    };
+
+    // 格式化代码 (简单实现)
+    const formatCode = () => {
+      if (editor) {
+        // 这里只是一个简单的格式化示例，实际项目中可能需要更复杂的格式化逻辑
+        const code = editor.getValue();
+        try {
+          // 简单的缩进处理
+          const lines = code.split('\n');
+          let formattedCode = '';
+          let indentLevel = 0;
+          
+          for (const line of lines) {
+            const trimmedLine = line.trim();
+            
+            // 减少缩进的情况
+            if (trimmedLine.startsWith('}') || 
+                trimmedLine.startsWith(')') || 
+                trimmedLine.startsWith(']') ||
+                trimmedLine === 'else:' ||
+                trimmedLine === 'elif:' ||
+                trimmedLine.startsWith('except:')) {
+              indentLevel = Math.max(0, indentLevel - 1);
+            }
+            
+            // 添加当前行
+            if (trimmedLine.length > 0) {
+              formattedCode += ' '.repeat(indentLevel * 4) + trimmedLine + '\n';
+            } else {
+              formattedCode += '\n';
+            }
+            
+            // 增加缩进的情况
+            if (trimmedLine.endsWith(':') || 
+                trimmedLine.endsWith('{') || 
+                trimmedLine.endsWith('(') && !trimmedLine.includes(')') ||
+                trimmedLine.endsWith('[') && !trimmedLine.includes(']')) {
+              indentLevel += 1;
+            }
+          }
+          
+          editor.setValue(formattedCode);
+          ElMessage.success('代码格式化完成');
+        } catch (error) {
+          ElMessage.error('代码格式化失败: ' + error.message);
+        }
+      }
+    };
+
+    // 加载策略数据
+    const loadStrategy = async () => {
+      if (!isNew.value && strategy.id) {
+        loading.value = true;
+        try {
+          const data = await strategyStore.getStrategy(strategy.id);
+          if (data) {
+            Object.assign(strategy, data);
+            nextTick(() => {
+              if (editor) {
+                editor.setValue(strategy.code || '');
+              }
+            });
+          }
+        } catch (error) {
+          ElMessage.error('加载策略失败: ' + error.message);
+        } finally {
+          loading.value = false;
+        }
+      }
+    };
+
+    // 保存策略
+    const saveStrategy = async () => {
+      if (!strategyForm.value) return;
+      
+      await strategyForm.value.validate(async (valid) => {
+        if (valid) {
+          saving.value = true;
+          try {
+            if (isNew.value) {
+              await strategyStore.createStrategy(strategy);
+              ElMessage.success('策略创建成功');
+            } else {
+              await strategyStore.updateStrategy(strategy);
+              ElMessage.success('策略更新成功');
+            }
+            router.push({ name: 'StrategyList' });
+          } catch (error) {
+            ElMessage.error('保存策略失败: ' + error.message);
+          } finally {
+            saving.value = false;
+          }
+        } else {
+          ElMessage.warning('请完善表单信息');
+          return false;
+        }
+      });
+    };
+
+    // 取消编辑
+    const cancel = () => {
+      ElMessageBox.confirm('确定要取消编辑吗？未保存的更改将丢失', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        router.push({ name: 'StrategyList' });
+      }).catch(() => {});
+    };
+
+    onMounted(() => {
+      initCodeEditor();
+      loadStrategy();
+    });
+
+    return {
+      strategyForm,
+      codeEditor,
+      fullscreenEditor,
+      strategy,
+      strategyTypes,
+      symbols,
+      timeframes,
+      rules,
+      isNew,
+      loading,
+      saving,
+      fullscreenCodeEditor,
+      saveStrategy,
+      cancel,
+      insertTemplate,
+      formatCode,
+      toggleFullscreen,
+      applyFullscreenCode
+    };
   }
 };
-
-const handleSubmit = async () => {
-  if (!formRef.value) return;
-
-  try {
-    await formRef.value.validate();
-
-    saving.value = true;
-
-    // TODO: 调用API更新策略
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    ElMessage.success("策略更新成功");
-    router.push(`/strategies/${route.params.id}`);
-  } catch (error) {
-    console.error("Form validation failed:", error);
-  } finally {
-    saving.value = false;
-  }
-};
-
-const handleReset = () => {
-  Object.assign(form, originalForm);
-  ElMessage.info("表单已重置");
-};
-
-const handleBacktest = () => {
-  // TODO: 实现回测逻辑
-  ElMessage.info("回测功能开发中");
-};
-
-const handlePreview = () => {
-  previewVisible.value = true;
-};
-
-const getTypeText = (type: string) => {
-  const texts: Record<string, string> = {
-    trend: "趋势跟踪",
-    momentum: "动量策略",
-    mean_reversion: "均值回归",
-    arbitrage: "套利策略",
-    high_frequency: "高频交易",
-    machine_learning: "机器学习",
-  };
-  return texts[type] || type;
-};
-
-// 生命周期
-onMounted(() => {
-  fetchStrategy();
-});
 </script>
 
 <style scoped>
-.edit-strategy {
+.strategy-editor-container {
   padding: 20px;
-  height: 100%;
-  overflow-y: auto;
-  background: var(--bg-primary);
+  background-color: var(--el-bg-color);
+  border-radius: 8px;
+  box-shadow: var(--el-box-shadow-light);
 }
 
-.page-header {
+.editor-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
-  padding: 16px 20px;
-  background: var(--surface-elevated);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
 }
 
-.page-header h2 {
+.editor-header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
   margin: 0;
-  color: var(--text-primary);
-  font-size: var(--font-2xl);
-  font-weight: var(--font-semibold);
 }
 
-/* Element Plus 组件样式覆盖 */
-:deep(.el-card) {
-  background: var(--surface-elevated);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+.action-buttons {
+  display: flex;
+  gap: 12px;
 }
 
-:deep(.el-card__body) {
-  padding: 24px;
+.strategy-form {
+  margin-top: 20px;
 }
 
-:deep(.el-form-item__label) {
-  color: var(--text-secondary);
-  font-weight: var(--font-medium);
-  font-size: var(--font-sm);
-}
-
-:deep(.el-input__inner) {
-  background: var(--input-bg);
-  border: 1px solid var(--input-border);
-  color: var(--input-text);
-  border-radius: var(--radius-md);
-  font-size: var(--font-base);
-}
-
-:deep(.el-input__inner:focus) {
-  border-color: var(--input-focus);
-  box-shadow: 0 0 0 2px var(--glow-primary);
-}
-
-:deep(.el-input__inner::placeholder) {
-  color: var(--input-placeholder);
-}
-
-:deep(.el-textarea__inner) {
-  background: var(--input-bg);
-  border: 1px solid var(--input-border);
-  color: var(--input-text);
-  border-radius: var(--radius-md);
-  font-size: var(--font-base);
-}
-
-:deep(.el-textarea__inner:focus) {
-  border-color: var(--input-focus);
-  box-shadow: 0 0 0 2px var(--glow-primary);
-}
-
-:deep(.el-select) {
+.full-width {
   width: 100%;
 }
 
-:deep(.el-select .el-input__inner) {
-  cursor: pointer;
+.code-editor-wrapper {
+  border: 1px solid var(--el-border-color);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.code-editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: var(--el-color-info-light-9);
+  border-bottom: 1px solid var(--el-border-color);
+}
+
+.code-editor-header span {
+  font-weight: 500;
+  color: var(--el-text-color-primary);
+}
+
+.code-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.code-editor {
+  height: 400px;
+  overflow: auto;
+}
+
+.fullscreen-editor {
+  height: calc(100vh - 180px);
+}
+
+:deep(.CodeMirror) {
+  height: 100%;
+  font-family: 'Fira Code', 'Consolas', monospace;
+  font-size: 14px;
+}
+
+:deep(.el-divider__text) {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--el-color-primary);
+}
+
+:deep(.el-form-item__label) {
+  font-weight: 500;
 }
 
 :deep(.el-input-number) {
   width: 100%;
-}
-
-:deep(.el-input-number .el-input__inner) {
-  text-align: left;
-}
-
-.code-editor {
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  background: var(--bg-secondary);
-}
-
-.code-editor :deep(.el-textarea__inner) {
-  border: none;
-  background: transparent;
-  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
-  font-size: var(--font-sm);
-  line-height: 1.6;
-  resize: none;
-  color: var(--text-primary);
-}
-
-.code-editor :deep(.el-textarea__inner):focus {
-  box-shadow: none;
-}
-
-/* 按钮样式 */
-:deep(.el-button) {
-  border-radius: var(--radius-md);
-  font-weight: var(--font-medium);
-  transition: all var(--transition-normal) var(--ease-out);
-}
-
-:deep(.el-button--primary) {
-  background: var(--btn-primary);
-  border-color: var(--btn-primary);
-  color: white;
-}
-
-:deep(.el-button--primary:hover) {
-  background: var(--btn-primary-hover);
-  border-color: var(--btn-primary-hover);
-  box-shadow: var(--glow-primary);
-}
-
-:deep(.el-button--default) {
-  background: var(--btn-secondary);
-  border-color: var(--border-primary);
-  color: var(--text-secondary);
-}
-
-:deep(.el-button--default:hover) {
-  background: var(--bg-hover);
-  border-color: var(--border-secondary);
-  color: var(--text-primary);
-}
-
-:deep(.el-button--danger) {
-  background: var(--market-down);
-  border-color: var(--market-down);
-  color: white;
-}
-
-:deep(.el-button--danger:hover) {
-  background: #e02e24;
-  border-color: #e02e24;
-  box-shadow: var(--glow-danger);
-}
-
-/* 对话框样式 */
-:deep(.el-dialog) {
-  background: var(--surface-overlay);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-premium-lg);
-}
-
-:deep(.el-dialog__header) {
-  background: var(--surface-elevated);
-  border-bottom: 1px solid var(--border-primary);
-  padding: 20px 24px;
-  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-}
-
-:deep(.el-dialog__title) {
-  color: var(--text-primary);
-  font-size: var(--font-lg);
-  font-weight: var(--font-semibold);
-}
-
-:deep(.el-dialog__body) {
-  background: var(--bg-primary);
-  padding: 24px;
-  color: var(--text-primary);
-}
-
-:deep(.el-dialog__footer) {
-  background: var(--surface-elevated);
-  border-top: 1px solid var(--border-primary);
-  padding: 16px 24px;
-  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
-}
-
-/* 描述组件样式 */
-:deep(.el-descriptions) {
-  background: transparent;
-}
-
-:deep(.el-descriptions__header) {
-  background: transparent;
-}
-
-:deep(.el-descriptions__title) {
-  color: var(--text-primary);
-  font-size: var(--font-base);
-  font-weight: var(--font-semibold);
-}
-
-:deep(.el-descriptions__label) {
-  background: var(--bg-secondary);
-  color: var(--text-secondary);
-  font-weight: var(--font-medium);
-  font-size: var(--font-sm);
-}
-
-:deep(.el-descriptions__content) {
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  font-size: var(--font-base);
-}
-
-:deep(.el-descriptions__border) .el-descriptions__cell {
-  border-color: var(--border-primary);
-}
-
-.preview-content h4 {
-  margin: 0 0 16px 0;
-  color: var(--text-primary);
-  font-size: var(--font-lg);
-  font-weight: var(--font-semibold);
-}
-
-.preview-content p {
-  margin: 0 0 16px 0;
-  color: var(--text-secondary);
-  line-height: var(--leading-normal);
-  font-size: var(--font-base);
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .edit-strategy {
-    padding: 12px;
-  }
-
-  .page-header {
-    flex-direction: column;
-    gap: 12px;
-    align-items: flex-start;
-    padding: 12px 16px;
-  }
-
-  .page-header h2 {
-    font-size: var(--font-xl);
-  }
-
-  :deep(.el-card__body) {
-    padding: 16px;
-  }
-
-  :deep(.el-form-item__label) {
-    float: none;
-    display: block;
-    text-align: left;
-    margin-bottom: 8px;
-  }
-
-  :deep(.el-form-item__content) {
-    margin-left: 0 !important;
-  }
 }
 </style>

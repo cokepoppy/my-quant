@@ -1,1104 +1,754 @@
 <template>
   <div class="strategy-list-container">
-    <!-- 页面头部 -->
-    <div class="page-header">
-      <div class="header-content">
-        <div class="header-left">
-          <h1>策略管理</h1>
-          <p>管理和配置您的交易策略</p>
-        </div>
-        <div class="header-right">
-          <el-button type="primary" @click="createStrategy">
-            <el-icon><plus /></el-icon>
-            创建策略
-          </el-button>
-          <el-button @click="fetchTemplates">
-            <el-icon><document /></el-icon>
-            使用模板
-          </el-button>
-        </div>
+    <div class="list-header">
+      <h1>策略管理</h1>
+      <div class="header-actions">
+        <el-input
+          v-model="searchQuery"
+          placeholder="搜索策略"
+          prefix-icon="Search"
+          clearable
+          class="search-input"
+          @input="handleSearch"
+        />
+        <el-button type="primary" @click="createStrategy" icon="Plus">创建策略</el-button>
       </div>
     </div>
 
-    <!-- 统计卡片 -->
-    <div class="stats-section">
-      <el-row :gutter="20">
-        <el-col :span="6">
-          <el-card class="stat-card">
-            <div class="stat-content">
-              <div class="stat-icon total">
-                <el-icon><collection /></el-icon>
-              </div>
-              <div class="stat-info">
-                <div class="stat-number">{{ strategyStats.total }}</div>
-                <div class="stat-label">总策略数</div>
-              </div>
-            </div>
-          </el-card>
-        </el-col>
-        <el-col :span="6">
-          <el-card class="stat-card">
-            <div class="stat-content">
-              <div class="stat-icon active">
-                <el-icon><video-play /></el-icon>
-              </div>
-              <div class="stat-info">
-                <div class="stat-number">{{ strategyStats.active }}</div>
-                <div class="stat-label">运行中</div>
-              </div>
-            </div>
-          </el-card>
-        </el-col>
-        <el-col :span="6">
-          <el-card class="stat-card">
-            <div class="stat-content">
-              <div class="stat-icon draft">
-                <el-icon><edit /></el-icon>
-              </div>
-              <div class="stat-info">
-                <div class="stat-number">{{ strategyStats.draft }}</div>
-                <div class="stat-label">草稿</div>
-              </div>
-            </div>
-          </el-card>
-        </el-col>
-        <el-col :span="6">
-          <el-card class="stat-card">
-            <div class="stat-content">
-              <div class="stat-icon stopped">
-                <el-icon><video-pause /></el-icon>
-              </div>
-              <div class="stat-info">
-                <div class="stat-number">{{ strategyStats.stopped }}</div>
-                <div class="stat-label">已停止</div>
-              </div>
-            </div>
-          </el-card>
-        </el-col>
-      </el-row>
-    </div>
-
-    <!-- 搜索和过滤器 -->
-    <div class="filter-section">
-      <el-card>
-        <el-form :inline="true" :model="filters" class="filter-form">
-          <el-form-item label="搜索">
-            <el-input
-              v-model="filters.search"
-              placeholder="搜索策略名称或描述"
-              clearable
-              @clear="handleSearch"
-              @keyup.enter="handleSearch"
-            />
-          </el-form-item>
-          <el-form-item label="状态">
-            <el-select
-              v-model="filters.status"
-              placeholder="选择状态"
-              clearable
-            >
-              <el-option label="全部" value="" />
-              <el-option label="运行中" value="active" />
-              <el-option label="草稿" value="draft" />
-              <el-option label="已停止" value="stopped" />
-              <el-option label="错误" value="error" />
+    <el-card class="strategy-card" v-loading="loading">
+      <template #header>
+        <div class="card-header">
+          <div class="filter-section">
+            <el-select v-model="filterType" placeholder="策略类型" clearable @change="handleFilter">
+              <el-option v-for="type in strategyTypes" :key="type.value" :label="type.label" :value="type.value" />
             </el-select>
-          </el-form-item>
-          <el-form-item label="类型">
-            <el-select v-model="filters.type" placeholder="选择类型" clearable>
-              <el-option label="全部" value="" />
-              <el-option label="趋势" value="trend" />
-              <el-option label="动量" value="momentum" />
-              <el-option label="均值回归" value="mean_reversion" />
-              <el-option label="套利" value="arbitrage" />
-              <el-option label="自定义" value="custom" />
+            <el-select v-model="filterSymbol" placeholder="交易品种" clearable @change="handleFilter">
+              <el-option v-for="symbol in symbols" :key="symbol.value" :label="symbol.label" :value="symbol.value" />
             </el-select>
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" @click="handleSearch">搜索</el-button>
-            <el-button @click="resetFilters">重置</el-button>
-          </el-form-item>
-        </el-form>
-      </el-card>
-    </div>
-
-    <!-- 策略列表 -->
-    <div class="strategy-list">
-      <el-card>
-        <div v-if="isLoading" class="loading-container fade-in">
-          <el-skeleton :rows="5" animated />
-        </div>
-
-        <div v-else-if="strategies.length === 0" class="empty-container fade-in">
-          <el-empty description="暂无策略">
-            <el-button type="primary" @click="createStrategy">
-              创建第一个策略
-            </el-button>
-          </el-empty>
-        </div>
-
-        <div v-else>
-          <div
-            v-for="(strategy, index) in strategies"
-            :key="strategy.id"
-            class="strategy-item"
-            :class="`fade-in delay-${index}`"
-          >
-            <div class="strategy-content">
-              <div class="strategy-info">
-                <div class="strategy-header">
-                  <h3>{{ strategy.name }}</h3>
-                  <el-tag :type="getStatusType(strategy.status)">
-                    {{ getStatusText(strategy.status) }}
-                  </el-tag>
-                </div>
-                <p class="strategy-description">{{ strategy.description }}</p>
-                <div class="strategy-meta">
-                  <span class="meta-item">
-                    <el-icon><cpu /></el-icon>
-                    {{ getTypeText(strategy.type) }}
-                  </span>
-                  <span class="meta-item">
-                    <el-icon><document /></el-icon>
-                    {{ strategy.language }}
-                  </span>
-                  <span class="meta-item">
-                    <el-icon><calendar /></el-icon>
-                    {{ formatDate(strategy.createdAt) }}
-                  </span>
-                  <span v-if="strategy.lastRunAt" class="meta-item">
-                    <el-icon><timer /></el-icon>
-                    最后运行: {{ formatDate(strategy.lastRunAt) }}
-                  </span>
-                </div>
-                <div class="strategy-tags">
-                  <el-tag
-                    v-for="tag in strategy.tags"
-                    :key="tag"
-                    size="small"
-                    class="strategy-tag"
-                  >
-                    {{ tag }}
-                  </el-tag>
-                </div>
-              </div>
-
-              <div class="strategy-actions">
-                <el-button-group>
-                  <el-button size="small" @click="viewStrategy(strategy.id)">
-                    查看
-                  </el-button>
-                  <el-button size="small" @click="editStrategy(strategy.id)">
-                    编辑
-                  </el-button>
-                  <el-button
-                    v-if="strategy.status === 'active'"
-                    size="small"
-                    type="warning"
-                    @click="stopStrategy(strategy.id)"
-                  >
-                    停止
-                  </el-button>
-                  <el-button
-                    v-else-if="
-                      strategy.status === 'stopped' ||
-                      strategy.status === 'draft'
-                    "
-                    size="small"
-                    type="success"
-                    @click="startStrategy(strategy.id)"
-                  >
-                    启动
-                  </el-button>
-                </el-button-group>
-                <el-dropdown
-                  @command="(command) => handleAction(command, strategy.id)"
-                >
-                  <el-button size="small" text>
-                    <el-icon><more /></el-icon>
-                  </el-button>
-                  <template #dropdown>
-                    <el-dropdown-menu>
-                      <el-dropdown-item command="performance"
-                        >性能分析</el-dropdown-item
-                      >
-                      <el-dropdown-item command="logs"
-                        >查看日志</el-dropdown-item
-                      >
-                      <el-dropdown-item command="duplicate"
-                        >复制策略</el-dropdown-item
-                      >
-                      <el-dropdown-item command="export"
-                        >导出策略</el-dropdown-item
-                      >
-                      <el-dropdown-item
-                        divided
-                        command="delete"
-                        class="text-danger"
-                      >
-                        删除策略
-                      </el-dropdown-item>
-                    </el-dropdown-menu>
-                  </template>
-                </el-dropdown>
-              </div>
-            </div>
+            <el-select v-model="sortBy" placeholder="排序方式" @change="handleSort">
+              <el-option label="创建时间 (新→旧)" value="created_desc" />
+              <el-option label="创建时间 (旧→新)" value="created_asc" />
+              <el-option label="名称 (A→Z)" value="name_asc" />
+              <el-option label="名称 (Z→A)" value="name_desc" />
+              <el-option label="收益率 (高→低)" value="profit_desc" />
+              <el-option label="收益率 (低→高)" value="profit_asc" />
+            </el-select>
           </div>
-        </div>
-
-        <!-- 分页 -->
-        <div v-if="strategies.length > 0" class="pagination-container">
-          <el-pagination
-            v-model:current-page="pagination.page"
-            v-model:page-size="pagination.limit"
-            :page-sizes="[10, 20, 50, 100]"
-            :total="pagination.total"
-            layout="total, sizes, prev, pager, next, jumper"
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
+          <el-switch
+            v-model="showActiveOnly"
+            active-text="仅显示激活策略"
+            inactive-text="显示所有策略"
+            @change="handleFilter"
           />
         </div>
-      </el-card>
-    </div>
+      </template>
 
-    <!-- 创建策略对话框 -->
-    <el-dialog
-      v-model="showCreateDialog"
-      title="创建策略"
-      width="80%"
-      :before-close="handleCloseCreateDialog"
-    >
-      <strategy-form
-        v-if="showCreateDialog"
-        :templates="templates"
-        @submit="handleCreateSubmit"
-        @cancel="handleCloseCreateDialog"
-      />
-    </el-dialog>
+      <div v-if="filteredStrategies.length === 0" class="empty-state">
+        <el-empty description="暂无策略" :image-size="120">
+          <template #description>
+            <p>{{ loading ? '加载中...' : (searchQuery ? '没有找到匹配的策略' : '您还没有创建任何策略') }}</p>
+          </template>
+          <el-button type="primary" @click="createStrategy">创建第一个策略</el-button>
+        </el-empty>
+      </div>
 
-    <!-- 模板选择对话框 -->
+      <el-table
+        v-else
+        :data="filteredStrategies"
+        style="width: 100%"
+        row-key="id"
+        border
+        stripe
+        highlight-current-row
+        @row-click="handleRowClick"
+      >
+        <el-table-column label="策略名称" min-width="180">
+          <template #default="{ row }">
+            <div class="strategy-name">
+              <el-tag :type="getStatusTagType(row.status)" size="small" effect="dark">
+                {{ getStatusText(row.status) }}
+              </el-tag>
+              <span class="name-text">{{ row.name }}</span>
+            </div>
+          </template>
+        </el-table-column>
+        
+        <el-table-column label="策略类型" prop="type" min-width="120">
+          <template #default="{ row }">
+            {{ getStrategyTypeLabel(row.type) }}
+          </template>
+        </el-table-column>
+        
+        <el-table-column label="交易品种" prop="symbol" min-width="120">
+          <template #default="{ row }">
+            {{ getSymbolLabel(row.symbol) }}
+          </template>
+        </el-table-column>
+        
+        <el-table-column label="时间周期" prop="timeframe" min-width="100">
+          <template #default="{ row }">
+            {{ getTimeframeLabel(row.timeframe) }}
+          </template>
+        </el-table-column>
+        
+        <el-table-column label="收益率" min-width="120">
+          <template #default="{ row }">
+            <div :class="['profit-rate', row.profitRate >= 0 ? 'profit-positive' : 'profit-negative']">
+              {{ formatProfitRate(row.profitRate) }}
+            </div>
+          </template>
+        </el-table-column>
+        
+        <el-table-column label="创建时间" prop="createdAt" min-width="180">
+          <template #default="{ row }">
+            {{ formatDate(row.createdAt) }}
+          </template>
+        </el-table-column>
+        
+        <el-table-column label="操作" fixed="right" width="220">
+          <template #default="{ row }">
+            <div class="action-buttons">
+              <el-button size="small" @click.stop="viewStrategy(row)">查看</el-button>
+              <el-button size="small" type="primary" @click.stop="editStrategy(row)">编辑</el-button>
+              <el-dropdown trigger="click" @command="(command) => handleCommand(command, row)" @click.stop>
+                <el-button size="small">
+                  更多<el-icon class="el-icon--right"><arrow-down /></el-icon>
+                </el-button>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item :command="row.status === 'active' ? 'deactivate' : 'activate'">
+                      {{ row.status === 'active' ? '停用' : '启用' }}
+                    </el-dropdown-item>
+                    <el-dropdown-item command="backtest">回测</el-dropdown-item>
+                    <el-dropdown-item command="duplicate">复制</el-dropdown-item>
+                    <el-dropdown-item command="export">导出</el-dropdown-item>
+                    <el-dropdown-item command="delete" divided>删除</el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+            </div>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <div class="pagination-container">
+        <el-pagination
+          v-model:current-page="currentPage"
+          v-model:page-size="pageSize"
+          :page-sizes="[10, 20, 50, 100]"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="totalStrategies"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+        />
+      </div>
+    </el-card>
+
+    <!-- 删除确认对话框 -->
     <el-dialog
-      v-model="showTemplateDialog"
-      title="选择策略模板"
-      width="60%"
-      :before-close="handleCloseTemplateDialog"
+      v-model="deleteDialogVisible"
+      title="删除策略"
+      width="400px"
+      :close-on-click-modal="false"
     >
-      <template-list
-        v-if="showTemplateDialog"
-        :templates="templates"
-        @select="handleTemplateSelect"
-        @cancel="handleCloseTemplateDialog"
-      />
+      <div class="delete-dialog-content">
+        <el-icon class="warning-icon"><warning /></el-icon>
+        <p>确定要删除策略 <strong>{{ selectedStrategy?.name }}</strong> 吗？</p>
+        <p class="warning-text">此操作不可逆，策略相关的所有数据将被永久删除。</p>
+      </div>
+      <template #footer>
+        <el-button @click="deleteDialogVisible = false">取消</el-button>
+        <el-button type="danger" @click="confirmDelete" :loading="deleting">确认删除</el-button>
+      </template>
     </el-dialog>
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref, onMounted } from "vue";
-import { useRouter } from "vue-router";
-import { ElMessage, ElMessageBox } from "element-plus";
-import {
-  Plus,
-  Document,
-  Collection,
-  VideoPlay,
-  VideoPause,
-  Edit,
-  More,
-  Cpu,
-  Calendar,
-  Timer,
-} from "@element-plus/icons-vue";
-import { useStrategyStore } from "@/stores/strategy";
-import { useAppStore } from "@/stores/app";
-import type { Strategy, StrategyTemplate } from "@/types/strategy";
-import StrategyForm from "@/components/forms/StrategyForm.vue";
-import TemplateList from "@/components/strategy/TemplateList.vue";
+<script>
+import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import { ArrowDown, Warning } from '@element-plus/icons-vue';
+import { useStrategyStore } from '@/stores/strategy';
 
-const router = useRouter();
-const strategyStore = useStrategyStore();
-const appStore = useAppStore();
-
-// 响应式数据
-const showCreateDialog = ref(false);
-const showTemplateDialog = ref(false);
-
-// 计算属性
-const strategies = computed(() => strategyStore.strategies);
-const templates = computed(() => strategyStore.templates);
-const isLoading = computed(() => strategyStore.isLoading);
-const strategyStats = computed(() => strategyStore.strategyStats);
-const pagination = computed(() => strategyStore.pagination);
-const filters = computed(() => strategyStore.filters);
-
-// 方法
-const createStrategy = () => {
-  showCreateDialog.value = true;
-};
-
-const fetchTemplates = async () => {
-  try {
-    await strategyStore.fetchTemplates();
-    showTemplateDialog.value = true;
-  } catch (error) {
-    console.error("获取模板失败:", error);
-  }
-};
-
-const viewStrategy = (id: string) => {
-  router.push(`/strategies/${id}`);
-};
-
-const editStrategy = (id: string) => {
-  router.push(`/strategies/${id}/edit`);
-};
-
-const startStrategy = async (id: string) => {
-  try {
-    await strategyStore.startStrategyById(id);
-  } catch (error) {
-    console.error("启动策略失败:", error);
-  }
-};
-
-const stopStrategy = async (id: string) => {
-  try {
-    await strategyStore.stopStrategyById(id);
-  } catch (error) {
-    console.error("停止策略失败:", error);
-  }
-};
-
-const handleAction = (command: string, id: string) => {
-  switch (command) {
-    case "performance":
-      router.push(`/strategies/${id}/performance`);
-      break;
-    case "logs":
-      router.push(`/strategies/${id}/logs`);
-      break;
-    case "duplicate":
-      duplicateStrategy(id);
-      break;
-    case "export":
-      exportStrategy(id);
-      break;
-    case "delete":
-      deleteStrategyAction(id);
-      break;
-  }
-};
-
-const duplicateStrategy = async (id: string) => {
-  try {
-    const strategy = await strategyStore.fetchStrategyById(id);
-    const newStrategy = {
-      ...strategy,
-      name: `${strategy.name} (复制)`,
-      status: "draft" as const,
-      id: undefined,
-      createdAt: undefined,
-      updatedAt: undefined,
-      lastRunAt: undefined,
+export default {
+  name: 'StrategyList',
+  components: {
+    ArrowDown,
+    Warning
+  },
+  setup() {
+    const router = useRouter();
+    const strategyStore = useStrategyStore();
+    
+    // 状态变量
+    const loading = ref(false);
+    const strategies = ref([]);
+    const searchQuery = ref('');
+    const filterType = ref('');
+    const filterSymbol = ref('');
+    const sortBy = ref('created_desc');
+    const showActiveOnly = ref(false);
+    const currentPage = ref(1);
+    const pageSize = ref(10);
+    const totalStrategies = ref(0);
+    const deleteDialogVisible = ref(false);
+    const deleting = ref(false);
+    const selectedStrategy = ref(null);
+    
+    // 策略类型选项
+    const strategyTypes = [
+      { value: 'trend_following', label: '趋势跟踪' },
+      { value: 'mean_reversion', label: '均值回归' },
+      { value: 'breakout', label: '突破策略' },
+      { value: 'statistical_arbitrage', label: '统计套利' },
+      { value: 'machine_learning', label: '机器学习' },
+      { value: 'custom', label: '自定义策略' },
+    ];
+    
+    // 交易品种选项
+    const symbols = [
+      { value: 'BTCUSDT', label: 'BTC/USDT - 比特币' },
+      { value: 'ETHUSDT', label: 'ETH/USDT - 以太坊' },
+      { value: 'BNBUSDT', label: 'BNB/USDT - 币安币' },
+      { value: '000001.SH', label: '上证指数' },
+      { value: '399001.SZ', label: '深证成指' },
+      { value: '399006.SZ', label: '创业板指' },
+    ];
+    
+    // 时间周期选项
+    const timeframes = [
+      { value: '1m', label: '1分钟' },
+      { value: '5m', label: '5分钟' },
+      { value: '15m', label: '15分钟' },
+      { value: '30m', label: '30分钟' },
+      { value: '1h', label: '1小时' },
+      { value: '4h', label: '4小时' },
+      { value: '1d', label: '日线' },
+      { value: '1w', label: '周线' },
+    ];
+    
+    // 过滤后的策略列表
+    const filteredStrategies = computed(() => {
+      let result = [...strategies.value];
+      
+      // 搜索过滤
+      if (searchQuery.value) {
+        const query = searchQuery.value.toLowerCase();
+        result = result.filter(strategy => 
+          strategy.name.toLowerCase().includes(query) || 
+          strategy.description?.toLowerCase().includes(query)
+        );
+      }
+      
+      // 类型过滤
+      if (filterType.value) {
+        result = result.filter(strategy => strategy.type === filterType.value);
+      }
+      
+      // 交易品种过滤
+      if (filterSymbol.value) {
+        result = result.filter(strategy => strategy.symbol === filterSymbol.value);
+      }
+      
+      // 状态过滤
+      if (showActiveOnly.value) {
+        result = result.filter(strategy => strategy.status === 'active');
+      }
+      
+      // 排序
+      result.sort((a, b) => {
+        switch (sortBy.value) {
+          case 'created_desc':
+            return new Date(b.createdAt) - new Date(a.createdAt);
+          case 'created_asc':
+            return new Date(a.createdAt) - new Date(b.createdAt);
+          case 'name_asc':
+            return a.name.localeCompare(b.name);
+          case 'name_desc':
+            return b.name.localeCompare(a.name);
+          case 'profit_desc':
+            return b.profitRate - a.profitRate;
+          case 'profit_asc':
+            return a.profitRate - b.profitRate;
+          default:
+            return 0;
+        }
+      });
+      
+      return result;
+    });
+    
+    // 加载策略列表
+    const loadStrategies = async () => {
+      loading.value = true;
+      try {
+        // 实际项目中应该调用API获取数据
+        // const data = await strategyStore.getStrategies({
+        //   page: currentPage.value,
+        //   pageSize: pageSize.value,
+        //   sortBy: sortBy.value,
+        //   filterType: filterType.value,
+        //   filterSymbol: filterSymbol.value,
+        //   showActiveOnly: showActiveOnly.value,
+        //   searchQuery: searchQuery.value
+        // });
+        // strategies.value = data.strategies;
+        // totalStrategies.value = data.total;
+        
+        // 使用模拟数据
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // 模拟策略数据
+        const mockStrategies = [
+          {
+            id: '1',
+            name: 'BTC趋势跟踪策略',
+            description: '基于移动平均线的趋势跟踪策略，当短期均线上穿长期均线时买入，下穿时卖出。',
+            type: 'trend_following',
+            symbol: 'BTCUSDT',
+            timeframe: '1h',
+            status: 'active',
+            profitRate: 12.5,
+            createdAt: new Date(2023, 5, 15),
+            updatedAt: new Date(2023, 6, 20)
+          },
+          {
+            id: '2',
+            name: 'ETH均值回归策略',
+            description: '基于布林带的均值回归策略，当价格触及上轨时卖出，触及下轨时买入。',
+            type: 'mean_reversion',
+            symbol: 'ETHUSDT',
+            timeframe: '4h',
+            status: 'inactive',
+            profitRate: -3.2,
+            createdAt: new Date(2023, 4, 10),
+            updatedAt: new Date(2023, 5, 5)
+          },
+          {
+            id: '3',
+            name: '上证指数突破策略',
+            description: '基于支撑阻力位的突破策略，当价格突破阻力位时买入，跌破支撑位时卖出。',
+            type: 'breakout',
+            symbol: '000001.SH',
+            timeframe: '1d',
+            status: 'active',
+            profitRate: 8.7,
+            createdAt: new Date(2023, 3, 20),
+            updatedAt: new Date(2023, 4, 15)
+          },
+          {
+            id: '4',
+            name: 'BNB动量策略',
+            description: '基于RSI指标的动量策略，当RSI超买时卖出，超卖时买入。',
+            type: 'custom',
+            symbol: 'BNBUSDT',
+            timeframe: '15m',
+            status: 'active',
+            profitRate: 5.3,
+            createdAt: new Date(2023, 6, 5),
+            updatedAt: new Date(2023, 7, 10)
+          },
+          {
+            id: '5',
+            name: '创业板指机器学习策略',
+            description: '使用LSTM神经网络预测价格走势，根据预测结果进行交易。',
+            type: 'machine_learning',
+            symbol: '399006.SZ',
+            timeframe: '1d',
+            status: 'inactive',
+            profitRate: 15.8,
+            createdAt: new Date(2023, 2, 15),
+            updatedAt: new Date(2023, 3, 20)
+          }
+        ];
+        
+        strategies.value = mockStrategies;
+        totalStrategies.value = mockStrategies.length;
+      } catch (error) {
+        ElMessage.error('加载策略列表失败: ' + error.message);
+      } finally {
+        loading.value = false;
+      }
     };
-    await strategyStore.createNewStrategy(newStrategy);
-  } catch (error) {
-    console.error("复制策略失败:", error);
+    
+    // 创建新策略
+    const createStrategy = () => {
+      router.push({ name: 'CreateStrategy' });
+    };
+    
+    // 查看策略详情
+    const viewStrategy = (strategy) => {
+      router.push({ name: 'StrategyDetail', params: { id: strategy.id } });
+    };
+    
+    // 编辑策略
+    const editStrategy = (strategy) => {
+      router.push({ name: 'EditStrategy', params: { id: strategy.id } });
+    };
+    
+    // 处理下拉菜单命令
+    const handleCommand = (command, strategy) => {
+      selectedStrategy.value = strategy;
+      
+      switch (command) {
+        case 'activate':
+          toggleStrategyStatus(strategy, 'active');
+          break;
+        case 'deactivate':
+          toggleStrategyStatus(strategy, 'inactive');
+          break;
+        case 'backtest':
+          router.push({ name: 'Backtest', query: { strategyId: strategy.id } });
+          break;
+        case 'duplicate':
+          duplicateStrategy(strategy);
+          break;
+        case 'export':
+          exportStrategy(strategy);
+          break;
+        case 'delete':
+          deleteDialogVisible.value = true;
+          break;
+      }
+    };
+    
+    // 切换策略状态
+    const toggleStrategyStatus = async (strategy, newStatus) => {
+      try {
+        const actionText = newStatus === 'active' ? '启用' : '停用';
+        
+        // 实际项目中应该调用API更新状态
+        // await strategyStore.updateStrategyStatus(strategy.id, newStatus);
+        
+        // 模拟API调用
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        // 更新本地状态
+        const index = strategies.value.findIndex(s => s.id === strategy.id);
+        if (index !== -1) {
+          strategies.value[index].status = newStatus;
+        }
+        
+        ElMessage.success(`策略${actionText}成功`);
+      } catch (error) {
+        ElMessage.error('操作失败: ' + error.message);
+      }
+    };
+    
+    // 复制策略
+    const duplicateStrategy = async (strategy) => {
+      try {
+        // 实际项目中应该调用API复制策略
+        // const newStrategy = await strategyStore.duplicateStrategy(strategy.id);
+        // router.push({ name: 'EditStrategy', params: { id: newStrategy.id } });
+        
+        // 模拟API调用
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        ElMessage.success('策略复制成功');
+        loadStrategies();
+      } catch (error) {
+        ElMessage.error('复制失败: ' + error.message);
+      }
+    };
+    
+    // 导出策略
+    const exportStrategy = (strategy) => {
+      try {
+        // 创建要导出的策略数据
+        const exportData = {
+          name: strategy.name,
+          description: strategy.description,
+          type: strategy.type,
+          symbol: strategy.symbol,
+          timeframe: strategy.timeframe,
+          // 其他需要导出的字段
+        };
+        
+        // 转换为JSON字符串
+        const jsonStr = JSON.stringify(exportData, null, 2);
+        
+        // 创建Blob对象
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        
+        // 创建下载链接
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${strategy.name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.json`;
+        
+        // 触发下载
+        document.body.appendChild(a);
+        a.click();
+        
+        // 清理
+        setTimeout(() => {
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }, 0);
+        
+        ElMessage.success('策略导出成功');
+      } catch (error) {
+        ElMessage.error('导出失败: ' + error.message);
+      }
+    };
+    
+    // 确认删除策略
+    const confirmDelete = async () => {
+      if (!selectedStrategy.value) return;
+      
+      deleting.value = true;
+      try {
+        // 实际项目中应该调用API删除策略
+        // await strategyStore.deleteStrategy(selectedStrategy.value.id);
+        
+        // 模拟API调用
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
+        // 更新本地状态
+        strategies.value = strategies.value.filter(s => s.id !== selectedStrategy.value.id);
+        totalStrategies.value = strategies.value.length;
+        
+        ElMessage.success('策略删除成功');
+        deleteDialogVisible.value = false;
+      } catch (error) {
+        ElMessage.error('删除失败: ' + error.message);
+      } finally {
+        deleting.value = false;
+      }
+    };
+    
+    // 处理表格行点击
+    const handleRowClick = (row) => {
+      viewStrategy(row);
+    };
+    
+    // 处理搜索
+    const handleSearch = () => {
+      currentPage.value = 1;
+      loadStrategies();
+    };
+    
+    // 处理过滤
+    const handleFilter = () => {
+      currentPage.value = 1;
+      loadStrategies();
+    };
+    
+    // 处理排序
+    const handleSort = () => {
+      loadStrategies();
+    };
+    
+    // 处理页面大小变化
+    const handleSizeChange = (size) => {
+      pageSize.value = size;
+      loadStrategies();
+    };
+    
+    // 处理页码变化
+    const handleCurrentChange = (page) => {
+      currentPage.value = page;
+      loadStrategies();
+    };
+    
+    // 格式化收益率
+    const formatProfitRate = (rate) => {
+      if (rate === undefined || rate === null) return '--';
+      return `${rate >= 0 ? '+' : ''}${rate.toFixed(2)}%`;
+    };
+    
+    // 格式化日期
+    const formatDate = (date) => {
+      if (!date) return '--';
+      try {
+        const d = new Date(date);
+        return d.toLocaleDateString();
+      } catch (e) {
+        return '--';
+      }
+    };
+    
+    // 获取策略类型标签
+    const getStrategyTypeLabel = (type) => {
+      const found = strategyTypes.find(t => t.value === type);
+      return found ? found.label : type;
+    };
+    
+    // 获取交易品种标签
+    const getSymbolLabel = (symbol) => {
+      const found = symbols.find(s => s.value === symbol);
+      return found ? found.label : symbol;
+    };
+    
+    // 获取时间周期标签
+    const getTimeframeLabel = (timeframe) => {
+      const found = timeframes.find(t => t.value === timeframe);
+      return found ? found.label : timeframe;
+    };
+    
+    // 获取状态文本
+    const getStatusText = (status) => {
+      const statusMap = {
+        active: '运行中',
+        inactive: '已停用',
+        error: '错误',
+        pending: '等待中'
+      };
+      return statusMap[status] || status;
+    };
+    
+    // 获取状态标签类型
+    const getStatusTagType = (status) => {
+      const typeMap = {
+        active: 'success',
+        inactive: 'info',
+        error: 'danger',
+        pending: 'warning'
+      };
+      return typeMap[status] || 'info';
+    };
+    
+    onMounted(() => {
+      loadStrategies();
+    });
+    
+    return {
+      loading,
+      strategies,
+      filteredStrategies,
+      searchQuery,
+      filterType,
+      filterSymbol,
+      sortBy,
+      showActiveOnly,
+      currentPage,
+      pageSize,
+      totalStrategies,
+      strategyTypes,
+      symbols,
+      deleteDialogVisible,
+      deleting,
+      selectedStrategy,
+      createStrategy,
+      viewStrategy,
+      editStrategy,
+      handleCommand,
+      confirmDelete,
+      handleRowClick,
+      handleSearch,
+      handleFilter,
+      handleSort,
+      handleSizeChange,
+      handleCurrentChange,
+      formatProfitRate,
+      formatDate,
+      getStrategyTypeLabel,
+      getSymbolLabel,
+      getTimeframeLabel,
+      getStatusText,
+      getStatusTagType
+    };
   }
 };
-
-const exportStrategy = async (id: string) => {
-  try {
-    const strategy = await strategyStore.fetchStrategyById(id);
-    const dataStr = JSON.stringify(strategy, null, 2);
-    const dataUri =
-      "data:application/json;charset=utf-8," + encodeURIComponent(dataStr);
-
-    const exportFileDefaultName = `${strategy.name}.json`;
-
-    const linkElement = document.createElement("a");
-    linkElement.setAttribute("href", dataUri);
-    linkElement.setAttribute("download", exportFileDefaultName);
-    linkElement.click();
-  } catch (error) {
-    console.error("导出策略失败:", error);
-  }
-};
-
-const deleteStrategyAction = async (id: string) => {
-  try {
-    await ElMessageBox.confirm(
-      "确定要删除这个策略吗？此操作不可撤销。",
-      "删除策略",
-      {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning",
-      },
-    );
-
-    await strategyStore.deleteStrategyById(id);
-  } catch (error) {
-    if (error !== "cancel") {
-      console.error("删除策略失败:", error);
-    }
-  }
-};
-
-const handleSearch = () => {
-  strategyStore.setFilters(filters.value);
-  strategyStore.fetchStrategies();
-};
-
-const resetFilters = () => {
-  strategyStore.setFilters({
-    search: "",
-    status: "",
-    type: "",
-  });
-  strategyStore.fetchStrategies();
-};
-
-const handleSizeChange = (size: number) => {
-  strategyStore.setPagination({ limit: size });
-  strategyStore.fetchStrategies();
-};
-
-const handleCurrentChange = (page: number) => {
-  strategyStore.setPagination({ page });
-  strategyStore.fetchStrategies();
-};
-
-const handleCreateSubmit = async (data: Partial<Strategy>) => {
-  try {
-    await strategyStore.createNewStrategy(data);
-    showCreateDialog.value = false;
-    router.push(`/strategies/${strategyStore.strategies[0].id}`);
-  } catch (error) {
-    console.error("创建策略失败:", error);
-  }
-};
-
-const handleCloseCreateDialog = () => {
-  showCreateDialog.value = false;
-};
-
-const handleTemplateSelect = async (template: StrategyTemplate) => {
-  try {
-    showTemplateDialog.value = false;
-    router.push(`/strategies/create?template=${template.id}`);
-  } catch (error) {
-    console.error("选择模板失败:", error);
-  }
-};
-
-const handleCloseTemplateDialog = () => {
-  showTemplateDialog.value = false;
-};
-
-const getStatusType = (status: string) => {
-  const types: Record<string, string> = {
-    active: "success",
-    draft: "info",
-    stopped: "warning",
-    error: "danger",
-  };
-  return types[status] || "info";
-};
-
-const getStatusText = (status: string) => {
-  const texts: Record<string, string> = {
-    active: "运行中",
-    draft: "草稿",
-    stopped: "已停止",
-    error: "错误",
-  };
-  return texts[status] || status;
-};
-
-const getTypeText = (type: string) => {
-  const types: Record<string, string> = {
-    trend: "趋势",
-    momentum: "动量",
-    mean_reversion: "均值回归",
-    arbitrage: "套利",
-    custom: "自定义",
-  };
-  return types[type] || type;
-};
-
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleString("zh-CN");
-};
-
-// 生命周期
-onMounted(async () => {
-  try {
-    await strategyStore.fetchStrategies();
-    await strategyStore.fetchTemplates();
-  } catch (error) {
-    console.error("获取策略列表失败:", error);
-  }
-});
 </script>
 
 <style scoped>
 .strategy-list-container {
   padding: 20px;
-  height: 100%;
-  overflow-y: auto;
-  background: var(--bg-primary);
 }
 
-.page-header {
+.list-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
-  padding: 16px 20px;
-  background: var(--surface-elevated);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
 }
 
-.header-left h1 {
-  margin: 0 0 8px 0;
-  color: var(--text-primary);
-  font-size: var(--font-3xl);
-  font-weight: var(--font-bold);
-}
-
-.header-left p {
+.list-header h1 {
   margin: 0;
-  color: var(--text-secondary);
-  font-size: var(--font-base);
-  font-weight: var(--font-normal);
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
 }
 
-.header-right {
+.header-actions {
   display: flex;
   gap: 12px;
 }
 
-.stats-section {
+.search-input {
+  width: 240px;
+}
+
+.strategy-card {
   margin-bottom: 24px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 }
 
-.stat-card {
-  background: var(--surface-elevated);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  transition: all var(--transition-normal) var(--ease-out);
-  height: 100%;
-}
-
-.stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-}
-
-.stat-content {
+.card-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 16px;
-  padding: 20px;
-}
-
-.stat-icon {
-  width: 60px;
-  height: 60px;
-  border-radius: var(--radius-xl);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  color: white;
-  flex-shrink: 0;
-}
-
-.stat-icon.total {
-  background: linear-gradient(135deg, var(--btn-primary) 0%, #4a90e2 100%);
-  box-shadow: var(--glow-primary);
-}
-
-.stat-icon.active {
-  background: linear-gradient(135deg, var(--market-up) 0%, #00a885 100%);
-  box-shadow: var(--glow-success);
-}
-
-.stat-icon.draft {
-  background: linear-gradient(135deg, var(--market-volatile) 0%, #e07f00 100%);
-  box-shadow: var(--glow-warning);
-}
-
-.stat-icon.stopped {
-  background: linear-gradient(135deg, var(--text-tertiary) 0%, var(--text-muted) 100%);
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
-}
-
-.stat-info {
-  flex: 1;
-}
-
-.stat-number {
-  font-size: var(--font-3xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  line-height: 1;
-}
-
-.stat-label {
-  color: var(--text-secondary);
-  font-size: var(--font-sm);
-  margin-top: 4px;
-  font-weight: var(--font-medium);
 }
 
 .filter-section {
-  margin-bottom: 24px;
-}
-
-.filter-form {
-  margin: 0;
-}
-
-.strategy-list {
-  margin-bottom: 24px;
-}
-
-.loading-container,
-.empty-container {
-  padding: 40px 20px;
-  text-align: center;
-  background: var(--surface-elevated);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-}
-
-.strategy-item {
-  padding: 20px 0;
-  border-bottom: 1px solid var(--border-secondary);
-  transition: all var(--transition-normal) var(--ease-out);
-}
-
-.strategy-item:hover {
-  background: var(--bg-hover);
-  border-radius: var(--radius-md);
-  margin: 0 -20px;
-  padding-left: 20px;
-  padding-right: 20px;
-}
-
-.strategy-item:last-child {
-  border-bottom: none;
-}
-
-.strategy-content {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 20px;
-}
-
-.strategy-info {
-  flex: 1;
-}
-
-.strategy-header {
-  display: flex;
-  align-items: center;
   gap: 12px;
-  margin-bottom: 8px;
 }
 
-.strategy-header h3 {
-  margin: 0;
-  font-size: var(--font-xl);
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-}
-
-.strategy-description {
-  margin: 0 0 12px 0;
-  color: var(--text-secondary);
-  font-size: var(--font-sm);
-  line-height: var(--leading-relaxed);
-}
-
-.strategy-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  margin-bottom: 12px;
-}
-
-.meta-item {
+.strategy-name {
   display: flex;
   align-items: center;
-  gap: 4px;
-  color: var(--text-secondary);
-  font-size: var(--font-xs);
-  font-weight: var(--font-medium);
-}
-
-.strategy-tags {
-  display: flex;
-  flex-wrap: wrap;
   gap: 8px;
 }
 
-.strategy-tag {
-  margin-right: 0;
-  background: var(--surface-elevated);
-  border: 1px solid var(--border-secondary);
-  border-radius: var(--radius-md);
-  transition: all var(--transition-normal) var(--ease-out);
+.name-text {
+  font-weight: 500;
 }
 
-.strategy-tag:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
+.profit-rate {
+  font-weight: 600;
 }
 
-.strategy-actions {
+.profit-positive {
+  color: #67c23a;
+}
+
+.profit-negative {
+  color: #f56c6c;
+}
+
+.action-buttons {
   display: flex;
-  align-items: center;
   gap: 8px;
 }
 
 .pagination-container {
-  padding: 20px 0 0 0;
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.empty-state {
+  padding: 40px 0;
   text-align: center;
-  background: var(--surface-elevated);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  transition: all var(--transition-normal) var(--ease-out);
 }
 
-.pagination-container:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
+.delete-dialog-content {
+  text-align: center;
+  padding: 20px 0;
 }
 
-.text-danger {
-  color: var(--market-down);
+.warning-icon {
+  font-size: 48px;
+  color: #e6a23c;
+  margin-bottom: 16px;
 }
 
-/* 动画效果 */
-.fade-in {
-  animation: fadeIn 0.5s ease-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* 延迟动画效果 */
-.delay-0 { animation-delay: 0.1s; }
-.delay-1 { animation-delay: 0.2s; }
-.delay-2 { animation-delay: 0.3s; }
-.delay-3 { animation-delay: 0.4s; }
-.delay-4 { animation-delay: 0.5s; }
-.delay-5 { animation-delay: 0.6s; }
-.delay-6 { animation-delay: 0.7s; }
-.delay-7 { animation-delay: 0.8s; }
-.delay-8 { animation-delay: 0.9s; }
-.delay-9 { animation-delay: 1.0s; }
-
-/* Element Plus 组件样式覆盖 */
-:deep(.el-card) {
-  background: var(--surface-elevated);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  transition: all var(--transition-normal) var(--ease-out);
-}
-
-:deep(.el-card:hover) {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-}
-
-:deep(.el-button) {
-  border-radius: var(--radius-md);
-  font-weight: var(--font-medium);
-  transition: all var(--transition-normal) var(--ease-out);
-}
-
-:deep(.el-button:hover) {
-  transform: translateY(-1px);
-}
-
-:deep(.el-button--primary) {
-  background: var(--btn-primary);
-  border-color: var(--btn-primary);
-  color: white;
-}
-
-:deep(.el-button--primary:hover) {
-  background: var(--btn-primary-hover);
-  border-color: var(--btn-primary-hover);
-  box-shadow: var(--glow-primary);
-}
-
-:deep(.el-button--success) {
-  background: var(--market-up);
-  border-color: var(--market-up);
-  color: white;
-}
-
-:deep(.el-button--success:hover) {
-  background: #00d4aa;
-  border-color: #00d4aa;
-  box-shadow: var(--glow-success);
-}
-
-:deep(.el-button--warning) {
-  background: var(--market-volatile);
-  border-color: var(--market-volatile);
-  color: white;
-}
-
-:deep(.el-button--warning:hover) {
-  background: #e08c00;
-  border-color: #e08c00;
-  box-shadow: var(--glow-warning);
-}
-
-:deep(.el-input__wrapper) {
-  background: var(--input-bg);
-  border-color: var(--input-border);
-  border-radius: var(--radius-md);
-}
-
-:deep(.el-input__inner) {
-  color: var(--input-text);
-}
-
-:deep(.el-input__wrapper:hover) {
-  border-color: var(--input-hover);
-}
-
-:deep(.el-input__wrapper.is-focus) {
-  border-color: var(--input-focus);
-  box-shadow: 0 0 0 2px var(--glow-primary);
-}
-
-:deep(.el-select .el-input__wrapper) {
-  background: var(--input-bg);
-  border-color: var(--input-border);
-}
-
-:deep(.el-select-dropdown) {
-  background: var(--surface-overlay);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
-}
-
-:deep(.el-select-dropdown__item) {
-  color: var(--text-primary);
-}
-
-:deep(.el-select-dropdown__item:hover) {
-  background: var(--bg-hover);
-  color: var(--text-primary);
-}
-
-:deep(.el-tag) {
-  background: var(--surface-elevated);
-  border: 1px solid var(--border-secondary);
-  border-radius: var(--radius-md);
-  color: var(--text-primary);
-  transition: all var(--transition-normal) var(--ease-out);
-}
-
-:deep(.el-tag:hover) {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
-}
-
-:deep(.el-tag--success) {
-  background: var(--market-up);
-  border-color: var(--market-up);
-  color: white;
-}
-
-:deep(.el-tag--warning) {
-  background: var(--market-volatile);
-  border-color: var(--market-volatile);
-  color: white;
-}
-
-:deep(.el-tag--info) {
-  background: var(--btn-primary);
-  border-color: var(--btn-primary);
-  color: white;
-}
-
-:deep(.el-tag--danger) {
-  background: var(--market-down);
-  border-color: var(--market-down);
-  color: white;
-}
-
-:deep(.el-table) {
-  background: transparent;
-  color: var(--text-primary);
-}
-
-:deep(.el-table th) {
-  background: var(--surface-elevated);
-  border-bottom: 1px solid var(--border-primary);
-  color: var(--text-secondary);
-  font-weight: var(--font-semibold);
-}
-
-:deep(.el-table td) {
-  background: transparent;
-  border-bottom: 1px solid var(--border-secondary);
-  color: var(--text-primary);
-}
-
-:deep(.el-table tr:hover td) {
-  background: var(--bg-hover);
-}
-
-:deep(.el-dialog) {
-  background: var(--surface-overlay);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-premium-lg);
-}
-
-:deep(.el-dialog__header) {
-  background: var(--surface-elevated);
-  border-bottom: 1px solid var(--border-primary);
-  padding: 20px 24px;
-  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-}
-
-:deep(.el-dialog__title) {
-  color: var(--text-primary);
-  font-weight: var(--font-semibold);
-}
-
-:deep(.el-dialog__body) {
-  background: var(--bg-primary);
-  padding: 24px;
-  color: var(--text-primary);
-}
-
-:deep(.el-dialog__footer) {
-  background: var(--surface-elevated);
-  border-top: 1px solid var(--border-primary);
-  padding: 16px 24px;
-  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
-}
-
-:deep(.el-empty) {
-  color: var(--text-secondary);
-}
-
-:deep(.el-empty__description) {
-  color: var(--text-secondary);
-}
-
-:deep(.el-pagination) {
-  color: var(--text-primary);
-}
-
-:deep(.el-pagination .el-pagination__total) {
-  color: var(--text-secondary);
-}
-
-:deep(.el-pagination .btn-prev),
-:deep(.el-pagination .btn-next) {
-  background: var(--surface-elevated);
-  border: 1px solid var(--border-primary);
-  color: var(--text-primary);
-}
-
-:deep(.el-pagination .btn-prev:hover),
-:deep(.el-pagination .btn-next:hover) {
-  background: var(--bg-hover);
-  border-color: var(--border-secondary);
-}
-
-:deep(.el-pagination .el-pager li) {
-  background: var(--surface-elevated);
-  border: 1px solid var(--border-primary);
-  color: var(--text-primary);
-}
-
-:deep(.el-pagination .el-pager li:hover) {
-  background: var(--bg-hover);
-  border-color: var(--border-secondary);
-}
-
-:deep(.el-pagination .el-pager li.active) {
-  background: var(--btn-primary);
-  border-color: var(--btn-primary);
-  color: white;
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .strategy-list-container {
-    padding: 12px;
-  }
-
-  .page-header {
-    flex-direction: column;
-    gap: 12px;
-    align-items: flex-start;
-    padding: 12px 16px;
-  }
-
-  .header-left h1 {
-    font-size: var(--font-2xl);
-  }
-
-  .stats-section .el-col {
-    margin-bottom: 16px;
-  }
-
-  .strategy-content {
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .strategy-actions {
-    justify-content: flex-start;
-  }
-
-  .filter-form {
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .stat-content {
-    padding: 16px;
-  }
-
-  .stat-icon {
-    width: 48px;
-    height: 48px;
-    font-size: 20px;
-  }
-
-  .stat-number {
-    font-size: var(--font-2xl);
-  }
-
-  .strategy-item:hover {
-    margin: 0 -12px;
-    padding-left: 12px;
-    padding-right: 12px;
-  }
+.warning-text {
+  color: #f56c6c;
+  margin-top: 12px;
 }
 </style>
