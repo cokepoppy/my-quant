@@ -596,10 +596,24 @@ onUnmounted(() => {
 <style scoped>
 .monitoring-container {
   padding: 20px;
+  height: 100%;
+  overflow-y: auto;
+  background: var(--bg-primary);
 }
 
 .page-header {
-  margin-bottom: 30px;
+  margin-bottom: 24px;
+  padding: 16px 20px;
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-normal) var(--ease-out);
+}
+
+.page-header:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
 }
 
 .header-content {
@@ -610,15 +624,15 @@ onUnmounted(() => {
 
 .header-left h1 {
   margin: 0 0 8px 0;
-  font-size: 28px;
-  font-weight: 600;
-  color: #333;
+  font-size: var(--font-3xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
 }
 
 .header-left p {
   margin: 0;
-  color: #666;
-  font-size: 16px;
+  color: var(--text-secondary);
+  font-size: var(--font-base);
 }
 
 .header-right {
@@ -631,13 +645,22 @@ onUnmounted(() => {
 .app-status-section,
 .alerts-section,
 .metrics-section {
-  margin-bottom: 30px;
+  margin-bottom: 24px;
 }
 
 .status-card,
 .metric-card {
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-primary);
+  transition: all var(--transition-normal) var(--ease-out);
+}
+
+.status-card:hover,
+.metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
 }
 
 .status-content,

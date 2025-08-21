@@ -8,7 +8,7 @@
           {{ isRunning ? '回测中...' : '开始回测' }}
         </el-button>
         <el-button @click="saveConfig">
-          <el-icon><Save /></el-icon>
+          <el-icon><DocumentAdd /></el-icon>
           保存配置
         </el-button>
       </div>
@@ -250,7 +250,7 @@ import { ref, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
 import {
   VideoPlay,
-  Save,
+  DocumentAdd,
   Plus
 } from '@element-plus/icons-vue'
 

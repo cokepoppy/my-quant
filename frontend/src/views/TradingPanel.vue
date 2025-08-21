@@ -127,7 +127,7 @@
               <el-select v-model="tradingForm.timeInForce" placeholder="有效期" style="width: 100%">
                 <el-option label="当日有效" value="day" />
                 <el-option label="撤单前有效" value="gtc" />
-                <el-option label "立即或撤单" value="ioc" />
+                <el-option label="立即或撤单" value="ioc" />
                 <el-option label="全部或撤单" value="fok" />
               </el-select>
             </div>

@@ -560,29 +560,41 @@ onUnmounted(() => {
 <style scoped>
 .market-data {
   padding: 20px;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  min-height: 100vh;
-  color: #e0e0e0;
+  height: 100%;
+  overflow-y: auto;
+  background: var(--bg-primary);
 }
 
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  padding: 16px 20px;
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
 }
 
 .page-header h2 {
   margin: 0;
-  color: #ffffff;
-  font-weight: 600;
+  color: var(--text-primary);
+  font-size: var(--font-2xl);
+  font-weight: var(--font-semibold);
 }
 
 .market-card {
-  background: rgba(255, 255, 255, 0.05) !important;
-  backdrop-filter: blur(10px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+  background: var(--surface-elevated) !important;
+  border: 1px solid var(--border-primary) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-md) !important;
+  transition: all var(--transition-normal) var(--ease-out) !important;
+}
+
+.market-card:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: var(--shadow-lg) !important;
 }
 
 .market-overview {
@@ -595,8 +607,17 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-secondary);
+  transition: all var(--transition-normal) var(--ease-out);
+}
+
+.overview-item:hover {
+  background: var(--bg-hover);
+  margin: 0 -16px;
+  padding-left: 16px;
+  padding-right: 16px;
+  border-radius: var(--radius-md);
 }
 
 .overview-item:last-child {
@@ -604,29 +625,30 @@ onUnmounted(() => {
 }
 
 .overview-item .label {
-  font-size: 14px;
-  color: #b0b0b0;
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+  font-weight: var(--font-medium);
 }
 
 .overview-item .value {
-  font-size: 16px;
-  font-weight: 600;
-  color: #ffffff;
+  font-size: var(--font-base);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
 }
 
 .price-value {
-  color: #00d4aa;
-  font-weight: 600;
+  color: var(--market-up);
+  font-weight: var(--font-semibold);
 }
 
 .profit {
-  color: #00d4aa !important;
-  font-weight: 600;
+  color: var(--market-up) !important;
+  font-weight: var(--font-semibold);
 }
 
 .loss {
-  color: #ff4757 !important;
-  font-weight: 600;
+  color: var(--market-down) !important;
+  font-weight: var(--font-semibold);
 }
 
 .chart-controls,
@@ -645,16 +667,25 @@ onUnmounted(() => {
 
 .watchlist-header h3 {
   margin: 0;
-  color: #ffffff;
-  font-weight: 600;
+  color: var(--text-primary);
+  font-size: var(--font-lg);
+  font-weight: var(--font-semibold);
 }
 
 .chart-container,
 .depth-container {
   height: 500px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-primary);
   padding: 20px;
+  transition: all var(--transition-normal) var(--ease-out);
+}
+
+.chart-container:hover,
+.depth-container:hover {
+  border-color: var(--border-secondary);
+  box-shadow: var(--shadow-md);
 }
 
 .depth-placeholder {
@@ -669,158 +700,211 @@ onUnmounted(() => {
   text-align: right;
 }
 
-/* 卡片样式 */
-.el-card {
-  background: rgba(255, 255, 255, 0.05) !important;
-  backdrop-filter: blur(10px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
-  transition: all 0.3s ease !important;
+/* Element Plus 组件样式覆盖 */
+:deep(.el-card) {
+  background: var(--surface-elevated) !important;
+  border: 1px solid var(--border-primary) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-md) !important;
+  transition: all var(--transition-normal) var(--ease-out) !important;
 }
 
-.el-card:hover {
+:deep(.el-card:hover) {
   transform: translateY(-2px) !important;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4) !important;
+  box-shadow: var(--shadow-lg) !important;
 }
 
-.el-card__header {
-  background: rgba(255, 255, 255, 0.02) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+:deep(.el-card__header) {
+  background: var(--surface-elevated) !important;
+  border-bottom: 1px solid var(--border-primary) !important;
+  padding: 16px 20px !important;
 }
 
-.el-card__header span {
-  color: #ffffff !important;
-  font-weight: 600 !important;
+:deep(.el-card__header span) {
+  color: var(--text-primary) !important;
+  font-weight: var(--font-semibold) !important;
 }
 
 /* 表格样式 */
-.el-table {
+:deep(.el-table) {
   background: transparent !important;
-  color: #ffffff !important;
+  color: var(--text-primary) !important;
 }
 
-.el-table th {
-  background: rgba(255, 255, 255, 0.05) !important;
-  color: #ffffff !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+:deep(.el-table th) {
+  background: var(--surface-elevated) !important;
+  color: var(--text-secondary) !important;
+  border-bottom: 1px solid var(--border-primary) !important;
+  font-weight: var(--font-semibold) !important;
 }
 
-.el-table td {
-  background: rgba(255, 255, 255, 0.02) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
-  color: #e0e0e0 !important;
+:deep(.el-table td) {
+  background: transparent !important;
+  border-bottom: 1px solid var(--border-secondary) !important;
+  color: var(--text-primary) !important;
 }
 
-.el-table--enable-row-hover .el-table__body tr:hover > td {
-  background: rgba(255, 255, 255, 0.08) !important;
+:deep(.el-table--enable-row-hover .el-table__body tr:hover > td) {
+  background: var(--bg-hover) !important;
 }
 
 /* 按钮样式 */
-.el-button {
-  border-radius: 6px !important;
-  font-weight: 500 !important;
-  transition: all 0.3s ease !important;
+:deep(.el-button) {
+  border-radius: var(--radius-md) !important;
+  font-weight: var(--font-medium) !important;
+  transition: all var(--transition-normal) var(--ease-out) !important;
 }
 
-.el-button:hover {
+:deep(.el-button:hover) {
   transform: translateY(-1px) !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+:deep(.el-button--primary) {
+  background: var(--btn-primary) !important;
+  border-color: var(--btn-primary) !important;
+  color: white !important;
+}
+
+:deep(.el-button--primary:hover) {
+  background: var(--btn-primary-hover) !important;
+  border-color: var(--btn-primary-hover) !important;
+  box-shadow: var(--glow-primary) !important;
 }
 
 /* 对话框样式 */
-.el-dialog {
-  background: rgba(26, 26, 46, 0.95) !important;
-  backdrop-filter: blur(20px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) !important;
+:deep(.el-dialog) {
+  background: var(--surface-overlay) !important;
+  border: 1px solid var(--border-primary) !important;
+  border-radius: var(--radius-xl) !important;
+  box-shadow: var(--shadow-premium-lg) !important;
 }
 
-.el-dialog__header {
-  background: rgba(255, 255, 255, 0.02) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+:deep(.el-dialog__header) {
+  background: var(--surface-elevated) !important;
+  border-bottom: 1px solid var(--border-primary) !important;
+  padding: 20px 24px !important;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0 !important;
 }
 
-.el-dialog__title {
-  color: #ffffff !important;
-  font-weight: 600 !important;
+:deep(.el-dialog__title) {
+  color: var(--text-primary) !important;
+  font-weight: var(--font-semibold) !important;
+  font-size: var(--font-lg) !important;
 }
 
-.el-dialog__body {
-  background: rgba(255, 255, 255, 0.02) !important;
-  color: #e0e0e0 !important;
+:deep(.el-dialog__body) {
+  background: var(--bg-primary) !important;
+  padding: 24px !important;
+  color: var(--text-primary) !important;
+}
+
+:deep(.el-dialog__footer) {
+  background: var(--surface-elevated) !important;
+  border-top: 1px solid var(--border-primary) !important;
+  padding: 16px 24px !important;
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl) !important;
 }
 
 /* 表单样式 */
-.el-form-item__label {
-  color: #b0b0b0 !important;
+:deep(.el-form-item__label) {
+  color: var(--text-secondary) !important;
+  font-weight: var(--font-medium) !important;
+  font-size: var(--font-sm) !important;
 }
 
-.el-input__inner {
-  background: rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  color: #ffffff !important;
+:deep(.el-input__wrapper) {
+  background: var(--input-bg) !important;
+  border-color: var(--input-border) !important;
+  border-radius: var(--radius-md) !important;
 }
 
-.el-input__inner:focus {
-  border-color: #00d4aa !important;
-  box-shadow: 0 0 0 2px rgba(0, 212, 170, 0.2) !important;
+:deep(.el-input__inner) {
+  color: var(--input-text) !important;
 }
 
-.el-select .el-input__inner {
-  background: rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  color: #ffffff !important;
+:deep(.el-input__wrapper:hover) {
+  border-color: var(--input-hover) !important;
 }
 
-.el-select-dropdown {
-  background: rgba(26, 26, 46, 0.95) !important;
-  backdrop-filter: blur(20px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+:deep(.el-input__wrapper.is-focus) {
+  border-color: var(--input-focus) !important;
+  box-shadow: 0 0 0 2px var(--glow-primary) !important;
 }
 
-.el-select-dropdown__item {
-  color: #e0e0e0 !important;
+:deep(.el-select .el-input__wrapper) {
+  background: var(--input-bg) !important;
+  border-color: var(--input-border) !important;
 }
 
-.el-select-dropdown__item:hover {
-  background: rgba(255, 255, 255, 0.1) !important;
-  color: #ffffff !important;
+:deep(.el-select-dropdown) {
+  background: var(--surface-overlay) !important;
+  border: 1px solid var(--border-primary) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+:deep(.el-select-dropdown__item) {
+  color: var(--text-primary) !important;
+}
+
+:deep(.el-select-dropdown__item:hover) {
+  background: var(--bg-hover) !important;
+  color: var(--text-primary) !important;
 }
 
 /* 标签页样式 */
-.el-tabs__nav-wrap::after {
-  background: rgba(255, 255, 255, 0.1) !important;
+:deep(.el-tabs__nav-wrap::after) {
+  background: var(--border-primary) !important;
 }
 
-.el-tabs__item {
-  color: #b0b0b0 !important;
+:deep(.el-tabs__item) {
+  color: var(--text-secondary) !important;
 }
 
-.el-tabs__item.is-active {
-  color: #00d4aa !important;
+:deep(.el-tabs__item.is-active) {
+  color: var(--btn-primary) !important;
 }
 
-.el-tabs__active-bar {
-  background: #00d4aa !important;
+:deep(.el-tabs__active-bar) {
+  background: var(--btn-primary) !important;
 }
 
 /* 分页样式 */
-.el-pagination {
-  color: #e0e0e0 !important;
+:deep(.el-pagination) {
+  color: var(--text-primary) !important;
 }
 
-.el-pagination .el-pagination__total {
-  color: #e0e0e0 !important;
+:deep(.el-pagination .el-pagination__total) {
+  color: var(--text-secondary) !important;
 }
 
-.el-pagination .el-pager li {
-  background: rgba(255, 255, 255, 0.05) !important;
-  color: #e0e0e0 !important;
+:deep(.el-pagination .btn-prev),
+:deep(.el-pagination .btn-next) {
+  background: var(--surface-elevated) !important;
+  border: 1px solid var(--border-primary) !important;
+  color: var(--text-primary) !important;
 }
 
-.el-pagination .el-pager li.active {
-  background: #00d4aa !important;
-  color: #ffffff !important;
+:deep(.el-pagination .btn-prev:hover),
+:deep(.el-pagination .btn-next:hover) {
+  background: var(--bg-hover) !important;
+  border-color: var(--border-secondary) !important;
+}
+
+:deep(.el-pagination .el-pager li) {
+  background: var(--surface-elevated) !important;
+  border: 1px solid var(--border-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+:deep(.el-pagination .el-pager li:hover) {
+  background: var(--bg-hover) !important;
+  border-color: var(--border-secondary) !important;
+}
+
+:deep(.el-pagination .el-pager li.active) {
+  background: var(--btn-primary) !important;
+  border-color: var(--btn-primary) !important;
+  color: white !important;
 }
 </style>

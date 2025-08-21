@@ -425,60 +425,40 @@ onMounted(() => {
 <style scoped>
 .trading {
   padding: 20px;
-  background: var(--gradient-primary);
-  min-height: 100vh;
-  color: var(--text-primary);
-  position: relative;
-}
-
-.trading::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: 
-    radial-gradient(circle at 10% 20%, rgba(0, 122, 255, 0.05) 0%, transparent 50%),
-    radial-gradient(circle at 90% 80%, rgba(0, 212, 170, 0.05) 0%, transparent 50%);
-  pointer-events: none;
+  height: 100%;
+  overflow-y: auto;
+  background: var(--bg-primary);
 }
 
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  position: relative;
-  z-index: 1;
-  background: var(--glass-bg);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-xl);
-  padding: var(--space-xl);
-  box-shadow: var(--shadow-glass);
-  transition: all var(--transition-smooth) var(--transition-spring);
+  margin-bottom: 24px;
+  padding: 16px 20px;
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-normal) var(--ease-out);
 }
 
 .page-header:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-premium-lg);
+  box-shadow: var(--shadow-lg);
 }
 
 .page-header h2 {
   margin: 0;
   color: var(--text-primary);
-  font-weight: 700;
-  font-size: 28px;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  font-size: var(--font-2xl);
+  font-weight: var(--font-semibold);
 }
 
 .balance-info,
 .positions-info,
 .orders-info {
   padding: 20px;
-  position: relative;
-  z-index: 1;
 }
 
 .total-balance {
@@ -487,24 +467,19 @@ onMounted(() => {
   align-items: center;
   margin-bottom: 20px;
   padding-bottom: 20px;
-  border-bottom: 1px solid var(--glass-border);
+  border-bottom: 1px solid var(--border-secondary);
 }
 
 .total-balance .label {
-  font-size: 16px;
+  font-size: var(--font-base);
   color: var(--text-secondary);
-  font-weight: 500;
+  font-weight: var(--font-medium);
 }
 
 .total-balance .value {
-  font-size: 32px;
-  font-weight: 700;
+  font-size: var(--font-3xl);
+  font-weight: var(--font-bold);
   color: var(--text-primary);
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  background: linear-gradient(135deg, var(--text-primary), var(--market-up));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .balance-detail .item,
@@ -513,17 +488,21 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
-  padding: 10px 0;
+  margin-bottom: 12px;
+  padding: 12px 16px;
   border-radius: var(--radius-lg);
-  transition: all var(--transition-smooth) var(--transition-spring);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  transition: all var(--transition-normal) var(--ease-out);
 }
 
 .balance-detail .item:hover,
 .position-item:hover,
 .order-item:hover {
-  background: rgba(255, 255, 255, 0.05);
-  transform: translateX(5px);
+  background: var(--bg-hover);
+  border-color: var(--border-secondary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .balance-detail .item:last-child,
@@ -535,204 +514,252 @@ onMounted(() => {
 .item .label,
 .position-item .label,
 .order-item .label {
-  font-size: 14px;
+  font-size: var(--font-sm);
   color: var(--text-secondary);
-  font-weight: 500;
+  font-weight: var(--font-medium);
 }
 
 .item .value,
 .position-item .value,
 .order-item .value {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: var(--font-base);
+  font-weight: var(--font-semibold);
   color: var(--text-primary);
 }
 
 .profit {
   color: var(--market-up) !important;
-  font-weight: 700;
-  text-shadow: 0 0 10px rgba(0, 212, 170, 0.3);
+  font-weight: var(--font-bold);
 }
 
 .loss {
   color: var(--market-down) !important;
-  font-weight: 700;
-  text-shadow: 0 0 10px rgba(255, 59, 48, 0.3);
+  font-weight: var(--font-bold);
 }
 
-/* 卡片样式 */
-.el-card {
-  background: var(--glass-bg) !important;
-  backdrop-filter: blur(20px) !important;
-  border: 1px solid var(--glass-border) !important;
-  border-radius: var(--radius-xl) !important;
-  box-shadow: var(--shadow-glass) !important;
-  transition: all var(--transition-smooth) var(--transition-spring) !important;
+/* Element Plus 组件样式覆盖 */
+:deep(.el-card) {
+  background: var(--surface-elevated) !important;
+  border: 1px solid var(--border-primary) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-md) !important;
+  transition: all var(--transition-normal) var(--ease-out) !important;
   position: relative;
   overflow: hidden;
 }
 
-.el-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-  transition: left 0.5s ease;
+:deep(.el-card:hover) {
+  transform: translateY(-2px) !important;
+  box-shadow: var(--shadow-lg) !important;
 }
 
-.el-card:hover::before {
-  left: 100%;
+:deep(.el-card__header) {
+  background: var(--surface-elevated) !important;
+  border-bottom: 1px solid var(--border-primary) !important;
+  padding: 16px 20px !important;
 }
 
-.el-card:hover {
-  transform: translateY(-4px) !important;
-  box-shadow: var(--shadow-premium-lg) !important;
-  border-color: var(--border-glow-primary) !important;
-}
-
-.el-card__header {
-  background: var(--glass-bg) !important;
-  backdrop-filter: blur(10px) !important;
-  border-bottom: 1px solid var(--glass-border) !important;
-  padding: var(--space-lg) !important;
-}
-
-.el-card__header span {
+:deep(.el-card__header span) {
   color: var(--text-primary) !important;
   font-weight: var(--font-semibold) !important;
   font-size: var(--font-lg) !important;
 }
 
+:deep(.el-card__body) {
+  padding: 20px !important;
+}
+
 /* 表格样式优化 */
-.el-table {
+:deep(.el-table) {
   background: transparent !important;
-  color: #ffffff !important;
+  color: var(--text-primary) !important;
 }
 
-.el-table th {
-  background: rgba(255, 255, 255, 0.05) !important;
-  color: #ffffff !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+:deep(.el-table th) {
+  background: var(--surface-elevated) !important;
+  color: var(--text-secondary) !important;
+  border-bottom: 1px solid var(--border-primary) !important;
+  font-weight: var(--font-semibold) !important;
 }
 
-.el-table td {
-  background: rgba(255, 255, 255, 0.02) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
-  color: #e0e0e0 !important;
+:deep(.el-table td) {
+  background: transparent !important;
+  border-bottom: 1px solid var(--border-secondary) !important;
+  color: var(--text-primary) !important;
 }
 
-.el-table--enable-row-hover .el-table__body tr:hover > td {
-  background: rgba(255, 255, 255, 0.08) !important;
+:deep(.el-table--enable-row-hover .el-table__body tr:hover > td) {
+  background: var(--bg-hover) !important;
 }
 
-.el-table__border {
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+:deep(.el-table__border) {
+  border: 1px solid var(--border-primary) !important;
 }
 
 /* 按钮样式优化 */
-.el-button {
-  border-radius: 6px !important;
-  font-weight: 500 !important;
-  transition: all 0.3s ease !important;
+:deep(.el-button) {
+  border-radius: var(--radius-md) !important;
+  font-weight: var(--font-medium) !important;
+  transition: all var(--transition-normal) var(--ease-out) !important;
 }
 
-.el-button:hover {
+:deep(.el-button:hover) {
   transform: translateY(-1px) !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+:deep(.el-button--primary) {
+  background: var(--btn-primary) !important;
+  border-color: var(--btn-primary) !important;
+  color: white !important;
+}
+
+:deep(.el-button--primary:hover) {
+  background: var(--btn-primary-hover) !important;
+  border-color: var(--btn-primary-hover) !important;
+  box-shadow: var(--glow-primary) !important;
+}
+
+:deep(.el-button--success) {
+  background: var(--market-up) !important;
+  border-color: var(--market-up) !important;
+  color: white !important;
+}
+
+:deep(.el-button--success:hover) {
+  background: #00d4aa !important;
+  border-color: #00d4aa !important;
+  box-shadow: var(--glow-success) !important;
+}
+
+:deep(.el-button--danger) {
+  background: var(--market-down) !important;
+  border-color: var(--market-down) !important;
+  color: white !important;
+}
+
+:deep(.el-button--danger:hover) {
+  background: #e02e24 !important;
+  border-color: #e02e24 !important;
+  box-shadow: var(--glow-danger) !important;
 }
 
 /* 对话框样式优化 */
-.el-dialog {
-  background: rgba(26, 26, 46, 0.95) !important;
-  backdrop-filter: blur(20px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) !important;
+:deep(.el-dialog) {
+  background: var(--surface-overlay) !important;
+  border: 1px solid var(--border-primary) !important;
+  border-radius: var(--radius-xl) !important;
+  box-shadow: var(--shadow-premium-lg) !important;
 }
 
-.el-dialog__header {
-  background: rgba(255, 255, 255, 0.02) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+:deep(.el-dialog__header) {
+  background: var(--surface-elevated) !important;
+  border-bottom: 1px solid var(--border-primary) !important;
+  padding: 20px 24px !important;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0 !important;
 }
 
-.el-dialog__title {
-  color: #ffffff !important;
-  font-weight: 600 !important;
+:deep(.el-dialog__title) {
+  color: var(--text-primary) !important;
+  font-weight: var(--font-semibold) !important;
+  font-size: var(--font-lg) !important;
 }
 
-.el-dialog__body {
-  background: rgba(255, 255, 255, 0.02) !important;
-  color: #e0e0e0 !important;
+:deep(.el-dialog__body) {
+  background: var(--bg-primary) !important;
+  padding: 24px !important;
+  color: var(--text-primary) !important;
+}
+
+:deep(.el-dialog__footer) {
+  background: var(--surface-elevated) !important;
+  border-top: 1px solid var(--border-primary) !important;
+  padding: 16px 24px !important;
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl) !important;
 }
 
 /* 表单样式优化 */
-.el-form-item__label {
-  color: #b0b0b0 !important;
+:deep(.el-form-item__label) {
+  color: var(--text-secondary) !important;
+  font-weight: var(--font-medium) !important;
+  font-size: var(--font-sm) !important;
 }
 
-.el-input__inner {
-  background: rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  color: #ffffff !important;
+:deep(.el-input__wrapper) {
+  background: var(--input-bg) !important;
+  border-color: var(--input-border) !important;
+  border-radius: var(--radius-md) !important;
 }
 
-.el-input__inner:focus {
-  border-color: #00d4aa !important;
-  box-shadow: 0 0 0 2px rgba(0, 212, 170, 0.2) !important;
+:deep(.el-input__inner) {
+  color: var(--input-text) !important;
 }
 
-.el-select .el-input__inner {
-  background: rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  color: #ffffff !important;
+:deep(.el-input__wrapper:hover) {
+  border-color: var(--input-hover) !important;
 }
 
-.el-select-dropdown {
-  background: rgba(26, 26, 46, 0.95) !important;
-  backdrop-filter: blur(20px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+:deep(.el-input__wrapper.is-focus) {
+  border-color: var(--input-focus) !important;
+  box-shadow: 0 0 0 2px var(--glow-primary) !important;
 }
 
-.el-select-dropdown__item {
-  color: #e0e0e0 !important;
+:deep(.el-select .el-input__wrapper) {
+  background: var(--input-bg) !important;
+  border-color: var(--input-border) !important;
 }
 
-.el-select-dropdown__item:hover {
-  background: rgba(255, 255, 255, 0.1) !important;
-  color: #ffffff !important;
+:deep(.el-select-dropdown) {
+  background: var(--surface-overlay) !important;
+  border: 1px solid var(--border-primary) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+:deep(.el-select-dropdown__item) {
+  color: var(--text-primary) !important;
+}
+
+:deep(.el-select-dropdown__item:hover) {
+  background: var(--bg-hover) !important;
+  color: var(--text-primary) !important;
 }
 
 /* 标签样式优化 */
-.el-tag {
-  border-radius: 4px !important;
-  font-weight: 500 !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+:deep(.el-tag) {
+  border-radius: var(--radius-md) !important;
+  font-weight: var(--font-medium) !important;
+  border: 1px solid var(--border-primary) !important;
+  background: var(--surface-elevated) !important;
+  color: var(--text-primary) !important;
+  transition: all var(--transition-normal) var(--ease-out) !important;
 }
 
-.el-tag--success {
-  background: rgba(0, 212, 170, 0.2) !important;
-  color: #00d4aa !important;
-  border-color: #00d4aa !important;
+:deep(.el-tag:hover) {
+  transform: translateY(-1px) !important;
+  box-shadow: var(--shadow-sm) !important;
 }
 
-.el-tag--danger {
-  background: rgba(255, 71, 87, 0.2) !important;
-  color: #ff4757 !important;
-  border-color: #ff4757 !important;
+:deep(.el-tag--success) {
+  background: var(--market-up) !important;
+  border-color: var(--market-up) !important;
+  color: white !important;
 }
 
-.el-tag--warning {
-  background: rgba(255, 193, 7, 0.2) !important;
-  color: #ffc107 !important;
-  border-color: #ffc107 !important;
+:deep(.el-tag--danger) {
+  background: var(--market-down) !important;
+  border-color: var(--market-down) !important;
+  color: white !important;
 }
 
-.el-tag--info {
-  background: rgba(108, 117, 125, 0.2) !important;
-  color: #6c757d !important;
-  border-color: #6c757d !important;
+:deep(.el-tag--warning) {
+  background: var(--market-volatile) !important;
+  border-color: var(--market-volatile) !important;
+  color: white !important;
+}
+
+:deep(.el-tag--info) {
+  background: var(--btn-primary) !important;
+  border-color: var(--btn-primary) !important;
+  color: white !important;
 }
 </style>

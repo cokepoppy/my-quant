@@ -139,98 +139,240 @@ const handleLogin = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-primary);
   padding: 20px;
+  position: relative;
+}
+
+.login-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 10% 20%, rgba(0, 122, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 90% 80%, rgba(0, 212, 170, 0.1) 0%, transparent 50%);
+  pointer-events: none;
 }
 
 .login-box {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-  padding: 40px;
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-xl) !important;
+  box-shadow: var(--shadow-premium-lg) !important;
+  padding: 48px;
   width: 100%;
-  max-width: 400px;
+  max-width: 440px;
+  position: relative;
+  z-index: 1;
+  transition: all var(--transition-smooth) var(--transition-spring);
+}
+
+.login-box::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.login-box:hover::before {
+  left: 100%;
+}
+
+.login-box:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: var(--shadow-premium-xl) !important;
+  border-color: var(--border-glow-primary) !important;
 }
 
 .login-header {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 36px;
 }
 
 .login-header h1 {
-  font-size: 28px;
-  color: #333;
-  margin-bottom: 8px;
-  font-weight: 600;
+  font-size: 32px;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .login-header p {
-  color: #666;
-  font-size: 14px;
+  color: var(--text-secondary);
+  font-size: var(--font-base);
   margin: 0;
+  font-weight: var(--font-normal);
 }
 
 .login-form {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .form-options {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 24px;
 }
 
 .forgot-password {
-  color: #409eff;
+  color: var(--btn-primary);
   text-decoration: none;
-  font-size: 14px;
+  font-size: var(--font-sm);
+  font-weight: var(--font-medium);
+  transition: all var(--transition-smooth) var(--transition-spring);
 }
 
 .forgot-password:hover {
-  text-decoration: underline;
+  color: var(--btn-primary-hover);
+  text-shadow: 0 0 8px rgba(0, 212, 170, 0.4);
 }
 
 .login-button {
   width: 100%;
-  height: 44px;
-  font-size: 16px;
-  font-weight: 500;
+  height: 48px;
+  font-size: var(--font-lg);
+  font-weight: var(--font-semibold);
+  background: var(--btn-primary) !important;
+  border-color: var(--btn-primary) !important;
+  border-radius: var(--radius-lg) !important;
+  transition: all var(--transition-smooth) var(--transition-spring);
+  position: relative;
+  overflow: hidden;
+}
+
+.login-button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+  transition: all 0.5s ease;
+  transform: translate(-50%, -50%);
+}
+
+.login-button:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.login-button:hover {
+  background: var(--btn-primary-hover) !important;
+  border-color: var(--btn-primary-hover) !important;
+  box-shadow: var(--glow-primary) !important;
+  transform: translateY(-2px);
 }
 
 .login-footer {
   text-align: center;
-  color: #666;
-  font-size: 14px;
+  color: var(--text-secondary);
+  font-size: var(--font-base);
+  margin-top: 24px;
 }
 
 .register-link {
-  color: #409eff;
+  color: var(--btn-primary);
   text-decoration: none;
-  font-weight: 500;
+  font-weight: var(--font-semibold);
+  transition: all var(--transition-smooth) var(--transition-spring);
 }
 
 .register-link:hover {
-  text-decoration: underline;
+  color: var(--btn-primary-hover);
+  text-shadow: 0 0 8px rgba(0, 212, 170, 0.4);
+}
+
+/* 表单样式 */
+.el-form-item__label {
+  color: var(--text-secondary) !important;
+  font-weight: var(--font-medium) !important;
+  font-size: var(--font-sm) !important;
+}
+
+.el-input__wrapper {
+  background: var(--input-bg) !important;
+  border-color: var(--input-border) !important;
+  border-radius: var(--radius-md) !important;
+  transition: all var(--transition-smooth) var(--transition-spring) !important;
+}
+
+.el-input__wrapper:hover {
+  border-color: var(--input-hover) !important;
+}
+
+.el-input__wrapper.is-focus {
+  border-color: var(--input-focus) !important;
+  box-shadow: 0 0 0 2px var(--glow-primary) !important;
+}
+
+.el-input__inner {
+  color: var(--input-text) !important;
+  font-size: var(--font-base) !important;
+}
+
+/* 复选框样式 */
+.el-checkbox__label {
+  color: var(--text-secondary) !important;
+  font-size: var(--font-base) !important;
+}
+
+.el-checkbox__input.is-checked .el-checkbox__inner {
+  background-color: var(--btn-primary) !important;
+  border-color: var(--btn-primary) !important;
+}
+
+.el-checkbox__inner:hover {
+  border-color: var(--btn-primary) !important;
+}
+
+.el-checkbox__inner {
+  background: var(--input-bg) !important;
+  border-color: var(--input-border) !important;
+  border-radius: var(--radius-sm) !important;
 }
 
 /* 响应式设计 */
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   .login-container {
-    padding: 10px;
+    padding: 12px;
   }
 
   .login-box {
-    padding: 30px 20px;
+    padding: 32px 24px;
+    max-width: 100%;
   }
 
   .login-header h1 {
-    font-size: 24px;
+    font-size: var(--font-xl);
+  }
+
+  .login-header p {
+    font-size: var(--font-sm);
   }
 
   .form-options {
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
     align-items: flex-start;
+  }
+
+  .login-button {
+    height: 44px;
+    font-size: var(--font-base);
+  }
+
+  .login-footer {
+    font-size: var(--font-sm);
   }
 }
 </style>

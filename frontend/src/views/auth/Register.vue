@@ -224,90 +224,256 @@ const showPrivacy = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-primary);
   padding: 20px;
+  position: relative;
+}
+
+.register-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 10% 20%, rgba(0, 122, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 90% 80%, rgba(0, 212, 170, 0.1) 0%, transparent 50%);
+  pointer-events: none;
 }
 
 .register-box {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-  padding: 40px;
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-xl) !important;
+  box-shadow: var(--shadow-premium-lg) !important;
+  padding: 48px;
   width: 100%;
-  max-width: 450px;
+  max-width: 480px;
+  position: relative;
+  z-index: 1;
+  transition: all var(--transition-smooth) var(--transition-spring);
+}
+
+.register-box::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.register-box:hover::before {
+  left: 100%;
+}
+
+.register-box:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: var(--shadow-premium-xl) !important;
+  border-color: var(--border-glow-primary) !important;
 }
 
 .register-header {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 36px;
 }
 
 .register-header h1 {
-  font-size: 28px;
-  color: #333;
-  margin-bottom: 8px;
-  font-weight: 600;
+  font-size: 32px;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .register-header p {
-  color: #666;
-  font-size: 14px;
+  color: var(--text-secondary);
+  font-size: var(--font-base);
   margin: 0;
+  font-weight: var(--font-normal);
 }
 
 .register-form {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .register-button {
   width: 100%;
-  height: 44px;
-  font-size: 16px;
-  font-weight: 500;
+  height: 48px;
+  font-size: var(--font-lg);
+  font-weight: var(--font-semibold);
+  background: var(--btn-primary) !important;
+  border-color: var(--btn-primary) !important;
+  border-radius: var(--radius-lg) !important;
+  transition: all var(--transition-smooth) var(--transition-spring);
+  position: relative;
+  overflow: hidden;
+}
+
+.register-button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+  transition: all 0.5s ease;
+  transform: translate(-50%, -50%);
+}
+
+.register-button:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.register-button:hover {
+  background: var(--btn-primary-hover) !important;
+  border-color: var(--btn-primary-hover) !important;
+  box-shadow: var(--glow-primary) !important;
+  transform: translateY(-2px);
 }
 
 .register-footer {
   text-align: center;
-  color: #666;
-  font-size: 14px;
+  color: var(--text-secondary);
+  font-size: var(--font-base);
+  margin-top: 24px;
 }
 
 .login-link {
-  color: #409eff;
+  color: var(--btn-primary);
   text-decoration: none;
-  font-weight: 500;
+  font-weight: var(--font-semibold);
+  transition: all var(--transition-smooth) var(--transition-spring);
 }
 
 .login-link:hover {
-  text-decoration: underline;
+  color: var(--btn-primary-hover);
+  text-shadow: 0 0 8px rgba(0, 212, 170, 0.4);
 }
 
 a {
-  color: #409eff;
+  color: var(--btn-primary);
   text-decoration: none;
+  font-weight: var(--font-medium);
+  transition: all var(--transition-smooth) var(--transition-spring);
 }
 
 a:hover {
-  text-decoration: underline;
+  color: var(--btn-primary-hover);
+  text-shadow: 0 0 8px rgba(0, 212, 170, 0.4);
+}
+
+/* 表单样式 */
+.el-form-item__label {
+  color: var(--text-secondary) !important;
+  font-weight: var(--font-medium) !important;
+  font-size: var(--font-sm) !important;
+}
+
+.el-input__wrapper {
+  background: var(--input-bg) !important;
+  border-color: var(--input-border) !important;
+  border-radius: var(--radius-md) !important;
+  transition: all var(--transition-smooth) var(--transition-spring) !important;
+}
+
+.el-input__wrapper:hover {
+  border-color: var(--input-hover) !important;
+}
+
+.el-input__wrapper.is-focus {
+  border-color: var(--input-focus) !important;
+  box-shadow: 0 0 0 2px var(--glow-primary) !important;
+}
+
+.el-input__inner {
+  color: var(--input-text) !important;
+  font-size: var(--font-base) !important;
+}
+
+/* 复选框样式 */
+.el-checkbox__label {
+  color: var(--text-secondary) !important;
+  font-size: var(--font-base) !important;
+}
+
+.el-checkbox__input.is-checked .el-checkbox__inner {
+  background-color: var(--btn-primary) !important;
+  border-color: var(--btn-primary) !important;
+}
+
+.el-checkbox__inner:hover {
+  border-color: var(--btn-primary) !important;
+}
+
+.el-checkbox__inner {
+  background: var(--input-bg) !important;
+  border-color: var(--input-border) !important;
+  border-radius: var(--radius-sm) !important;
+}
+
+/* 单选框样式 */
+.el-radio__label {
+  color: var(--text-secondary) !important;
+  font-size: var(--font-base) !important;
+}
+
+.el-radio__input.is-checked .el-radio__inner {
+  background-color: var(--btn-primary) !important;
+  border-color: var(--btn-primary) !important;
+}
+
+.el-radio__inner:hover {
+  border-color: var(--btn-primary) !important;
+}
+
+.el-radio__inner {
+  background: var(--input-bg) !important;
+  border-color: var(--input-border) !important;
 }
 
 /* 响应式设计 */
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   .register-container {
-    padding: 10px;
+    padding: 12px;
   }
 
   .register-box {
-    padding: 30px 20px;
+    padding: 32px 24px;
+    max-width: 100%;
   }
 
   .register-header h1 {
-    font-size: 24px;
+    font-size: var(--font-xl);
+  }
+
+  .register-header p {
+    font-size: var(--font-sm);
+  }
+
+  .register-button {
+    height: 44px;
+    font-size: var(--font-base);
+  }
+
+  .register-footer {
+    font-size: var(--font-sm);
   }
 
   .el-radio-group {
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .el-radio {
+    margin-right: 0;
   }
 }
 </style>

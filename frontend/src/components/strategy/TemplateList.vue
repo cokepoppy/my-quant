@@ -331,12 +331,20 @@ onMounted(() => {
 <style scoped>
 .template-list-container {
   padding: 20px;
+  height: 100%;
+  overflow-y: auto;
+  background: var(--bg-primary);
 }
 
 .filter-section {
   display: flex;
   gap: 16px;
   margin-bottom: 24px;
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
 }
 
 .filter-section .el-input {
@@ -360,14 +368,17 @@ onMounted(() => {
 
 .template-card {
   cursor: pointer;
-  transition: all 0.3s ease;
-  border-radius: 12px;
+  transition: all var(--transition-normal) var(--ease-out);
+  border-radius: var(--radius-lg);
   overflow: hidden;
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-primary);
+  box-shadow: var(--shadow-sm);
 }
 
 .template-card:hover {
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
   transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .template-header {
@@ -379,9 +390,9 @@ onMounted(() => {
 
 .template-info h3 {
   margin: 0 0 8px 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: #333;
+  font-size: var(--font-lg);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
 }
 
 .template-meta {
@@ -395,9 +406,9 @@ onMounted(() => {
 }
 
 .template-description {
-  color: #666;
-  font-size: 14px;
-  line-height: 1.5;
+  color: var(--text-secondary);
+  font-size: var(--font-sm);
+  line-height: var(--leading-relaxed);
   margin-bottom: 16px;
   min-height: 42px;
 }
@@ -406,8 +417,8 @@ onMounted(() => {
   display: flex;
   gap: 16px;
   margin-bottom: 16px;
-  font-size: 12px;
-  color: #888;
+  font-size: var(--font-xs);
+  color: var(--text-tertiary);
 }
 
 .parameter-count,
@@ -433,12 +444,12 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   padding-top: 16px;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--border-primary);
 }
 
 .template-stats {
-  font-size: 12px;
-  color: #888;
+  font-size: var(--font-xs);
+  color: var(--text-tertiary);
 }
 
 .stat-item .stat-label {
@@ -446,7 +457,7 @@ onMounted(() => {
 }
 
 .stat-item .stat-value {
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .template-preview {
@@ -457,14 +468,14 @@ onMounted(() => {
 .preview-header {
   margin-bottom: 24px;
   padding-bottom: 16px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--border-primary);
 }
 
 .preview-header h2 {
   margin: 0 0 12px 0;
-  font-size: 24px;
-  font-weight: 600;
-  color: #333;
+  font-size: var(--font-xl);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
 }
 
 .preview-meta {
@@ -479,15 +490,15 @@ onMounted(() => {
 
 .preview-description h3 {
   margin: 0 0 8px 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #333;
+  font-size: var(--font-base);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
 }
 
 .preview-description p {
   margin: 0;
-  color: #666;
-  line-height: 1.6;
+  color: var(--text-secondary);
+  line-height: var(--leading-normal);
 }
 
 .preview-parameters {
@@ -496,9 +507,9 @@ onMounted(() => {
 
 .preview-parameters h3 {
   margin: 0 0 12px 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #333;
+  font-size: var(--font-base);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
 }
 
 .preview-code {
@@ -507,23 +518,170 @@ onMounted(() => {
 
 .preview-code h3 {
   margin: 0 0 12px 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #333;
+  font-size: var(--font-base);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
 }
 
 .code-preview {
   font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
-  font-size: 13px;
-  background-color: #f8f9fa;
-  border: 1px solid #e9ecef;
-  border-radius: 4px;
+  font-size: var(--font-sm);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  color: var(--text-primary);
+}
+
+/* Element Plus 组件样式覆盖 */
+:deep(.el-card) {
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-normal) var(--ease-out);
+}
+
+:deep(.el-card:hover) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+:deep(.el-card__body) {
+  padding: 20px;
+}
+
+:deep(.el-input__wrapper) {
+  background: var(--input-bg);
+  border-color: var(--input-border);
+  border-radius: var(--radius-md);
+}
+
+:deep(.el-input__inner) {
+  color: var(--input-text);
+  font-size: var(--font-base);
+}
+
+:deep(.el-select .el-input__wrapper) {
+  background: var(--input-bg);
+  border-color: var(--input-border);
+}
+
+:deep(.el-button) {
+  border-radius: var(--radius-md);
+  font-weight: var(--font-medium);
+  transition: all var(--transition-normal) var(--ease-out);
+}
+
+:deep(.el-button:hover) {
+  transform: translateY(-1px);
+}
+
+:deep(.el-button--primary) {
+  background: var(--btn-primary);
+  border-color: var(--btn-primary);
+  color: white;
+}
+
+:deep(.el-button--primary:hover) {
+  background: var(--btn-primary-hover);
+  border-color: var(--btn-primary-hover);
+  box-shadow: var(--glow-primary);
+}
+
+:deep(.el-tag) {
+  border-radius: var(--radius-md);
+  font-weight: var(--font-medium);
+}
+
+:deep(.el-tag--success) {
+  background: var(--market-up);
+  border-color: var(--market-up);
+  color: white;
+}
+
+:deep(.el-tag--warning) {
+  background: var(--market-volatile);
+  border-color: var(--market-volatile);
+  color: white;
+}
+
+:deep(.el-tag--info) {
+  background: var(--btn-primary);
+  border-color: var(--btn-primary);
+  color: white;
+}
+
+:deep(.el-tag--danger) {
+  background: var(--market-down);
+  border-color: var(--market-down);
+  color: white;
+}
+
+:deep(.el-rate) {
+  color: var(--market-volatile);
+}
+
+:deep(.el-dialog) {
+  background: var(--surface-overlay);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-premium-lg);
+}
+
+:deep(.el-dialog__header) {
+  background: var(--surface-elevated);
+  border-bottom: 1px solid var(--border-primary);
+  padding: 20px 24px;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+}
+
+:deep(.el-dialog__title) {
+  color: var(--text-primary);
+  font-size: var(--font-lg);
+  font-weight: var(--font-semibold);
+}
+
+:deep(.el-dialog__body) {
+  background: var(--bg-primary);
+  padding: 24px;
+  color: var(--text-primary);
+}
+
+:deep(.el-dialog__footer) {
+  background: var(--surface-elevated);
+  border-top: 1px solid var(--border-primary);
+  padding: 16px 24px;
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+}
+
+:deep(.el-table) {
+  background: transparent;
+  color: var(--text-primary);
+}
+
+:deep(.el-table th) {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-weight: var(--font-semibold);
+}
+
+:deep(.el-table td) {
+  background: transparent;
+  color: var(--text-primary);
+}
+
+:deep(.el-table--border) {
+  border-color: var(--border-primary);
+}
+
+:deep(.el-table--border th, .el-table--border td) {
+  border-color: var(--border-primary);
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
   .template-list-container {
-    padding: 10px;
+    padding: 12px;
   }
 
   .filter-section {
