@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import * as echarts from 'echarts'
 
 interface Props {
@@ -87,16 +87,16 @@ const updateChart = () => {
       type: 'time',
       axisLine: {
         lineStyle: {
-          color: 'var(--border-color)'
+          color: 'var(--border-primary)'
         }
       },
       axisLabel: {
-        color: 'var(--muted-text)',
+        color: 'var(--text-muted)',
         fontSize: 10
       },
       splitLine: {
         lineStyle: {
-          color: 'var(--border-color)',
+          color: 'var(--border-primary)',
           opacity: 0.3
         }
       }
@@ -105,11 +105,11 @@ const updateChart = () => {
       type: 'value',
       axisLine: {
         lineStyle: {
-          color: 'var(--border-color)'
+          color: 'var(--border-primary)'
         }
       },
       axisLabel: {
-        color: 'var(--muted-text)',
+        color: 'var(--text-muted)',
         fontSize: 10,
         formatter: (value: number) => {
           return (value / 1000).toFixed(0) + 'K'
@@ -117,7 +117,7 @@ const updateChart = () => {
       },
       splitLine: {
         lineStyle: {
-          color: 'var(--border-color)',
+          color: 'var(--border-primary)',
           opacity: 0.3
         }
       }
@@ -129,7 +129,7 @@ const updateChart = () => {
       smooth: true,
       showSymbol: false,
       lineStyle: {
-        color: 'var(--primary-text)',
+        color: 'var(--market-up)',
         width: 2
       },
       areaStyle: {
@@ -141,20 +141,20 @@ const updateChart = () => {
           y2: 1,
           colorStops: [{
             offset: 0,
-            color: 'rgba(0, 255, 136, 0.3)'
+            color: 'rgba(0, 212, 170, 0.3)'
           }, {
             offset: 1,
-            color: 'rgba(0, 255, 136, 0.05)'
+            color: 'rgba(0, 212, 170, 0.05)'
           }]
         }
       }
     }],
     tooltip: {
       trigger: 'axis',
-      backgroundColor: 'var(--secondary-bg)',
-      borderColor: 'var(--border-color)',
+      backgroundColor: 'var(--surface-overlay)',
+      borderColor: 'var(--border-primary)',
       textStyle: {
-        color: 'var(--secondary-text)'
+        color: 'var(--text-primary)'
       },
       formatter: (params: any) => {
         const data = params[0]
@@ -163,7 +163,7 @@ const updateChart = () => {
         return `
           <div style="padding: 8px">
             <div style="margin-bottom: 4px; font-weight: 600">${date.toLocaleDateString('zh-CN')}</div>
-            <div>总资产: <span style="color: var(--primary-text)">$${value.toLocaleString('zh-CN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span></div>
+            <div>总资产: <span style="color: var(--market-up)">$${value.toLocaleString('zh-CN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span></div>
           </div>
         `
       }

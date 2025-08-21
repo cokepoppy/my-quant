@@ -48,25 +48,35 @@
         class="tab-pane"
         :class="{ active: activeTabId === tab.id }"
       >
-        <component :is="getComponent(tab.component)" v-bind="tab.props" />
+        <Suspense>
+          <template #default>
+            <component :is="getComponent(tab.component)" v-bind="tab.props" />
+          </template>
+          <template #fallback>
+            <div class="loading-placeholder">
+              <el-icon class="loading-icon"><Loading /></el-icon>
+              <span>加载中...</span>
+            </div>
+          </template>
+        </Suspense>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, markRaw } from 'vue'
+import { ref, computed, watch, markRaw, defineAsyncComponent } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Close, MoreFilled } from '@element-plus/icons-vue'
+import { Close, MoreFilled, Loading } from '@element-plus/icons-vue'
 
 // 组件映射
 const componentMap = {
-  'DashboardOverview': markRaw(() => import('@/views/DashboardOverview.vue')),
-  'StrategyList': markRaw(() => import('@/views/strategy/StrategyList.vue')),
-  'CreateStrategy': markRaw(() => import('@/views/strategy/CreateStrategy.vue')),
-  'BacktestSettings': markRaw(() => import('@/views/BacktestSettings.vue')),
-  'TradingPanel': markRaw(() => import('@/views/TradingPanel.vue')),
-  'Monitoring': markRaw(() => import('@/views/monitoring/Monitoring.vue'))
+  'DashboardOverview': defineAsyncComponent(() => import('@/views/DashboardOverview.vue')),
+  'StrategyList': defineAsyncComponent(() => import('@/views/strategy/StrategyList.vue')),
+  'CreateStrategy': defineAsyncComponent(() => import('@/views/strategy/CreateStrategy.vue')),
+  'BacktestSettings': defineAsyncComponent(() => import('@/views/BacktestSettings.vue')),
+  'TradingPanel': defineAsyncComponent(() => import('@/views/TradingPanel.vue')),
+  'Monitoring': defineAsyncComponent(() => import('@/views/monitoring/Monitoring.vue'))
 }
 
 interface Tab {
@@ -280,15 +290,15 @@ defineExpose({
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--secondary-bg);
+  background: var(--bg-secondary);
 }
 
 .tab-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid var(--border-color);
-  background: var(--card-bg);
+  border-bottom: 1px solid var(--border-primary);
+  background: var(--surface-elevated);
   min-height: 40px;
 }
 
@@ -305,11 +315,11 @@ defineExpose({
 }
 
 .tab-list::-webkit-scrollbar-track {
-  background: var(--primary-bg);
+  background: var(--bg-primary);
 }
 
 .tab-list::-webkit-scrollbar-thumb {
-  background: var(--brand-secondary);
+  background: var(--btn-primary);
   border-radius: 1px;
 }
 
@@ -320,7 +330,7 @@ defineExpose({
   padding: 8px 12px;
   cursor: pointer;
   transition: all 0.2s;
-  border-right: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-primary);
   white-space: nowrap;
   user-select: none;
   min-width: 80px;
@@ -328,13 +338,13 @@ defineExpose({
 }
 
 .tab-item:hover {
-  background: var(--hover-bg);
+  background: var(--bg-hover);
 }
 
 .tab-item.active {
-  background: var(--secondary-bg);
-  color: var(--primary-text);
-  border-bottom: 2px solid var(--primary-text);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--text-primary);
 }
 
 .tab-icon {
@@ -369,7 +379,7 @@ defineExpose({
 }
 
 .tab-close:hover {
-  background: var(--negative-color);
+  background: var(--market-down);
   color: white;
 }
 
@@ -381,7 +391,7 @@ defineExpose({
   display: flex;
   align-items: center;
   padding: 0 8px;
-  border-left: 1px solid var(--border-color);
+  border-left: 1px solid var(--border-primary);
 }
 
 .tab-content {
@@ -434,7 +444,7 @@ defineExpose({
   left: 0;
   width: 100%;
   height: 2px;
-  background: var(--primary-text);
+  background: var(--text-primary);
   transform: scaleX(0);
   transition: transform 0.2s ease;
 }
@@ -443,38 +453,63 @@ defineExpose({
   transform: scaleX(1);
 }
 
+/* 加载占位符 */
+.loading-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+  gap: 12px;
+}
+
+.loading-icon {
+  font-size: 24px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* 自定义滚动条样式 */
 .tab-list {
   scrollbar-width: thin;
-  scrollbar-color: var(--brand-secondary) var(--primary-bg);
+  scrollbar-color: var(--btn-primary) var(--bg-primary);
 }
 
 /* Element Plus 组件样式覆盖 */
 :deep(.el-button) {
   background: transparent;
   border: none;
-  color: var(--secondary-text);
+  color: var(--text-secondary);
   padding: 4px 8px;
   height: 24px;
 }
 
 :deep(.el-button:hover) {
-  background: var(--hover-bg);
-  color: var(--primary-text);
+  background: var(--bg-hover);
+  color: var(--text-primary);
 }
 
 :deep(.el-dropdown-menu) {
-  background: var(--secondary-bg);
-  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
 }
 
 :deep(.el-dropdown-menu__item) {
-  color: var(--secondary-text);
+  color: var(--text-secondary);
   font-size: 12px;
 }
 
 :deep(.el-dropdown-menu__item:hover) {
-  background: var(--hover-bg);
-  color: var(--primary-text);
+  background: var(--bg-hover);
+  color: var(--text-primary);
 }
 </style>

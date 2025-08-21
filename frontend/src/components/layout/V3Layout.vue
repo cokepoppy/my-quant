@@ -608,15 +608,15 @@ onMounted(() => {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--primary-bg);
-  color: var(--primary-text);
+  background: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 /* 顶部状态栏 */
 .top-status-bar {
   height: 60px;
-  background: var(--secondary-bg);
-  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-primary);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -653,12 +653,12 @@ onMounted(() => {
 
 .status-text {
   font-size: 14px;
-  color: var(--secondary-text);
+  color: var(--text-secondary);
 }
 
 .market-time {
   font-size: 13px;
-  color: var(--muted-text);
+  color: var(--text-muted);
 }
 
 .status-center {
@@ -681,13 +681,13 @@ onMounted(() => {
 
 .stat-label {
   font-size: 12px;
-  color: var(--muted-text);
+  color: var(--text-muted);
 }
 
 .stat-value {
   font-size: 16px;
   font-weight: 600;
-  color: var(--primary-text);
+  color: var(--text-primary);
 }
 
 .stat-change {
@@ -723,12 +723,12 @@ onMounted(() => {
 .user-name {
   font-size: 14px;
   font-weight: 500;
-  color: var(--primary-text);
+  color: var(--text-primary);
 }
 
 .user-role {
   font-size: 12px;
-  color: var(--muted-text);
+  color: var(--text-muted);
 }
 
 .quick-actions {
@@ -752,8 +752,8 @@ onMounted(() => {
 
 .right-panel {
   width: 300px;
-  background: var(--secondary-bg);
-  border-left: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border-primary);
   display: flex;
   flex-direction: column;
 }
@@ -764,14 +764,14 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 0 15px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-primary);
 }
 
 .panel-header h3 {
   margin: 0;
   font-size: 14px;
   font-weight: 500;
-  color: var(--primary-text);
+  color: var(--text-primary);
 }
 
 .panel-content {
@@ -788,7 +788,7 @@ onMounted(() => {
   margin: 0 0 15px 0;
   font-size: 13px;
   font-weight: 500;
-  color: var(--primary-text);
+  color: var(--text-primary);
 }
 
 .info-item {
@@ -798,7 +798,7 @@ onMounted(() => {
 .info-label {
   display: block;
   font-size: 12px;
-  color: var(--muted-text);
+  color: var(--text-muted);
   margin-bottom: 4px;
 }
 
@@ -823,7 +823,7 @@ onMounted(() => {
   display: flex;
   gap: 10px;
   padding: 8px;
-  background: var(--card-bg);
+  background: var(--surface-elevated);
   border-radius: 6px;
 }
 
@@ -851,20 +851,20 @@ onMounted(() => {
 
 .activity-text {
   font-size: 12px;
-  color: var(--primary-text);
+  color: var(--text-primary);
   margin-bottom: 2px;
 }
 
 .activity-time {
   font-size: 11px;
-  color: var(--muted-text);
+  color: var(--text-muted);
 }
 
 /* 底部信息栏 */
 .bottom-status-bar {
   height: 35px;
-  background: var(--secondary-bg);
-  border-top: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-primary);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -912,7 +912,7 @@ onMounted(() => {
 }
 
 .message-item {
-  color: var(--muted-text);
+  color: var(--text-muted);
 }
 
 .bottom-right {
@@ -962,12 +962,12 @@ onMounted(() => {
 
 .notification-time {
   font-size: 11px;
-  color: var(--muted-text);
+  color: var(--text-muted);
 }
 
 .notification-content {
   font-size: 13px;
-  color: var(--primary-text);
+  color: var(--text-primary);
   line-height: 1.4;
 }
 
@@ -1022,65 +1022,65 @@ onMounted(() => {
 :deep(.el-button) {
   background: transparent;
   border: none;
-  color: var(--secondary-text);
+  color: var(--text-secondary);
 }
 
 :deep(.el-button:hover) {
-  color: var(--primary-text);
-  background: var(--hover-bg);
+  color: var(--text-primary);
+  background: var(--bg-hover);
 }
 
 :deep(.el-progress-bar__outer) {
-  background-color: var(--border-color);
+  background-color: var(--border-primary);
 }
 
 :deep(.el-drawer) {
-  background: var(--secondary-bg);
+  background: var(--bg-secondary);
 }
 
 :deep(.el-drawer__header) {
-  color: var(--primary-text);
-  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-primary);
 }
 
 :deep(.el-drawer__body) {
-  background: var(--primary-bg);
+  background: var(--bg-primary);
 }
 
 :deep(.el-dialog) {
-  background: var(--secondary-bg);
-  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
 }
 
 :deep(.el-dialog__header) {
-  color: var(--primary-text);
-  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-primary);
 }
 
 :deep(.el-dialog__body) {
-  background: var(--primary-bg);
-  color: var(--primary-text);
+  background: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 :deep(.el-tabs__nav-wrap::after) {
-  background-color: var(--border-color);
+  background-color: var(--border-primary);
 }
 
 :deep(.el-tabs__item) {
-  color: var(--secondary-text);
+  color: var(--text-secondary);
 }
 
 :deep(.el-tabs__item.is-active) {
-  color: var(--primary-text);
+  color: var(--text-primary);
 }
 
 :deep(.el-form-item__label) {
-  color: var(--primary-text);
+  color: var(--text-primary);
 }
 
 :deep(.el-input__inner) {
-  background: var(--card-bg);
-  border-color: var(--border-color);
-  color: var(--primary-text);
+  background: var(--surface-elevated);
+  border-color: var(--border-primary);
+  color: var(--text-primary);
 }
 </style>

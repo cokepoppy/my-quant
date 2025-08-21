@@ -378,16 +378,16 @@ const getActivityIcon = (type: string) => {
 }
 
 .stat-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-primary);
   border-radius: 8px;
   padding: 20px;
   transition: all 0.2s;
 }
 
 .stat-card:hover {
-  border-color: var(--primary-text);
-  box-shadow: 0 4px 12px rgba(0, 255, 136, 0.1);
+  border-color: var(--border-glow-primary);
+  box-shadow: var(--glow-primary);
 }
 
 .stat-header {
@@ -399,19 +399,19 @@ const getActivityIcon = (type: string) => {
 
 .stat-title {
   font-size: 14px;
-  color: var(--muted-text);
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
 .stat-icon {
   font-size: 16px;
-  color: var(--primary-text);
+  color: var(--text-primary);
 }
 
 .stat-value {
   font-size: 24px;
   font-weight: 700;
-  color: var(--secondary-text);
+  color: var(--text-primary);
   margin-bottom: 8px;
 }
 
@@ -432,7 +432,7 @@ const getActivityIcon = (type: string) => {
 
 .stat-subtitle {
   font-size: 12px;
-  color: var(--muted-text);
+  color: var(--text-muted);
 }
 
 /* 图表网格 */
@@ -444,8 +444,8 @@ const getActivityIcon = (type: string) => {
 }
 
 .chart-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-primary);
   border-radius: 8px;
   display: flex;
   flex-direction: column;
@@ -456,14 +456,14 @@ const getActivityIcon = (type: string) => {
   align-items: center;
   justify-content: space-between;
   padding: 16px 20px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-primary);
 }
 
 .chart-header h3 {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
-  color: var(--primary-text);
+  color: var(--text-primary);
 }
 
 .chart-controls {
@@ -473,13 +473,13 @@ const getActivityIcon = (type: string) => {
 }
 
 .help-icon {
-  color: var(--muted-text);
+  color: var(--text-muted);
   cursor: pointer;
   font-size: 14px;
 }
 
 .help-icon:hover {
-  color: var(--primary-text);
+  color: var(--text-primary);
 }
 
 .chart-container {
@@ -500,8 +500,8 @@ const getActivityIcon = (type: string) => {
 /* 表现卡片 */
 .performance-card,
 .activity-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-primary);
   border-radius: 8px;
   display: flex;
   flex-direction: column;
@@ -512,14 +512,14 @@ const getActivityIcon = (type: string) => {
   align-items: center;
   justify-content: space-between;
   padding: 16px 20px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-primary);
 }
 
 .card-header h3 {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
-  color: var(--primary-text);
+  color: var(--text-primary);
 }
 
 /* 策略列表 */
@@ -534,7 +534,7 @@ const getActivityIcon = (type: string) => {
   align-items: center;
   justify-content: space-between;
   padding: 12px 0;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-primary);
 }
 
 .strategy-item:last-child {
@@ -548,13 +548,13 @@ const getActivityIcon = (type: string) => {
 .strategy-name {
   font-size: 14px;
   font-weight: 500;
-  color: var(--secondary-text);
+  color: var(--text-primary);
   margin-bottom: 4px;
 }
 
 .strategy-type {
   font-size: 12px;
-  color: var(--muted-text);
+  color: var(--text-muted);
 }
 
 .strategy-metrics {
@@ -572,13 +572,13 @@ const getActivityIcon = (type: string) => {
 
 .metric-label {
   font-size: 11px;
-  color: var(--muted-text);
+  color: var(--text-muted);
 }
 
 .metric-value {
   font-size: 12px;
   font-weight: 600;
-  color: var(--secondary-text);
+  color: var(--text-primary);
 }
 
 .metric-value.positive {
@@ -600,7 +600,7 @@ const getActivityIcon = (type: string) => {
   display: flex;
   gap: 12px;
   padding: 12px 0;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-primary);
 }
 
 .activity-item:last-child {
@@ -614,29 +614,29 @@ const getActivityIcon = (type: string) => {
   width: 32px;
   height: 32px;
   border-radius: 6px;
-  background: var(--hover-bg);
+  background: var(--bg-hover);
   flex-shrink: 0;
 }
 
 .activity-icon .el-icon {
   font-size: 16px;
-  color: var(--primary-text);
+  color: var(--text-primary);
 }
 
 .activity-icon.strategy .el-icon {
-  color: var(--warning-color);
+  color: var(--market-volatile);
 }
 
 .activity-icon.trade .el-icon {
-  color: var(--positive-color);
+  color: var(--market-up);
 }
 
 .activity-icon.system .el-icon {
-  color: var(--info-color);
+  color: var(--btn-primary);
 }
 
 .activity-icon.alert .el-icon {
-  color: var(--negative-color);
+  color: var(--market-down);
 }
 
 .activity-content {
@@ -646,28 +646,28 @@ const getActivityIcon = (type: string) => {
 .activity-title {
   font-size: 14px;
   font-weight: 500;
-  color: var(--secondary-text);
+  color: var(--text-primary);
   margin-bottom: 4px;
 }
 
 .activity-description {
   font-size: 12px;
-  color: var(--muted-text);
+  color: var(--text-muted);
   margin-bottom: 4px;
 }
 
 .activity-time {
   font-size: 11px;
-  color: var(--muted-text);
+  color: var(--text-muted);
 }
 
 /* 通用样式 */
 .positive {
-  color: var(--positive-color) !important;
+  color: var(--market-up) !important;
 }
 
 .negative {
-  color: var(--negative-color) !important;
+  color: var(--market-down) !important;
 }
 
 /* 响应式设计 */
@@ -707,32 +707,32 @@ const getActivityIcon = (type: string) => {
 
 .strategy-list::-webkit-scrollbar-track,
 .activity-list::-webkit-scrollbar-track {
-  background: var(--primary-bg);
+  background: var(--bg-primary);
 }
 
 .strategy-list::-webkit-scrollbar-thumb,
 .activity-list::-webkit-scrollbar-thumb {
-  background: var(--brand-secondary);
+  background: var(--btn-primary);
   border-radius: 3px;
 }
 
 /* Element Plus 组件样式覆盖 */
 :deep(.el-radio-group) {
-  background: var(--card-bg);
+  background: var(--surface-elevated);
 }
 
 :deep(.el-radio-button__inner) {
-  background: var(--card-bg);
-  border-color: var(--border-color);
-  color: var(--secondary-text);
+  background: var(--surface-elevated);
+  border-color: var(--border-primary);
+  color: var(--text-secondary);
   font-size: 12px;
   padding: 4px 8px;
 }
 
 :deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
-  background: var(--brand-secondary);
-  border-color: var(--brand-secondary);
-  color: var(--primary-bg);
+  background: var(--btn-primary);
+  border-color: var(--btn-primary);
+  color: white;
 }
 
 :deep(.el-tag) {

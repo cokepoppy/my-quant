@@ -6,6 +6,10 @@ import * as ElementPlusIconsVue from "@element-plus/icons-vue";
 import router from "@/router";
 import App from "@/App.vue";
 
+// 导入自定义样式
+import "@/styles/bloomberg-theme.css";
+import "@/styles/premium.css";
+
 // 创建应用实例
 const app = createApp(App);
 
