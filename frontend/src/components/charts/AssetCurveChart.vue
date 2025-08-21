@@ -77,27 +77,30 @@ const updateChart = () => {
   const option = {
     backgroundColor: 'transparent',
     grid: {
-      left: '3%',
-      right: '3%',
-      top: '3%',
-      bottom: '3%',
+      left: '8%',
+      right: '5%',
+      top: '8%',
+      bottom: '12%',
       containLabel: true
     },
     xAxis: {
       type: 'time',
       axisLine: {
         lineStyle: {
-          color: 'var(--border-primary)'
+          color: 'var(--border-secondary)',
+          width: 1
         }
       },
       axisLabel: {
-        color: 'var(--text-muted)',
-        fontSize: 10
+        color: 'var(--text-secondary)',
+        fontSize: 11,
+        fontWeight: 500
       },
       splitLine: {
         lineStyle: {
-          color: 'var(--border-primary)',
-          opacity: 0.3
+          color: 'var(--border-secondary)',
+          opacity: 0.6,
+          type: 'dashed'
         }
       }
     },
@@ -105,20 +108,23 @@ const updateChart = () => {
       type: 'value',
       axisLine: {
         lineStyle: {
-          color: 'var(--border-primary)'
+          color: 'var(--border-secondary)',
+          width: 1
         }
       },
       axisLabel: {
-        color: 'var(--text-muted)',
-        fontSize: 10,
+        color: 'var(--text-secondary)',
+        fontSize: 12,
+        fontWeight: 600,
         formatter: (value: number) => {
           return (value / 1000).toFixed(0) + 'K'
         }
       },
       splitLine: {
         lineStyle: {
-          color: 'var(--border-primary)',
-          opacity: 0.3
+          color: 'var(--border-secondary)',
+          opacity: 0.6,
+          type: 'dashed'
         }
       }
     },
@@ -128,9 +134,29 @@ const updateChart = () => {
       data: data,
       smooth: true,
       showSymbol: false,
+      emphasis: {
+        scale: true,
+        focus: 'series'
+      },
+      markPoint: {
+        data: [
+          { type: 'max', name: '最高值' },
+          { type: 'min', name: '最低值' }
+        ],
+        symbol: 'circle',
+        symbolSize: 6,
+        label: {
+          color: 'var(--text-primary)',
+          fontSize: 10,
+          fontWeight: 500
+        }
+      },
       lineStyle: {
         color: 'var(--market-up)',
-        width: 2
+        width: 3,
+        shadowColor: 'var(--market-up)',
+        shadowBlur: 8,
+        shadowOffsetY: 0
       },
       areaStyle: {
         color: {
@@ -141,7 +167,10 @@ const updateChart = () => {
           y2: 1,
           colorStops: [{
             offset: 0,
-            color: 'rgba(0, 212, 170, 0.3)'
+            color: 'rgba(0, 212, 170, 0.6)'
+          }, {
+            offset: 0.8,
+            color: 'rgba(0, 212, 170, 0.2)'
           }, {
             offset: 1,
             color: 'rgba(0, 212, 170, 0.05)'
