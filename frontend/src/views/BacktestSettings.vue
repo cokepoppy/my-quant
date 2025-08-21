@@ -127,7 +127,7 @@
               <el-button
                 size="small"
                 type="danger"
-                @click="removeParam(index"
+                @click="removeParam(index)"
                 :disabled="backtestForm.strategyParams.length === 1"
               >
                 删除
