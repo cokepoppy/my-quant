@@ -248,31 +248,187 @@ const handleBacktest = () => {
 <style scoped>
 .create-strategy {
   padding: 20px;
+  height: 100%;
+  overflow-y: auto;
+  background: var(--bg-primary);
 }
 
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  padding: 16px 20px;
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
 }
 
 .page-header h2 {
   margin: 0;
-  color: #333;
+  color: var(--text-primary);
+  font-size: var(--font-2xl);
+  font-weight: var(--font-semibold);
+}
+
+/* Element Plus 组件样式覆盖 */
+:deep(.el-card) {
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+:deep(.el-card__body) {
+  padding: 24px;
+}
+
+:deep(.el-form-item__label) {
+  color: var(--text-secondary);
+  font-weight: var(--font-medium);
+  font-size: var(--font-sm);
+}
+
+:deep(.el-input__inner) {
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--input-text);
+  border-radius: var(--radius-md);
+  font-size: var(--font-base);
+}
+
+:deep(.el-input__inner:focus) {
+  border-color: var(--input-focus);
+  box-shadow: 0 0 0 2px var(--glow-primary);
+}
+
+:deep(.el-input__inner::placeholder) {
+  color: var(--input-placeholder);
+}
+
+:deep(.el-textarea__inner) {
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--input-text);
+  border-radius: var(--radius-md);
+  font-size: var(--font-base);
+}
+
+:deep(.el-textarea__inner:focus) {
+  border-color: var(--input-focus);
+  box-shadow: 0 0 0 2px var(--glow-primary);
+}
+
+:deep(.el-select) {
+  width: 100%;
+}
+
+:deep(.el-select .el-input__inner) {
+  cursor: pointer;
+}
+
+:deep(.el-input-number) {
+  width: 100%;
+}
+
+:deep(.el-input-number .el-input__inner) {
+  text-align: left;
 }
 
 .code-editor {
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
   overflow: hidden;
+  background: var(--bg-secondary);
 }
 
 .code-editor :deep(.el-textarea__inner) {
   border: none;
+  background: transparent;
   font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: var(--font-sm);
+  line-height: 1.6;
   resize: none;
+  color: var(--text-primary);
+}
+
+.code-editor :deep(.el-textarea__inner):focus {
+  box-shadow: none;
+}
+
+/* 按钮样式 */
+:deep(.el-button) {
+  border-radius: var(--radius-md);
+  font-weight: var(--font-medium);
+  transition: all var(--transition-normal) var(--ease-out);
+}
+
+:deep(.el-button--primary) {
+  background: var(--btn-primary);
+  border-color: var(--btn-primary);
+  color: white;
+}
+
+:deep(.el-button--primary:hover) {
+  background: var(--btn-primary-hover);
+  border-color: var(--btn-primary-hover);
+  box-shadow: var(--glow-primary);
+}
+
+:deep(.el-button--default) {
+  background: var(--btn-secondary);
+  border-color: var(--border-primary);
+  color: var(--text-secondary);
+}
+
+:deep(.el-button--default:hover) {
+  background: var(--bg-hover);
+  border-color: var(--border-secondary);
+  color: var(--text-primary);
+}
+
+:deep(.el-button--danger) {
+  background: var(--market-down);
+  border-color: var(--market-down);
+  color: white;
+}
+
+:deep(.el-button--danger:hover) {
+  background: #e02e24;
+  border-color: #e02e24;
+  box-shadow: var(--glow-danger);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .create-strategy {
+    padding: 12px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 12px 16px;
+  }
+
+  .page-header h2 {
+    font-size: var(--font-xl);
+  }
+
+  :deep(.el-card__body) {
+    padding: 16px;
+  }
+
+  :deep(.el-form-item__label) {
+    float: none;
+    display: block;
+    text-align: left;
+    margin-bottom: 8px;
+  }
+
+  :deep(.el-form-item__content) {
+    margin-left: 0 !important;
+  }
 }
 </style>
