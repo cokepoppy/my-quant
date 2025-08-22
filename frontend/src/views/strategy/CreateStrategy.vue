@@ -121,7 +121,7 @@
             <el-input
               v-model="form.code"
               type="textarea"
-              :rows="20"
+              :rows="25"
               placeholder="请输入策略代码"
             />
           </div>
@@ -291,14 +291,13 @@ const handleBacktest = () => {
 
 :deep(.el-input__inner) {
   background: var(--input-bg);
-  border: 1px solid var(--input-border);
+  border: none;
   color: var(--input-text);
   border-radius: var(--radius-md);
   font-size: var(--font-base);
 }
 
 :deep(.el-input__inner:focus) {
-  border-color: var(--input-focus);
   box-shadow: 0 0 0 2px var(--glow-primary);
 }
 
@@ -308,14 +307,13 @@ const handleBacktest = () => {
 
 :deep(.el-textarea__inner) {
   background: var(--input-bg);
-  border: 1px solid var(--input-border);
+  border: none;
   color: var(--input-text);
   border-radius: var(--radius-md);
   font-size: var(--font-base);
 }
 
 :deep(.el-textarea__inner:focus) {
-  border-color: var(--input-focus);
   box-shadow: 0 0 0 2px var(--glow-primary);
 }
 
@@ -340,6 +338,9 @@ const handleBacktest = () => {
   border-radius: var(--radius-lg);
   overflow: hidden;
   background: var(--bg-secondary);
+  width: 100%;
+  max-width: 100%;
+  min-height: 400px;
 }
 
 .code-editor :deep(.el-textarea__inner) {
@@ -350,6 +351,9 @@ const handleBacktest = () => {
   line-height: 1.6;
   resize: none;
   color: var(--text-primary);
+  width: 100% !important;
+  min-height: 380px !important;
+  padding: 16px !important;
 }
 
 .code-editor :deep(.el-textarea__inner):focus {

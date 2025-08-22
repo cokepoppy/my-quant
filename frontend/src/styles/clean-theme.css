@@ -141,10 +141,10 @@
   --space-4xl: 40px;
 
   /* Border Radius - 现代的圆角 */
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
+  --radius-sm: 1px;
+  --radius-md: 1px;
+  --radius-lg: 1px;
+  --radius-xl: 1px;
   --radius-full: 9999px;
 
   /* Transitions - 流畅的过渡 */
@@ -245,7 +245,7 @@
 /* 输入框样式 */
 .clean-theme .input {
   background-color: var(--input-bg);
-  border: 1px solid var(--input-border);
+  /*border: 0px solid var(--input-border);*/
   border-radius: var(--radius-md);
   color: var(--input-text);
   padding: var(--space-sm) var(--space-md);
@@ -640,7 +640,7 @@
 /* 清爽的输入框 */
 .clean-theme .clean-input {
   background: var(--input-bg);
-  border: 1px solid var(--input-border);
+  /*border: 0px solid var(--input-border);*/
   border-radius: var(--radius-lg);
   color: var(--input-text);
   padding: var(--space-md) var(--space-lg);

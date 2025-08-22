@@ -18,20 +18,26 @@
         <div class="quick-stats">
           <div class="stat-item">
             <span class="stat-label">总资产</span>
-            <span class="stat-value">${{ totalAssets.toLocaleString() }}</span>
-            <span class="stat-change" :class="totalChange >= 0 ? 'positive' : 'negative'">
-              {{ totalChange >= 0 ? '+' : '' }}{{ totalChange.toFixed(2) }}%
-            </span>
+            <div class="stat-content">
+              <span class="stat-value">${{ totalAssets.toLocaleString() }}</span>
+              <span class="stat-change" :class="totalChange >= 0 ? 'positive' : 'negative'">
+                {{ totalChange >= 0 ? '+' : '' }}{{ totalChange.toFixed(2) }}%
+              </span>
+            </div>
           </div>
           <div class="stat-item">
             <span class="stat-label">今日盈亏</span>
-            <span class="stat-value" :class="todayPnL >= 0 ? 'positive' : 'negative'">
-              {{ todayPnL >= 0 ? '+' : '' }}${{ todayPnL.toFixed(2) }}
-            </span>
+            <div class="stat-content">
+              <span class="stat-value" :class="todayPnL >= 0 ? 'positive' : 'negative'">
+                {{ todayPnL >= 0 ? '+' : '' }}${{ todayPnL.toFixed(2) }}
+              </span>
+            </div>
           </div>
           <div class="stat-item">
             <span class="stat-label">运行策略</span>
-            <span class="stat-value">{{ runningStrategies }}/{{ totalStrategies }}</span>
+            <div class="stat-content">
+              <span class="stat-value">{{ runningStrategies }}/{{ totalStrategies }}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -669,29 +675,36 @@ onMounted(() => {
 
 .quick-stats {
   display: flex;
-  gap: 30px;
+  gap: 60px;
 }
 
 .stat-item {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 4px;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 140px;
+}
+
+.stat-content {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
 }
 
 .stat-label {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-muted);
 }
 
 .stat-value {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-primary);
 }
 
 .stat-change {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 500;
 }
 
@@ -978,7 +991,7 @@ onMounted(() => {
   }
   
   .quick-stats {
-    gap: 20px;
+    gap: 40px;
   }
 }
 
