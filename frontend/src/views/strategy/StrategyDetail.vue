@@ -2,7 +2,7 @@
   <div class="strategy-detail-container">
     <div class="detail-header">
       <div class="header-left">
-        <h1>{{ strategy.name }}</h1>
+        <h1>{{ strategy.name || '策略详情' }}</h1>
         <div class="strategy-status">
           <el-tag :type="getStatusTagType(strategy.status)" effect="dark">
             {{ getStatusText(strategy.status) }}
@@ -11,8 +11,8 @@
         </div>
       </div>
       <div class="header-actions">
-        <el-button @click="$router.push('/strategies')">返回列表</el-button>
-        <el-button type="primary" @click="editStrategy">编辑策略</el-button>
+        <el-button @click="emit('back-to-list')">返回列表</el-button>
+        <el-button type="primary" @click="emit('edit-strategy', strategy)">编辑策略</el-button>
         <el-button 
           :type="strategy.status === 'active' ? 'danger' : 'success'"
           @click="toggleStrategyStatus"
@@ -21,7 +21,7 @@
         </el-button>
         <el-dropdown trigger="click" @command="handleCommand">
           <el-button>
-            更多操作<el-icon class="el-icon--right"><arrow-down /></el-icon>
+            更多操作<el-icon class="el-icon--right"><ArrowDown /></el-icon>
           </el-button>
           <template #dropdown>
             <el-dropdown-menu>
@@ -109,13 +109,13 @@
           <div class="performance-metrics">
             <div class="metric-item">
               <div class="metric-label">总收益率</div>
-              <div :class="['metric-value', strategy.profitRate >= 0 ? 'profit-positive' : 'profit-negative']">
+              <div :class="['metric-value', (strategy.profitRate || 0) >= 0 ? 'profit-positive' : 'profit-negative']">
                 {{ formatProfitRate(strategy.profitRate) }}
               </div>
             </div>
             <div class="metric-item">
               <div class="metric-label">夏普比率</div>
-              <div class="metric-value">{{ strategy.sharpeRatio?.toFixed(2) || '--' }}</div>
+              <div class="metric-value">{{ strategy.sharpeRatio ? strategy.sharpeRatio.toFixed(2) : '--' }}</div>
             </div>
             <div class="metric-item">
               <div class="metric-label">最大回撤</div>
@@ -128,7 +128,9 @@
           </div>
           
           <div class="chart-container">
-            <asset-curve-chart :data="performanceData" />
+            <div class="chart-placeholder">
+              <p>性能图表将在这里显示</p>
+            </div>
           </div>
         </el-card>
       </el-col>
@@ -140,14 +142,14 @@
             <div class="card-header">
               <h3>策略代码</h3>
               <div class="code-actions">
-                <el-button size="small" @click="copyCode" icon="Document-copy">复制</el-button>
-                <el-button size="small" @click="downloadCode" icon="Download">下载</el-button>
+                <el-button size="small" @click="copyCode">复制</el-button>
+                <el-button size="small" @click="downloadCode">下载</el-button>
               </div>
             </div>
           </template>
           
           <div class="code-container">
-            <div class="code-editor" ref="codeViewer"></div>
+            <pre class="code-display">{{ strategy.code || '// 策略代码将在这里显示' }}</pre>
           </div>
         </el-card>
 
@@ -180,7 +182,7 @@
             <el-table-column prop="amount" label="数量" width="120" />
             <el-table-column prop="profit" label="盈亏" width="120">
               <template #default="{ row }">
-                <span :class="row.profit >= 0 ? 'profit-positive' : 'profit-negative'">
+                <span :class="(row.profit || 0) >= 0 ? 'profit-positive' : 'profit-negative'">
                   {{ formatMoney(row.profit) }}
                 </span>
               </template>
@@ -198,7 +200,7 @@
       :close-on-click-modal="false"
     >
       <div class="delete-dialog-content">
-        <el-icon class="warning-icon"><warning /></el-icon>
+        <el-icon class="warning-icon"><Warning /></el-icon>
         <p>确定要删除策略 <strong>{{ strategy.name }}</strong> 吗？</p>
         <p class="warning-text">此操作不可逆，策略相关的所有数据将被永久删除。</p>
       </div>
@@ -210,151 +212,116 @@
   </div>
 </template>
 
-<script>
-import { ref, reactive, onMounted, nextTick } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
-import { ElMessage, ElMessageBox } from 'element-plus';
-import { ArrowDown, Warning } from '@element-plus/icons-vue';
-import { useStrategyStore } from '@/stores/strategy';
-import { formatDistanceToNow } from 'date-fns';
-import { zhCN } from 'date-fns/locale';
-import AssetCurveChart from '@/components/charts/AssetCurveChart.vue';
-import CodeMirror from 'codemirror';
-import 'codemirror/lib/codemirror.css';
-import 'codemirror/theme/monokai.css';
-import 'codemirror/mode/python/python';
-import 'codemirror/addon/edit/matchbrackets';
-import 'codemirror/addon/selection/active-line';
-import 'codemirror/addon/fold/foldgutter';
-import 'codemirror/addon/fold/foldgutter.css';
-import 'codemirror/addon/fold/brace-fold';
-import 'codemirror/addon/fold/indent-fold';
+<script setup>
+import { ref, reactive, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import { ArrowDown, Warning } from '@element-plus/icons-vue'
 
-export default {
-  name: 'StrategyDetail',
-  components: {
-    ArrowDown,
-    Warning,
-    AssetCurveChart
+// 定义props和emits
+const props = defineProps({
+  strategyId: {
+    type: [String, Number],
+    required: true
   },
-  setup() {
-    const router = useRouter();
-    const route = useRoute();
-    const strategyStore = useStrategyStore();
-    const codeViewer = ref(null);
-    const performancePeriod = ref('30d');
-    const deleteDialogVisible = ref(false);
-    const deleting = ref(false);
-    const loadingTrades = ref(false);
-    
-    let editor = null;
-    
-    // 策略数据
-    const strategy = reactive({
-      id: route.params.id,
-      name: '',
-      description: '',
-      type: '',
-      symbol: '',
-      timeframe: '',
-      initialCapital: 10000,
-      maxPosition: 10,
-      stopLossRatio: 2.0,
-      takeProfitRatio: 5.0,
-      code: '',
-      status: 'inactive',
-      profitRate: 0,
-      sharpeRatio: null,
-      maxDrawdown: null,
-      winRate: null,
-      createdAt: null,
-      updatedAt: null
-    });
-    
-    // 性能数据
-    const performanceData = ref([]);
-    
-    // 最近交易
-    const recentTrades = ref([]);
-    
-    const strategyTypes = [
-      { value: 'trend_following', label: '趋势跟踪' },
-      { value: 'mean_reversion', label: '均值回归' },
-      { value: 'breakout', label: '突破策略' },
-      { value: 'statistical_arbitrage', label: '统计套利' },
-      { value: 'machine_learning', label: '机器学习' },
-      { value: 'custom', label: '自定义策略' },
-    ];
-    
-    const symbols = [
-      { value: 'BTCUSDT', label: 'BTC/USDT - 比特币' },
-      { value: 'ETHUSDT', label: 'ETH/USDT - 以太坊' },
-      { value: 'BNBUSDT', label: 'BNB/USDT - 币安币' },
-      { value: '000001.SH', label: '上证指数' },
-      { value: '399001.SZ', label: '深证成指' },
-      { value: '399006.SZ', label: '创业板指' },
-    ];
-    
-    const timeframes = [
-      { value: '1m', label: '1分钟' },
-      { value: '5m', label: '5分钟' },
-      { value: '15m', label: '15分钟' },
-      { value: '30m', label: '30分钟' },
-      { value: '1h', label: '1小时' },
-      { value: '4h', label: '4小时' },
-      { value: '1d', label: '日线' },
-      { value: '1w', label: '周线' },
-    ];
-    
-    // 初始化代码查看器
-    const initCodeViewer = () => {
-      nextTick(() => {
-        if (codeViewer.value) {
-          editor = CodeMirror(codeViewer.value, {
-            value: strategy.code || '',
-            mode: 'python',
-            theme: 'monokai',
-            lineNumbers: true,
-            lineWrapping: true,
-            matchBrackets: true,
-            styleActiveLine: true,
-            foldGutter: true,
-            gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter'],
-            readOnly: true
-          });
-        }
-      });
-    };
-    
-    // 加载策略数据
-    const loadStrategy = async () => {
-      try {
-        // 实际项目中应该调用API获取数据
-        // const data = await strategyStore.getStrategy(strategy.id);
-        // Object.assign(strategy, data);
-        
-        // 使用模拟数据
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // 模拟策略数据
-        Object.assign(strategy, {
-          name: 'BTC趋势跟踪策略',
-          description: '基于移动平均线的趋势跟踪策略，当短期均线上穿长期均线时买入，下穿时卖出。',
-          type: 'trend_following',
-          symbol: 'BTCUSDT',
-          timeframe: '1h',
-          initialCapital: 10000,
-          maxPosition: 20,
-          stopLossRatio: 2.0,
-          takeProfitRatio: 5.0,
-          status: 'active',
-          profitRate: 12.5,
-          sharpeRatio: 1.8,
-          maxDrawdown: 8.3,
-          winRate: 65.2,
-          createdAt: new Date(2023, 5, 15),
-          updatedAt: new Date(2023, 6, 20),
-          code: `# 策略名称: BTC趋势跟踪策略
+  strategy: {
+    type: Object,
+    default: () => ({})
+  }
+})
+
+const emit = defineEmits(['back-to-list', 'edit-strategy'])
+
+const router = useRouter()
+const performancePeriod = ref('30d')
+const deleteDialogVisible = ref(false)
+const deleting = ref(false)
+const loadingTrades = ref(false)
+
+// 策略数据 - 使用传入的 strategy prop 或默认值
+const strategy = reactive({
+  id: props.strategyId,
+  name: '',
+  description: '',
+  type: '',
+  symbol: '',
+  timeframe: '',
+  initialCapital: 10000,
+  maxPosition: 10,
+  stopLossRatio: 2.0,
+  takeProfitRatio: 5.0,
+  code: '',
+  status: 'inactive',
+  profitRate: 0,
+  sharpeRatio: null,
+  maxDrawdown: null,
+  winRate: null,
+  createdAt: null,
+  updatedAt: null
+})
+
+// 最近交易
+const recentTrades = ref([])
+
+const strategyTypes = [
+  { value: 'trend_following', label: '趋势跟踪' },
+  { value: 'mean_reversion', label: '均值回归' },
+  { value: 'breakout', label: '突破策略' },
+  { value: 'statistical_arbitrage', label: '统计套利' },
+  { value: 'machine_learning', label: '机器学习' },
+  { value: 'custom', label: '自定义策略' }
+]
+
+const symbols = [
+  { value: 'BTCUSDT', label: 'BTC/USDT - 比特币' },
+  { value: 'ETHUSDT', label: 'ETH/USDT - 以太坊' },
+  { value: 'BNBUSDT', label: 'BNB/USDT - 币安币' },
+  { value: '000001.SH', label: '上证指数' },
+  { value: '399001.SZ', label: '深证成指' },
+  { value: '399006.SZ', label: '创业板指' }
+]
+
+const timeframes = [
+  { value: '1m', label: '1分钟' },
+  { value: '5m', label: '5分钟' },
+  { value: '15m', label: '15分钟' },
+  { value: '30m', label: '30分钟' },
+  { value: '1h', label: '1小时' },
+  { value: '4h', label: '4小时' },
+  { value: '1d', label: '日线' },
+  { value: '1w', label: '周线' }
+]
+
+// 加载策略数据
+const loadStrategy = async () => {
+  try {
+    // 如果有传入的 strategy prop，直接使用
+    if (props.strategy && Object.keys(props.strategy).length > 0) {
+      Object.assign(strategy, props.strategy)
+      console.log('🔥 StrategyDetail: 使用传入的策略数据', strategy)
+    } else {
+      // 否则使用模拟数据
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      // 模拟策略数据
+      Object.assign(strategy, {
+        name: 'BTC趋势跟踪策略',
+        description: '基于移动平均线的趋势跟踪策略，当短期均线上穿长期均线时买入，下穿时卖出。',
+        type: 'trend_following',
+        symbol: 'BTCUSDT',
+        timeframe: '1h',
+        initialCapital: 10000,
+        maxPosition: 20,
+        stopLossRatio: 2.0,
+        takeProfitRatio: 5.0,
+        status: 'active',
+        profitRate: 12.5,
+        sharpeRatio: 1.8,
+        maxDrawdown: 8.3,
+        winRate: 65.2,
+        createdAt: new Date(2023, 5, 15),
+        updatedAt: new Date(2023, 6, 20),
+        code: `# 策略名称: BTC趋势跟踪策略
 # 交易品种: BTCUSDT
 # 时间周期: 1h
 
@@ -411,385 +378,292 @@ class MyStrategy(StrategyBase):
         """策略结束时调用"""
         self.log("策略运行结束")
 `
-        });
-        
-        // 初始化代码查看器
-        initCodeViewer();
-        
-        // 加载性能数据
-        loadPerformanceData();
-        
-        // 加载最近交易
-        loadRecentTrades();
-      } catch (error) {
-        ElMessage.error('加载策略失败: ' + error.message);
-      }
-    };
-    
-    // 加载性能数据
-    const loadPerformanceData = async () => {
-      try {
-        // 实际项目中应该调用API获取数据
-        // const data = await strategyStore.getStrategyPerformance(strategy.id, performancePeriod.value);
-        // performanceData.value = data;
-        
-        // 使用模拟数据
-        await new Promise(resolve => setTimeout(resolve, 300));
-        
-        // 生成模拟数据
-        const now = new Date();
-        const data = [];
-        let value = 10000;
-        
-        for (let i = 30; i >= 0; i--) {
-          const date = new Date(now);
-          date.setDate(date.getDate() - i);
-          
-          // 随机波动
-          const change = (Math.random() - 0.45) * 200;
-          value += change;
-          
-          data.push({
-            date: date.toISOString().split('T')[0],
-            value: value
-          });
-        }
-        
-        performanceData.value = data;
-      } catch (error) {
-        ElMessage.error('加载性能数据失败: ' + error.message);
-      }
-    };
+      })
+    }
     
     // 加载最近交易
-    const loadRecentTrades = async () => {
-      loadingTrades.value = true;
-      try {
-        // 实际项目中应该调用API获取数据
-        // const data = await strategyStore.getStrategyTrades(strategy.id, { limit: 5 });
-        // recentTrades.value = data;
-        
-        // 使用模拟数据
-        await new Promise(resolve => setTimeout(resolve, 400));
-        
-        // 模拟交易数据
-        recentTrades.value = [
-          {
-            id: '1',
-            time: new Date(2023, 7, 20, 14, 30),
-            type: 'buy',
-            price: 29850.25,
-            amount: 0.15,
-            profit: 0
-          },
-          {
-            id: '2',
-            time: new Date(2023, 7, 19, 10, 15),
-            type: 'sell',
-            price: 30120.50,
-            amount: 0.15,
-            profit: 40.54
-          },
-          {
-            id: '3',
-            time: new Date(2023, 7, 18, 22, 45),
-            type: 'buy',
-            price: 29780.75,
-            amount: 0.15,
-            profit: 0
-          },
-          {
-            id: '4',
-            time: new Date(2023, 7, 17, 16, 20),
-            type: 'sell',
-            price: 29650.30,
-            amount: 0.2,
-            profit: -28.14
-          },
-          {
-            id: '5',
-            time: new Date(2023, 7, 16, 9, 5),
-            type: 'buy',
-            price: 29790.80,
-            amount: 0.2,
-            profit: 0
-          }
-        ];
-      } catch (error) {
-        ElMessage.error('加载交易数据失败: ' + error.message);
-      } finally {
-        loadingTrades.value = false;
-      }
-    };
-    
-    // 编辑策略
-    const editStrategy = () => {
-      router.push({ name: 'EditStrategy', params: { id: strategy.id } });
-    };
-    
-    // 切换策略状态
-    const toggleStrategyStatus = async () => {
-      try {
-        const newStatus = strategy.status === 'active' ? 'inactive' : 'active';
-        const actionText = newStatus === 'active' ? '启用' : '停用';
-        
-        // 实际项目中应该调用API更新状态
-        // await strategyStore.updateStrategyStatus(strategy.id, newStatus);
-        
-        // 模拟API调用
-        await new Promise(resolve => setTimeout(resolve, 300));
-        
-        // 更新本地状态
-        strategy.status = newStatus;
-        
-        ElMessage.success(`策略${actionText}成功`);
-      } catch (error) {
-        ElMessage.error('操作失败: ' + error.message);
-      }
-    };
-    
-    // 处理下拉菜单命令
-    const handleCommand = (command) => {
-      switch (command) {
-        case 'backtest':
-          router.push({ name: 'Backtest', query: { strategyId: strategy.id } });
-          break;
-        case 'duplicate':
-          duplicateStrategy();
-          break;
-        case 'export':
-          exportStrategy();
-          break;
-        case 'delete':
-          deleteDialogVisible.value = true;
-          break;
-      }
-    };
-    
-    // 复制策略
-    const duplicateStrategy = async () => {
-      try {
-        // 实际项目中应该调用API复制策略
-        // const newStrategy = await strategyStore.duplicateStrategy(strategy.id);
-        // router.push({ name: 'EditStrategy', params: { id: newStrategy.id } });
-        
-        // 模拟API调用
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        ElMessage.success('策略复制成功');
-        router.push({ name: 'StrategyList' });
-      } catch (error) {
-        ElMessage.error('复制失败: ' + error.message);
-      }
-    };
-    
-    // 导出策略
-    const exportStrategy = () => {
-      try {
-        // 创建要导出的策略数据
-        const exportData = {
-          name: strategy.name,
-          description: strategy.description,
-          type: strategy.type,
-          symbol: strategy.symbol,
-          timeframe: strategy.timeframe,
-          initialCapital: strategy.initialCapital,
-          maxPosition: strategy.maxPosition,
-          stopLossRatio: strategy.stopLossRatio,
-          takeProfitRatio: strategy.takeProfitRatio,
-          code: strategy.code
-        };
-        
-        // 转换为JSON字符串
-        const jsonStr = JSON.stringify(exportData, null, 2);
-        
-        // 创建Blob对象
-        const blob = new Blob([jsonStr], { type: 'application/json' });
-        
-        // 创建下载链接
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${strategy.name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.json`;
-        
-        // 触发下载
-        document.body.appendChild(a);
-        a.click();
-        
-        // 清理
-        setTimeout(() => {
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-        }, 0);
-        
-        ElMessage.success('策略导出成功');
-      } catch (error) {
-        ElMessage.error('导出失败: ' + error.message);
-      }
-    };
-    
-    // 确认删除策略
-    const confirmDelete = async () => {
-      deleting.value = true;
-      try {
-        // 实际项目中应该调用API删除策略
-        // await strategyStore.deleteStrategy(strategy.id);
-        
-        // 模拟API调用
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        ElMessage.success('策略删除成功');
-        deleteDialogVisible.value = false;
-        router.push({ name: 'StrategyList' });
-      } catch (error) {
-        ElMessage.error('删除失败: ' + error.message);
-      } finally {
-        deleting.value = false;
-      }
-    };
-    
-    // 复制代码
-    const copyCode = () => {
-      try {
-        navigator.clipboard.writeText(strategy.code);
-        ElMessage.success('代码已复制到剪贴板');
-      } catch (error) {
-        ElMessage.error('复制失败: ' + error.message);
-      }
-    };
-    
-    // 下载代码
-    const downloadCode = () => {
-      try {
-        // 创建Blob对象
-        const blob = new Blob([strategy.code], { type: 'text/plain' });
-        
-        // 创建下载链接
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${strategy.name.replace(/\s+/g, '_')}.py`;
-        
-        // 触发下载
-        document.body.appendChild(a);
-        a.click();
-        
-        // 清理
-        setTimeout(() => {
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-        }, 0);
-        
-        ElMessage.success('代码下载成功');
-      } catch (error) {
-        ElMessage.error('下载失败: ' + error.message);
-      }
-    };
-    
-    // 查看所有交易
-    const viewAllTrades = () => {
-      router.push({ name: 'StrategyTrades', params: { id: strategy.id } });
-    };
-    
-    // 格式化收益率
-    const formatProfitRate = (rate) => {
-      if (rate === undefined || rate === null) return '--';
-      return `${rate >= 0 ? '+' : ''}${rate.toFixed(2)}%`;
-    };
-    
-    // 格式化日期
-    const formatDate = (date) => {
-      if (!date) return '--';
-      try {
-        const d = new Date(date);
-        return `${d.toLocaleDateString()} ${d.toLocaleTimeString()}`;
-      } catch (e) {
-        return '--';
-      }
-    };
-    
-    // 格式化金额
-    const formatMoney = (amount) => {
-      if (amount === undefined || amount === null) return '--';
-      return amount.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    };
-    
-    // 获取策略类型标签
-    const getStrategyTypeLabel = (type) => {
-      const found = strategyTypes.find(t => t.value === type);
-      return found ? found.label : type;
-    };
-    
-    // 获取交易品种标签
-    const getSymbolLabel = (symbol) => {
-      const found = symbols.find(s => s.value === symbol);
-      return found ? found.label : symbol;
-    };
-    
-    // 获取时间周期标签
-    const getTimeframeLabel = (timeframe) => {
-      const found = timeframes.find(t => t.value === timeframe);
-      return found ? found.label : timeframe;
-    };
-    
-    // 获取状态文本
-    const getStatusText = (status) => {
-      const statusMap = {
-        active: '运行中',
-        inactive: '已停用',
-        error: '错误',
-        pending: '等待中'
-      };
-      return statusMap[status] || status;
-    };
-    
-    // 获取状态标签类型
-    const getStatusTagType = (status) => {
-      const typeMap = {
-        active: 'success',
-        inactive: 'info',
-        error: 'danger',
-        pending: 'warning'
-      };
-      return typeMap[status] || 'info';
-    };
-    
-    // 监听性能周期变化
-    const watchPerformancePeriod = () => {
-      loadPerformanceData();
-    };
-    
-    onMounted(() => {
-      loadStrategy();
-    });
-    
-    return {
-      strategy,
-      codeViewer,
-      performancePeriod,
-      performanceData,
-      recentTrades,
-      deleteDialogVisible,
-      deleting,
-      loadingTrades,
-      editStrategy,
-      toggleStrategyStatus,
-      handleCommand,
-      confirmDelete,
-      copyCode,
-      downloadCode,
-      viewAllTrades,
-      formatProfitRate,
-      formatDate,
-      formatMoney,
-      getStrategyTypeLabel,
-      getSymbolLabel,
-      getTimeframeLabel,
-      getStatusText,
-      getStatusTagType
-    };
+    loadRecentTrades()
+  } catch (error) {
+    ElMessage.error('加载策略失败: ' + error.message)
   }
-};
+}
+
+// 加载最近交易
+const loadRecentTrades = async () => {
+  loadingTrades.value = true
+  try {
+    // 使用模拟数据
+    await new Promise(resolve => setTimeout(resolve, 400))
+    
+    // 模拟交易数据
+    recentTrades.value = [
+      {
+        id: '1',
+        time: new Date(2023, 7, 20, 14, 30),
+        type: 'buy',
+        price: 29850.25,
+        amount: 0.15,
+        profit: 0
+      },
+      {
+        id: '2',
+        time: new Date(2023, 7, 19, 10, 15),
+        type: 'sell',
+        price: 30120.50,
+        amount: 0.15,
+        profit: 40.54
+      },
+      {
+        id: '3',
+        time: new Date(2023, 7, 18, 22, 45),
+        type: 'buy',
+        price: 29780.75,
+        amount: 0.15,
+        profit: 0
+      },
+      {
+        id: '4',
+        time: new Date(2023, 7, 17, 16, 20),
+        type: 'sell',
+        price: 29650.30,
+        amount: 0.2,
+        profit: -28.14
+      },
+      {
+        id: '5',
+        time: new Date(2023, 7, 16, 9, 5),
+        type: 'buy',
+        price: 29790.80,
+        amount: 0.2,
+        profit: 0
+      }
+    ]
+  } catch (error) {
+    ElMessage.error('加载交易数据失败: ' + error.message)
+  } finally {
+    loadingTrades.value = false
+  }
+}
+
+// 切换策略状态
+const toggleStrategyStatus = async () => {
+  try {
+    const newStatus = strategy.status === 'active' ? 'inactive' : 'active'
+    const actionText = newStatus === 'active' ? '启用' : '停用'
+    
+    // 模拟API调用
+    await new Promise(resolve => setTimeout(resolve, 300))
+    
+    // 更新本地状态
+    strategy.status = newStatus
+    
+    ElMessage.success(`策略${actionText}成功`)
+  } catch (error) {
+    ElMessage.error('操作失败: ' + error.message)
+  }
+}
+
+// 处理下拉菜单命令
+const handleCommand = (command) => {
+  switch (command) {
+    case 'backtest':
+      ElMessage.info('回测功能开发中')
+      break
+    case 'duplicate':
+      duplicateStrategy()
+      break
+    case 'export':
+      exportStrategy()
+      break
+    case 'delete':
+      deleteDialogVisible.value = true
+      break
+  }
+}
+
+// 复制策略
+const duplicateStrategy = async () => {
+  try {
+    // 模拟API调用
+    await new Promise(resolve => setTimeout(resolve, 500))
+    
+    ElMessage.success('策略复制成功')
+  } catch (error) {
+    ElMessage.error('复制失败: ' + error.message)
+  }
+}
+
+// 导出策略
+const exportStrategy = () => {
+  try {
+    // 创建要导出的策略数据
+    const exportData = {
+      name: strategy.name,
+      description: strategy.description,
+      type: strategy.type,
+      symbol: strategy.symbol,
+      timeframe: strategy.timeframe,
+      initialCapital: strategy.initialCapital,
+      maxPosition: strategy.maxPosition,
+      stopLossRatio: strategy.stopLossRatio,
+      takeProfitRatio: strategy.takeProfitRatio,
+      code: strategy.code
+    }
+    
+    // 转换为JSON字符串
+    const jsonStr = JSON.stringify(exportData, null, 2)
+    
+    // 创建Blob对象
+    const blob = new Blob([jsonStr], { type: 'application/json' })
+    
+    // 创建下载链接
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${strategy.name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.json`
+    
+    // 触发下载
+    document.body.appendChild(a)
+    a.click()
+    
+    // 清理
+    setTimeout(() => {
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    }, 0)
+    
+    ElMessage.success('策略导出成功')
+  } catch (error) {
+    ElMessage.error('导出失败: ' + error.message)
+  }
+}
+
+// 确认删除策略
+const confirmDelete = async () => {
+  deleting.value = true
+  try {
+    // 模拟API调用
+    await new Promise(resolve => setTimeout(resolve, 800))
+    
+    ElMessage.success('策略删除成功')
+    deleteDialogVisible.value = false
+    emit('back-to-list')
+  } catch (error) {
+    ElMessage.error('删除失败: ' + error.message)
+  } finally {
+    deleting.value = false
+  }
+}
+
+// 复制代码
+const copyCode = () => {
+  try {
+    navigator.clipboard.writeText(strategy.code)
+    ElMessage.success('代码已复制到剪贴板')
+  } catch (error) {
+    ElMessage.error('复制失败: ' + error.message)
+  }
+}
+
+// 下载代码
+const downloadCode = () => {
+  try {
+    // 创建Blob对象
+    const blob = new Blob([strategy.code], { type: 'text/plain' })
+    
+    // 创建下载链接
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${strategy.name.replace(/\s+/g, '_')}.py`
+    
+    // 触发下载
+    document.body.appendChild(a)
+    a.click()
+    
+    // 清理
+    setTimeout(() => {
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    }, 0)
+    
+    ElMessage.success('代码下载成功')
+  } catch (error) {
+    ElMessage.error('下载失败: ' + error.message)
+  }
+}
+
+// 查看所有交易
+const viewAllTrades = () => {
+  ElMessage.info('查看全部交易功能开发中')
+}
+
+// 格式化收益率
+const formatProfitRate = (rate) => {
+  if (rate === undefined || rate === null) return '--'
+  return `${rate >= 0 ? '+' : ''}${rate.toFixed(2)}%`
+}
+
+// 格式化日期
+const formatDate = (date) => {
+  if (!date) return '--'
+  try {
+    const d = new Date(date)
+    return `${d.toLocaleDateString()} ${d.toLocaleTimeString()}`
+  } catch (e) {
+    return '--'
+  }
+}
+
+// 格式化金额
+const formatMoney = (amount) => {
+  if (amount === undefined || amount === null) return '--'
+  return amount.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
+// 获取策略类型标签
+const getStrategyTypeLabel = (type) => {
+  const found = strategyTypes.find(t => t.value === type)
+  return found ? found.label : type
+}
+
+// 获取交易品种标签
+const getSymbolLabel = (symbol) => {
+  const found = symbols.find(s => s.value === symbol)
+  return found ? found.label : symbol
+}
+
+// 获取时间周期标签
+const getTimeframeLabel = (timeframe) => {
+  const found = timeframes.find(t => t.value === timeframe)
+  return found ? found.label : timeframe
+}
+
+// 获取状态文本
+const getStatusText = (status) => {
+  const statusMap = {
+    active: '运行中',
+    inactive: '已停用',
+    error: '错误',
+    pending: '等待中'
+  }
+  return statusMap[status] || status
+}
+
+// 获取状态标签类型
+const getStatusTagType = (status) => {
+  const typeMap = {
+    active: 'success',
+    inactive: 'info',
+    error: 'danger',
+    pending: 'warning'
+  }
+  return typeMap[status] || 'info'
+}
+
+onMounted(() => {
+  loadStrategy()
+})
 </script>
 
 <style scoped>
@@ -938,15 +812,36 @@ class MyStrategy(StrategyBase):
   margin-top: 16px;
 }
 
+.chart-placeholder {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--el-fill-color-lighter);
+  border-radius: 4px;
+  color: var(--el-text-color-secondary);
+}
+
 .code-container {
   height: 400px;
   border: 1px solid var(--el-border-color);
   border-radius: 4px;
-  overflow: hidden;
+  overflow: auto;
+  background-color: #2d3748;
 }
 
-.code-editor {
+.code-display {
   height: 100%;
+  margin: 0;
+  padding: 16px;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #e2e8f0;
+  background-color: #2d3748;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .code-actions {
@@ -969,21 +864,4 @@ class MyStrategy(StrategyBase):
   color: #f56c6c;
   margin-top: 12px;
 }
-
-/* CodeMirror 自定义样式 */
-:deep(.CodeMirror) {
-  height: 100%;
-  font-family: 'Fira Code', monospace;
-  font-size: 14px;
-}
-
-:deep(.cm-s-monokai .CodeMirror-gutters) {
-  background-color: #272822;
-}
-
-:deep(.cm-s-monokai .CodeMirror-linenumber) {
-  color: #75715e;
-}
 </style>
-      handleCommand,
-      confirmDelete,

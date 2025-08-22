@@ -164,40 +164,33 @@
   </div>
 </template>
 
-<script>
-import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+<script setup>
+import { ref, computed, onMounted, defineEmits } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { ArrowDown, Warning } from '@element-plus/icons-vue';
 import { useStrategyStore } from '@/stores/strategy';
 
-export default {
-  name: 'StrategyList',
-  components: {
-    ArrowDown,
-    Warning
-  },
-  setup() {
-    const router = useRouter();
-    const strategyStore = useStrategyStore();
-    
-    // 状态变量
-    const loading = ref(false);
-    const strategies = ref([]);
-    const searchQuery = ref('');
-    const filterType = ref('');
-    const filterSymbol = ref('');
-    const sortBy = ref('created_desc');
-    const showActiveOnly = ref(false);
-    const currentPage = ref(1);
-    const pageSize = ref(10);
-    const totalStrategies = ref(0);
-    const deleteDialogVisible = ref(false);
-    const deleting = ref(false);
-    const selectedStrategy = ref(null);
-    
-    // 策略类型选项
-    const strategyTypes = [
+// 定义emit事件
+const emit = defineEmits(['view-strategy', 'edit-strategy', 'create-strategy'])
+
+// 状态变量
+const loading = ref(false);
+const strategies = ref([]);
+const searchQuery = ref('');
+const filterType = ref('');
+const filterSymbol = ref('');
+const sortBy = ref('created_desc');
+const showActiveOnly = ref(false);
+const currentPage = ref(1);
+const pageSize = ref(10);
+const totalStrategies = ref(0);
+const deleteDialogVisible = ref(false);
+const deleting = ref(false);
+const selectedStrategy = ref(null);
+const strategyStore = useStrategyStore();
+
+// 策略类型选项
+const strategyTypes = [
       { value: 'trend_following', label: '趋势跟踪' },
       { value: 'mean_reversion', label: '均值回归' },
       { value: 'breakout', label: '突破策略' },
@@ -374,17 +367,18 @@ export default {
     
     // 创建新策略
     const createStrategy = () => {
-      router.push({ name: 'CreateStrategy' });
+      emit('create-strategy');
     };
     
     // 查看策略详情
     const viewStrategy = (strategy) => {
-      router.push({ name: 'StrategyDetail', params: { id: strategy.id } });
+      console.log('viewStrategy called with:', strategy)
+      emit('view-strategy', strategy);
     };
     
     // 编辑策略
     const editStrategy = (strategy) => {
-      router.push({ name: 'EditStrategy', params: { id: strategy.id } });
+      emit('edit-strategy', strategy);
     };
     
     // 处理下拉菜单命令
@@ -609,49 +603,15 @@ export default {
       };
       return typeMap[status] || 'info';
     };
-    
-    onMounted(() => {
-      loadStrategies();
-    });
-    
-    return {
-      loading,
-      strategies,
-      filteredStrategies,
-      searchQuery,
-      filterType,
-      filterSymbol,
-      sortBy,
-      showActiveOnly,
-      currentPage,
-      pageSize,
-      totalStrategies,
-      strategyTypes,
-      symbols,
-      deleteDialogVisible,
-      deleting,
-      selectedStrategy,
-      createStrategy,
-      viewStrategy,
-      editStrategy,
-      handleCommand,
-      confirmDelete,
-      handleRowClick,
-      handleSearch,
-      handleFilter,
-      handleSort,
-      handleSizeChange,
-      handleCurrentChange,
-      formatProfitRate,
-      formatDate,
-      getStrategyTypeLabel,
-      getSymbolLabel,
-      getTimeframeLabel,
-      getStatusText,
-      getStatusTagType
-    };
-  }
-};
+
+// 暴露方法给父组件
+defineExpose({
+  loadStrategies
+});
+
+onMounted(() => {
+  loadStrategies();
+});
 </script>
 
 <style scoped>

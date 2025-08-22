@@ -86,6 +86,9 @@
           @tab-change="handleTabChange"
           @tab-close="handleTabClose"
           @tabs-update="handleTabsUpdate"
+          @view-strategy="handleViewStrategy"
+          @edit-strategy="handleEditStrategy"
+          @create-strategy="handleCreateStrategy"
         />
       </div>
     </div>
@@ -226,7 +229,7 @@ import { useAuthStore } from "@/stores/auth";
 import SidebarNav from "@/components/layout/SidebarNav.vue";
 import TabSystem from "@/components/layout/TabSystem.vue";
 import DashboardOverview from "@/views/DashboardOverview.vue";
-import StrategyList from "@/views/StrategyList.vue";
+import StrategyList from "@/views/strategy/StrategyList.vue";
 import BacktestSettings from "@/views/BacktestSettings.vue";
 import TradingPanel from "@/views/TradingPanel.vue";
 import {
@@ -449,6 +452,15 @@ onMounted(() => {
     updateSystemMetrics();
     addRandomLog();
   }, 3000);
+  
+  // 调试信息
+  console.log('🔥 DashboardLayout mounted');
+  console.log('🔥 TabSystem ref:', tabSystemRef.value);
+  
+  // 延迟检查 TabSystem 引用
+  setTimeout(() => {
+    console.log('🔥 TabSystem ref after timeout:', tabSystemRef.value);
+  }, 1000);
 });
 
 // 组件卸载时清理事件监听器
@@ -557,6 +569,65 @@ const handleTabClose = (tabId: string) => {
 // 处理页签更新
 const handleTabsUpdate = (newTabs: any[]) => {
   tabs.value = newTabs;
+};
+
+// 处理策略查看
+const handleViewStrategy = (strategy: any) => {
+  console.log('🔥 DashboardLayout handleViewStrategy called with:', strategy);
+  
+  const tabConfig = {
+    id: `strategy-detail-${strategy.id}`,
+    title: `策略详情 - ${strategy.name}`,
+    icon: TrendCharts,
+    component: () => import('@/views/strategy/StrategyDetail.vue'),
+    props: {
+      strategyId: strategy.id,
+      strategy: strategy
+    }
+  };
+  
+  if (tabSystemRef.value) {
+    tabSystemRef.value.addTab(tabConfig);
+  }
+};
+
+// 添加调试日志
+console.log('🔥 DashboardLayout: handleViewStrategy function defined:', !!handleViewStrategy);
+
+// 处理策略编辑
+const handleEditStrategy = (strategy: any) => {
+  console.log('🔥 DashboardLayout handleEditStrategy called with:', strategy);
+  
+  const tabConfig = {
+    id: `strategy-edit-${strategy.id}`,
+    title: `编辑策略 - ${strategy.name}`,
+    icon: Operation,
+    component: () => import('@/views/strategy/EditStrategy.vue'),
+    props: {
+      strategyId: strategy.id,
+      strategy: strategy
+    }
+  };
+  
+  if (tabSystemRef.value) {
+    tabSystemRef.value.addTab(tabConfig);
+  }
+};
+
+// 处理创建策略
+const handleCreateStrategy = () => {
+  console.log('🔥 DashboardLayout handleCreateStrategy called');
+  
+  const tabConfig = {
+    id: 'strategy-create',
+    title: '创建策略',
+    icon: Plus,
+    component: () => import('@/views/strategy/CreateStrategy.vue')
+  };
+  
+  if (tabSystemRef.value) {
+    tabSystemRef.value.addTab(tabConfig);
+  }
 };
 
 // 导航方法

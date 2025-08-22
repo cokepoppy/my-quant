@@ -50,7 +50,17 @@
       >
         <Suspense>
           <template #default>
-            <component :is="getComponent(tab.component)" v-bind="tab.props" />
+            <component 
+              :is="getComponent(tab.component)" 
+              v-bind="tab.props"
+              @view-strategy="handleViewStrategy"
+              @edit-strategy="handleEditStrategy"
+              @create-strategy="handleCreateStrategy"
+              @back-to-list="handleBackToList"
+              @back-to-detail="handleBackToDetail"
+              @save-success="handleSaveSuccess"
+              @create-success="handleCreateSuccess"
+            />
           </template>
           <template #fallback>
             <div class="loading-placeholder">
@@ -65,7 +75,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, markRaw, defineAsyncComponent } from 'vue'
+import { ref, computed, watch, markRaw, defineAsyncComponent, getCurrentInstance } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Close, MoreFilled, Loading } from '@element-plus/icons-vue'
 
@@ -92,6 +102,13 @@ interface Tab {
 interface Props {
   modelValue?: string
   tabs?: Tab[]
+  onViewStrategy?: (strategy: any) => void
+  onEditStrategy?: (strategy: any) => void
+  onCreateStrategy?: () => void
+  onBackToList?: () => void
+  onBackToDetail?: () => void
+  onSaveSuccess?: () => void
+  onCreateSuccess?: () => void
 }
 
 interface Emits {
@@ -99,12 +116,28 @@ interface Emits {
   (e: 'tab-change', tab: Tab): void
   (e: 'tab-close', tabId: string): void
   (e: 'tabs-update', tabs: Tab[]): void
+  (e: 'view-strategy', strategy: any): void
+  (e: 'edit-strategy', strategy: any): void
+  (e: 'create-strategy'): void
+  (e: 'back-to-list'): void
+  (e: 'back-to-detail'): void
+  (e: 'save-success'): void
+  (e: 'create-success'): void
 }
+
+const instance = getCurrentInstance()
+const getContext = () => instance
 
 const props = withDefaults(defineProps<Props>(), {
   modelValue: '',
   tabs: () => []
 })
+
+// 调试props
+console.log('🔥 TabSystem props:', props)
+console.log('🔥 TabSystem props keys:', Object.keys(props))
+console.log('🔥 TabSystem onViewStrategy:', props.onViewStrategy)
+console.log('🔥 TabSystem attrs:', getContext()?.attrs || {})
 
 const emit = defineEmits<Emits>()
 
@@ -137,12 +170,20 @@ watch(() => props.modelValue, (newValue) => {
 
 // 方法
 const selectTab = (tabId: string) => {
+  console.log('🔥 TabSystem selectTab called with:', tabId)
+  console.log('🔥 Current activeTabId before:', activeTabId.value)
+  
   activeTabId.value = tabId
+  console.log('🔥 Set activeTabId to:', activeTabId.value)
+  
   emit('update:modelValue', tabId)
   
   const tab = tabs.value.find(t => t.id === tabId)
   if (tab) {
+    console.log('🔥 Found tab, emitting tab-change:', tab)
     emit('tab-change', tab)
+  } else {
+    console.error('🔥 Tab not found for id:', tabId)
   }
 }
 
@@ -241,13 +282,21 @@ const handleDropdownCommand = (command: string) => {
 
 // 添加标签页的方法
 const addTab = (tab: Tab) => {
+  console.log('🔥 TabSystem addTab called with:', tab)
+  console.log('🔥 Current tabs before add:', tabs.value)
+  
   const existingTab = tabs.value.find(t => t.id === tab.id)
   if (existingTab) {
+    console.log('🔥 Tab already exists, selecting it:', existingTab)
     selectTab(tab.id)
     return existingTab
   }
   
+  console.log('🔥 Adding new tab to tabs array')
   tabs.value.push(tab)
+  console.log('🔥 Tabs after add:', tabs.value)
+  
+  console.log('🔥 Selecting new tab:', tab.id)
   selectTab(tab.id)
   return tab
 }
@@ -270,7 +319,75 @@ const getComponent = (component: any) => {
   if (typeof component === 'string') {
     return componentMap[component] || component
   }
+  // 如果是函数（动态导入），需要用 defineAsyncComponent 包装
+  if (typeof component === 'function') {
+    return defineAsyncComponent(component)
+  }
   return component
+}
+
+// 事件处理函数
+const handleViewStrategy = (strategy) => {
+  console.log('🔥 TabSystem handleViewStrategy called with:', strategy)
+  console.log('🔥 Props onViewStrategy exists:', !!props.onViewStrategy)
+  
+  if (props.onViewStrategy) {
+    console.log('🔥 Calling props.onViewStrategy')
+    props.onViewStrategy(strategy)
+  } else {
+    console.log('🔥 No onViewStrategy prop, emitting event')
+    console.log('🔥 About to emit view-strategy event with:', strategy)
+    emit('view-strategy', strategy)
+    console.log('🔥 view-strategy event emitted')
+  }
+}
+
+const handleEditStrategy = (strategy) => {
+  if (props.onEditStrategy) {
+    props.onEditStrategy(strategy)
+  } else {
+    emit('edit-strategy', strategy)
+  }
+}
+
+const handleCreateStrategy = () => {
+  if (props.onCreateStrategy) {
+    props.onCreateStrategy()
+  } else {
+    emit('create-strategy')
+  }
+}
+
+const handleBackToList = () => {
+  if (props.onBackToList) {
+    props.onBackToList()
+  } else {
+    emit('back-to-list')
+  }
+}
+
+const handleBackToDetail = () => {
+  if (props.onBackToDetail) {
+    props.onBackToDetail()
+  } else {
+    emit('back-to-detail')
+  }
+}
+
+const handleSaveSuccess = () => {
+  if (props.onSaveSuccess) {
+    props.onSaveSuccess()
+  } else {
+    emit('save-success')
+  }
+}
+
+const handleCreateSuccess = () => {
+  if (props.onCreateSuccess) {
+    props.onCreateSuccess()
+  } else {
+    emit('create-success')
+  }
 }
 
 // 暴露方法给父组件

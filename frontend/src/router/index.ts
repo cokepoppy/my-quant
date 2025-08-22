@@ -70,38 +70,49 @@ const routes = [
   {
     path: "/strategies",
     name: "Strategies",
-    component: () => import("@/views/strategy/StrategyList.vue"),
+    component: () => import("@/views/strategy/StrategyManagement.vue"),
     meta: {
       requiresAuth: true,
       title: "策略管理",
     },
-  },
-  {
-    path: "/strategies/create",
-    name: "CreateStrategy",
-    component: () => import("@/views/strategy/CreateStrategy.vue"),
-    meta: {
-      requiresAuth: true,
-      title: "创建策略",
-    },
-  },
-  {
-    path: "/strategies/:id",
-    name: "StrategyDetail",
-    component: () => import("@/views/strategy/StrategyDetail.vue"),
-    meta: {
-      requiresAuth: true,
-      title: "策略详情",
-    },
-  },
-  {
-    path: "/strategies/:id/edit",
-    name: "EditStrategy",
-    component: () => import("@/views/strategy/EditStrategy.vue"),
-    meta: {
-      requiresAuth: true,
-      title: "编辑策略",
-    },
+    children: [
+      {
+        path: "",
+        name: "StrategyList",
+        component: () => import("@/views/strategy/StrategyList.vue"),
+        meta: {
+          requiresAuth: true,
+          title: "策略列表",
+        },
+      },
+      {
+        path: "create",
+        name: "CreateStrategy",
+        component: () => import("@/views/strategy/CreateStrategy.vue"),
+        meta: {
+          requiresAuth: true,
+          title: "创建策略",
+        },
+      },
+      {
+        path: ":id",
+        name: "StrategyDetail",
+        component: () => import("@/views/strategy/StrategyDetail.vue"),
+        meta: {
+          requiresAuth: true,
+          title: "策略详情",
+        },
+      },
+      {
+        path: ":id/edit",
+        name: "EditStrategy",
+        component: () => import("@/views/strategy/EditStrategy.vue"),
+        meta: {
+          requiresAuth: true,
+          title: "编辑策略",
+        },
+      },
+    ],
   },
   {
     path: "/strategies/:id/performance",

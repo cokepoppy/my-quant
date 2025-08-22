@@ -83,6 +83,9 @@
           @tab-change="handleTabChange"
           @tab-close="handleTabClose"
           @tabs-update="handleTabsUpdate"
+          @view-strategy="handleViewStrategy"
+          @edit-strategy="handleEditStrategy"
+          @create-strategy="handleCreateStrategy"
           ref="tabSystemRef"
         />
       </div>
@@ -515,6 +518,62 @@ const handleTabClose = (tabId: string) => {
 
 const handleTabsUpdate = (updatedTabs: Tab[]) => {
   tabs.value = updatedTabs
+}
+
+// 处理策略查看
+const handleViewStrategy = (strategy: any) => {
+  console.log('🔥 V3Layout handleViewStrategy called with:', strategy)
+  
+  const tabConfig: Tab = {
+    id: `strategy-detail-${strategy.id}`,
+    title: `策略详情 - ${strategy.name}`,
+    icon: 'TrendCharts',
+    component: () => import('@/views/strategy/StrategyDetail.vue'),
+    props: {
+      strategyId: strategy.id,
+      strategy: strategy
+    }
+  }
+  
+  if (tabSystemRef.value) {
+    tabSystemRef.value.addTab(tabConfig)
+  }
+}
+
+// 处理策略编辑
+const handleEditStrategy = (strategy: any) => {
+  console.log('🔥 V3Layout handleEditStrategy called with:', strategy)
+  
+  const tabConfig: Tab = {
+    id: `strategy-edit-${strategy.id}`,
+    title: `编辑策略 - ${strategy.name}`,
+    icon: 'Edit',
+    component: () => import('@/views/strategy/EditStrategy.vue'),
+    props: {
+      strategyId: strategy.id,
+      strategy: strategy
+    }
+  }
+  
+  if (tabSystemRef.value) {
+    tabSystemRef.value.addTab(tabConfig)
+  }
+}
+
+// 处理创建策略
+const handleCreateStrategy = () => {
+  console.log('🔥 V3Layout handleCreateStrategy called')
+  
+  const tabConfig: Tab = {
+    id: 'strategy-create',
+    title: '创建策略',
+    icon: 'Plus',
+    component: () => import('@/views/strategy/CreateStrategy.vue')
+  }
+  
+  if (tabSystemRef.value) {
+    tabSystemRef.value.addTab(tabConfig)
+  }
 }
 
 const toggleSidebar = () => {
