@@ -465,6 +465,13 @@ const connectionIcon = computed(() => {
 
 // 方法
 const handleNavClick = (item: string) => {
+  // 如果点击已存在的标签，切换到该标签
+  const existingTab = tabs.value.find(tab => tab.id === item)
+  if (existingTab) {
+    activeTab.value = item
+    return
+  }
+
   // 根据导航项创建对应的页签
   const tabComponents: Record<string, any> = {
     'dashboard': 'DashboardOverview',
@@ -477,7 +484,11 @@ const handleNavClick = (item: string) => {
     'trading': 'TradingPanel',
     'orders': 'OrdersManagement',
     'positions': 'PositionsManagement',
-    'risk-control': 'Monitoring'
+    'accounts': 'Accounts',
+    'risk-control': 'Monitoring',
+    'alerts': 'Monitoring',
+    'market-data': () => import('@/views/market/MarketData.vue'),
+    'data-import': () => import('@/views/market/DataImport.vue')
   }
 
   const tabTitles: Record<string, string> = {
@@ -491,7 +502,11 @@ const handleNavClick = (item: string) => {
     'trading': '交易面板',
     'orders': '订单管理',
     'positions': '持仓管理',
-    'risk-control': '风控设置'
+    'accounts': '账户管理',
+    'risk-control': '风控设置',
+    'alerts': '预警监控',
+    'market-data': '市场数据',
+    'data-import': '数据导入'
   }
 
   const tabIcons: Record<string, any> = {
@@ -505,7 +520,11 @@ const handleNavClick = (item: string) => {
     'trading': 'Money',
     'orders': 'List',
     'positions': 'PieChart',
-    'risk-control': 'Warning'
+    'accounts': 'Wallet',
+    'risk-control': 'Warning',
+    'alerts': 'Bell',
+    'market-data': 'DataBoard',
+    'data-import': 'Upload'
   }
 
   if (tabComponents[item]) {
