@@ -471,9 +471,11 @@ const handleNavClick = (item: string) => {
     'strategies': 'StrategyList',
     'strategy-editor': 'CreateStrategy',
     'strategy-templates': 'StrategyTemplates',
+    'optimization': 'ParameterOptimization',
     'backtest': 'BacktestSettings',
     'backtest-results': 'BacktestResult',
     'trading': 'TradingPanel',
+    'orders': 'OrdersManagement',
     'risk-control': 'Monitoring'
   }
 
@@ -482,9 +484,11 @@ const handleNavClick = (item: string) => {
     'strategies': '策略列表',
     'strategy-editor': '策略编辑器',
     'strategy-templates': '策略模板',
+    'optimization': '参数优化',
     'backtest': '回测设置',
     'backtest-results': '回测结果',
     'trading': '交易面板',
+    'orders': '订单管理',
     'risk-control': '风控设置'
   }
 
@@ -493,9 +497,11 @@ const handleNavClick = (item: string) => {
     'strategies': 'TrendCharts',
     'strategy-editor': 'Edit',
     'strategy-templates': 'Files',
+    'optimization': 'Aim',
     'backtest': 'VideoPlay',
     'backtest-results': 'DataLine',
     'trading': 'Money',
+    'orders': 'List',
     'risk-control': 'Warning'
   }
 

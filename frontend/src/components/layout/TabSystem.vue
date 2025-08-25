@@ -85,9 +85,11 @@ const componentMap = {
   'StrategyList': defineAsyncComponent(() => import('@/views/strategy/StrategyList.vue')),
   'CreateStrategy': defineAsyncComponent(() => import('@/views/strategy/CreateStrategy.vue')),
   'StrategyTemplates': defineAsyncComponent(() => import('@/components/strategy/TemplateList.vue')),
+  'ParameterOptimization': defineAsyncComponent(() => import('@/views/optimization/ParameterOptimization.vue')),
   'BacktestSettings': defineAsyncComponent(() => import('@/views/backtest/BacktestSettings.vue')),
   'BacktestResult': defineAsyncComponent(() => import('@/views/backtest/BacktestResult.vue')),
   'TradingPanel': defineAsyncComponent(() => import('@/views/trading/TradingPanel.vue')),
+  'OrdersManagement': defineAsyncComponent(() => import('@/views/trading/OrdersManagement.vue')),
   'Monitoring': defineAsyncComponent(() => import('@/views/monitoring/Monitoring.vue'))
 }
 
