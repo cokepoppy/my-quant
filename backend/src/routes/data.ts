@@ -1,10 +1,48 @@
 import { Router } from 'express';
-import { authenticate, AuthRequest } from '../middleware/auth';
+import { authenticate, optionalAuth, AuthRequest } from '../middleware/auth';
 import { PrismaClient } from '@prisma/client';
 import { query, validationResult } from 'express-validator';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 
 const router = Router();
 const prisma = new PrismaClient();
+
+// 配置 multer 用于文件上传
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(process.cwd(), 'uploads', 'data');
+    // 确保上传目录存在
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    // 生成唯一的文件名
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname);
+    cb(null, file.fieldname + '-' + uniqueSuffix + ext);
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB 限制
+  },
+  fileFilter: (req, file, cb) => {
+    // 检查文件类型
+    const allowedTypes = ['.csv', '.json', '.xlsx', '.xls'];
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (allowedTypes.includes(ext)) {
+      cb(null, true);
+    } else {
+      cb(new Error('不支持的文件类型'));
+    }
+  }
+});
 
 // Supported symbols and their info
 const supportedSymbols = {
@@ -19,8 +57,68 @@ const supportedSymbols = {
   '399006.SZ': { name: '创业板指', base: '399006', quote: 'SZ', precision: 2 }
 };
 
+// Get market data for single symbol
+router.get('/market/:symbol', optionalAuth, [
+  query('interval').optional().isIn(['1m', '5m', '15m', '30m', '1h', '4h', '1d']).withMessage('Invalid interval')
+], async (req: AuthRequest, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+
+    const { symbol } = req.params;
+    const interval = req.query.interval as string || '1h';
+
+    if (!supportedSymbols[symbol]) {
+      return res.status(400).json({
+        success: false,
+        message: 'Unsupported symbol'
+      });
+    }
+
+    // Generate mock market data for the symbol
+    const basePrice = getBasePrice(symbol);
+    const currentPrice = basePrice + (Math.random() - 0.5) * basePrice * 0.02;
+    const prevClose = basePrice;
+    const change = currentPrice - prevClose;
+    const changePercent = (change / prevClose) * 100;
+
+    const marketData = {
+      symbol,
+      ...supportedSymbols[symbol],
+      price: currentPrice,
+      prevClose,
+      change,
+      changePercent,
+      volume: Math.floor(Math.random() * 1000000),
+      high24h: currentPrice * 1.02,
+      low24h: currentPrice * 0.98,
+      timestamp: new Date(),
+      interval
+    };
+
+    res.json({
+      success: true,
+      message: 'Market data retrieved successfully',
+      data: marketData
+    });
+  } catch (error) {
+    console.error('Error fetching market data:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch market data',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
 // Get market data
-router.get('/market', authenticate, [
+router.get('/market', optionalAuth, [
   query('symbols').optional().isString().withMessage('Symbols must be a string'),
   query('interval').optional().isIn(['1m', '5m', '15m', '30m', '1h', '4h', '1d']).withMessage('Invalid interval')
 ], async (req: AuthRequest, res) => {
@@ -81,7 +179,7 @@ router.get('/market', authenticate, [
 });
 
 // Get historical data
-router.get('/historical', authenticate, [
+router.get('/historical', optionalAuth, [
   query('symbol').notEmpty().withMessage('Symbol is required'),
   query('interval').optional().isIn(['1m', '5m', '15m', '30m', '1h', '4h', '1d', '1w']).withMessage('Invalid interval'),
   query('startTime').optional().isISO8601().withMessage('Start time must be valid ISO8601 date'),
@@ -149,7 +247,7 @@ router.get('/historical', authenticate, [
 });
 
 // Get technical indicators
-router.get('/indicators', authenticate, [
+router.get('/indicators', optionalAuth, [
   query('symbol').notEmpty().withMessage('Symbol is required'),
   query('indicators').optional().isString().withMessage('Indicators must be a string'),
   query('interval').optional().isIn(['1m', '5m', '15m', '30m', '1h', '4h', '1d']).withMessage('Invalid interval'),
@@ -234,7 +332,7 @@ router.get('/indicators', authenticate, [
 });
 
 // Get supported symbols
-router.get('/symbols', authenticate, async (req: AuthRequest, res) => {
+router.get('/symbols', optionalAuth, async (req: AuthRequest, res) => {
   try {
     const symbols = Object.keys(supportedSymbols).map(key => ({
       symbol: key,
@@ -257,7 +355,7 @@ router.get('/symbols', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Get market overview
-router.get('/overview', authenticate, async (req: AuthRequest, res) => {
+router.get('/overview', optionalAuth, async (req: AuthRequest, res) => {
   try {
     const overview = {};
     const symbolKeys = Object.keys(supportedSymbols);
@@ -455,5 +553,207 @@ function calculateBollingerBands(data: any[], period: number) {
   
   return result;
 }
+
+// 文件上传路由
+router.post('/upload', optionalAuth, upload.single('file'), async (req: AuthRequest, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: '没有选择文件'
+      });
+    }
+
+    const { dataType = 'market', timeFormat = 'iso', dataSource = '', autoProcess = true } = req.body;
+    
+    // 创建导入记录
+    const importRecord = await prisma.dataImport.create({
+      data: {
+        fileName: req.file.originalname,
+        filePath: req.file.path,
+        fileType: path.extname(req.file.originalname),
+        fileSize: req.file.size,
+        dataType: dataType,
+        timeFormat: timeFormat,
+        dataSource: dataSource,
+        status: 'pending',
+        autoProcess: autoProcess,
+        userId: req.user?.id || null
+      }
+    });
+
+    // 如果需要自动处理，这里可以添加后台任务
+    if (autoProcess) {
+      // TODO: 添加后台任务处理文件
+      console.log(`开始处理文件: ${req.file.path}`);
+    }
+
+    res.json({
+      success: true,
+      message: '文件上传成功',
+      data: {
+        id: importRecord.id,
+        fileName: req.file.originalname,
+        fileSize: req.file.size,
+        status: importRecord.status
+      }
+    });
+  } catch (error) {
+    console.error('文件上传失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '文件上传失败',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// 获取导入历史记录
+router.get('/imports', optionalAuth, [
+  query('page').optional().isInt({ min: 1 }).withMessage('页码必须大于0'),
+  query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('每页数量必须在1-100之间'),
+  query('dataType').optional().isString().withMessage('数据类型必须为字符串'),
+  query('status').optional().isString().withMessage('状态必须为字符串')
+], async (req: AuthRequest, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: '验证失败',
+        errors: errors.array()
+      });
+    }
+
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
+    const offset = (page - 1) * limit;
+    const dataType = req.query.dataType as string;
+    const status = req.query.status as string;
+
+    const whereClause: any = {};
+    if (dataType) whereClause.dataType = dataType;
+    if (status) whereClause.status = status;
+    if (req.user?.id) whereClause.userId = req.user.id;
+
+    const [imports, total] = await Promise.all([
+      prisma.dataImport.findMany({
+        where: whereClause,
+        orderBy: { createdAt: 'desc' },
+        skip: offset,
+        take: limit
+      }),
+      prisma.dataImport.count({ where: whereClause })
+    ]);
+
+    res.json({
+      success: true,
+      message: '获取导入历史成功',
+      data: {
+        imports,
+        pagination: {
+          page,
+          limit,
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      }
+    });
+  } catch (error) {
+    console.error('获取导入历史失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '获取导入历史失败',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// 获取导入详情
+router.get('/imports/:id', optionalAuth, async (req: AuthRequest, res) => {
+  try {
+    const { id } = req.params;
+    
+    const importRecord = await prisma.dataImport.findUnique({
+      where: { id: parseInt(id) }
+    });
+
+    if (!importRecord) {
+      return res.status(404).json({
+        success: false,
+        message: '导入记录不存在'
+      });
+    }
+
+    // 检查权限
+    if (req.user?.id && importRecord.userId !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: '权限不足'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: '获取导入详情成功',
+      data: importRecord
+    });
+  } catch (error) {
+    console.error('获取导入详情失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '获取导入详情失败',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// 删除导入记录
+router.delete('/imports/:id', optionalAuth, async (req: AuthRequest, res) => {
+  try {
+    const { id } = req.params;
+    
+    const importRecord = await prisma.dataImport.findUnique({
+      where: { id: parseInt(id) }
+    });
+
+    if (!importRecord) {
+      return res.status(404).json({
+        success: false,
+        message: '导入记录不存在'
+      });
+    }
+
+    // 检查权限
+    if (req.user?.id && importRecord.userId !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: '权限不足'
+      });
+    }
+
+    // 删除文件
+    if (fs.existsSync(importRecord.filePath)) {
+      fs.unlinkSync(importRecord.filePath);
+    }
+
+    // 删除数据库记录
+    await prisma.dataImport.delete({
+      where: { id: parseInt(id) }
+    });
+
+    res.json({
+      success: true,
+      message: '删除导入记录成功'
+    });
+  } catch (error) {
+    console.error('删除导入记录失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '删除导入记录失败',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
 
 export default router;
