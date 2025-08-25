@@ -10,7 +10,7 @@ import { Server } from 'socket.io';
 import config from './config';
 import { errorHandler } from './middleware/errorHandler';
 import { rateLimiter } from './middleware/rateLimiter';
-import { setupSocketIO } from './socket';
+import RealTimeDataService from './services/realTimeData';
 
 // Import routes
 import authRoutes from './routes/auth';
@@ -27,12 +27,6 @@ dotenv.config();
 // Create Express app
 const app = express();
 const server = createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: config.CORS_ORIGIN,
-    methods: ['GET', 'POST']
-  }
-});
 
 // Middleware
 app.use(helmet());
@@ -75,8 +69,14 @@ app.use('*', (req, res) => {
 // Error handling middleware
 app.use(errorHandler);
 
-// Setup Socket.IO
-setupSocketIO(io);
+// Setup Real-time Data Service
+let realTimeDataService: RealTimeDataService | null = null;
+
+// Initialize real-time data service after server starts
+server.on('listening', () => {
+  realTimeDataService = new RealTimeDataService(server);
+  console.log('🔌 Real-time data service initialized');
+});
 
 // Start server
 const PORT = config.PORT;
