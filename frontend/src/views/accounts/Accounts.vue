@@ -490,6 +490,7 @@ import {
   type FormInstance,
   type FormRules,
 } from "element-plus";
+import * as tradingApi from "@/api/trading";
 
 const activeTab = ref("detail");
 const loading = ref(false);
@@ -631,10 +632,26 @@ const accountRules: FormRules = {
 const fetchAccounts = async () => {
   loading.value = true;
   try {
-    // TODO: 从API获取账户列表
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const response = await tradingApi.getTradingAccounts();
+    if (response.success) {
+      accounts.value = response.data || [];
+      // 更新账户概览
+      const activeAccounts = accounts.value.filter(acc => acc.isActive).length;
+      const totalAssets = accounts.value.reduce((sum, acc) => sum + (acc.balance || 0), 0);
+      const todayPnl = accounts.value.reduce((sum, acc) => sum + (acc.pnl || 0), 0);
+      
+      Object.assign(accountOverview, {
+        totalAccounts: accounts.value.length,
+        activeAccounts,
+        totalAssets,
+        todayPnl
+      });
+    } else {
+      throw new Error(response.message || '获取账户列表失败');
+    }
   } catch (error) {
-    ElMessage.error("获取账户列表失败");
+    console.error('获取账户列表失败:', error);
+    ElMessage.error('获取账户列表失败');
   } finally {
     loading.value = false;
   }

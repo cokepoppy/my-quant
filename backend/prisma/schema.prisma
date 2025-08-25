@@ -28,6 +28,7 @@ model User {
   trades        Trade[]
   accounts      Account[]
   apiKeys       ApiKey[]
+  strategyLogs  StrategyLog[]
   
   @@map("users")
 }
@@ -48,6 +49,7 @@ model Strategy {
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   backtests   Backtest[]
   trades      Trade[]
+  logs        StrategyLog[]
   
   @@map("strategies")
 }
@@ -111,6 +113,7 @@ model Trade {
   commission    Float?
   slippage      Float?
   pnl           Float?
+  profit        Float?
   notes         String?
   
   // Relations
@@ -119,6 +122,22 @@ model Trade {
   backtest      Backtest? @relation(fields: [backtestId], references: [id], onDelete: Cascade)
   
   @@map("trades")
+}
+
+model StrategyLog {
+  id          String   @id @default(cuid())
+  strategyId  String
+  userId      String
+  level       String   // 'info', 'warning', 'error', 'debug'
+  message     String
+  metadata    Json?
+  timestamp   DateTime @default(now())
+
+  // Relations
+  strategy    Strategy @relation(fields: [strategyId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("strategy_logs")
 }
 
 model Account {

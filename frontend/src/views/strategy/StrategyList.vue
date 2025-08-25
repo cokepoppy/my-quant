@@ -168,7 +168,7 @@
 import { ref, computed, onMounted, defineEmits } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { ArrowDown, Warning } from '@element-plus/icons-vue';
-import { useStrategyStore } from '@/stores/strategy';
+import * as strategyApi from '@/api/strategy';
 
 // 定义emit事件
 const emit = defineEmits(['view-strategy', 'edit-strategy', 'create-strategy'])
@@ -187,7 +187,6 @@ const totalStrategies = ref(0);
 const deleteDialogVisible = ref(false);
 const deleting = ref(false);
 const selectedStrategy = ref(null);
-const strategyStore = useStrategyStore();
 
 // 策略类型选项
 const strategyTypes = [
@@ -276,90 +275,23 @@ const strategyTypes = [
     const loadStrategies = async () => {
       loading.value = true;
       try {
-        // 实际项目中应该调用API获取数据
-        // const data = await strategyStore.getStrategies({
-        //   page: currentPage.value,
-        //   pageSize: pageSize.value,
-        //   sortBy: sortBy.value,
-        //   filterType: filterType.value,
-        //   filterSymbol: filterSymbol.value,
-        //   showActiveOnly: showActiveOnly.value,
-        //   searchQuery: searchQuery.value
-        // });
-        // strategies.value = data.strategies;
-        // totalStrategies.value = data.total;
+        const params = {
+          page: currentPage.value,
+          limit: pageSize.value,
+          search: searchQuery.value || undefined,
+          status: showActiveOnly.value ? 'active' : undefined,
+          type: filterType.value || undefined
+        };
         
-        // 使用模拟数据
-        await new Promise(resolve => setTimeout(resolve, 500));
+        const response = await strategyApi.getStrategies(params);
         
-        // 模拟策略数据
-        const mockStrategies = [
-          {
-            id: '1',
-            name: 'BTC趋势跟踪策略',
-            description: '基于移动平均线的趋势跟踪策略，当短期均线上穿长期均线时买入，下穿时卖出。',
-            type: 'trend_following',
-            symbol: 'BTCUSDT',
-            timeframe: '1h',
-            status: 'active',
-            profitRate: 12.5,
-            createdAt: new Date(2023, 5, 15),
-            updatedAt: new Date(2023, 6, 20)
-          },
-          {
-            id: '2',
-            name: 'ETH均值回归策略',
-            description: '基于布林带的均值回归策略，当价格触及上轨时卖出，触及下轨时买入。',
-            type: 'mean_reversion',
-            symbol: 'ETHUSDT',
-            timeframe: '4h',
-            status: 'inactive',
-            profitRate: -3.2,
-            createdAt: new Date(2023, 4, 10),
-            updatedAt: new Date(2023, 5, 5)
-          },
-          {
-            id: '3',
-            name: '上证指数突破策略',
-            description: '基于支撑阻力位的突破策略，当价格突破阻力位时买入，跌破支撑位时卖出。',
-            type: 'breakout',
-            symbol: '000001.SH',
-            timeframe: '1d',
-            status: 'active',
-            profitRate: 8.7,
-            createdAt: new Date(2023, 3, 20),
-            updatedAt: new Date(2023, 4, 15)
-          },
-          {
-            id: '4',
-            name: 'BNB动量策略',
-            description: '基于RSI指标的动量策略，当RSI超买时卖出，超卖时买入。',
-            type: 'custom',
-            symbol: 'BNBUSDT',
-            timeframe: '15m',
-            status: 'active',
-            profitRate: 5.3,
-            createdAt: new Date(2023, 6, 5),
-            updatedAt: new Date(2023, 7, 10)
-          },
-          {
-            id: '5',
-            name: '创业板指机器学习策略',
-            description: '使用LSTM神经网络预测价格走势，根据预测结果进行交易。',
-            type: 'machine_learning',
-            symbol: '399006.SZ',
-            timeframe: '1d',
-            status: 'inactive',
-            profitRate: 15.8,
-            createdAt: new Date(2023, 2, 15),
-            updatedAt: new Date(2023, 3, 20)
-          }
-        ];
-        
-        strategies.value = mockStrategies;
-        totalStrategies.value = mockStrategies.length;
+        strategies.value = response.strategies || [];
+        totalStrategies.value = response.pagination.total || 0;
       } catch (error) {
-        ElMessage.error('加载策略列表失败: ' + error.message);
+        console.error('加载策略列表失败:', error);
+        ElMessage.error('加载策略列表失败: ' + (error instanceof Error ? error.message : '未知错误'));
+        strategies.value = [];
+        totalStrategies.value = 0;
       } finally {
         loading.value = false;
       }
@@ -412,38 +344,38 @@ const strategyTypes = [
       try {
         const actionText = newStatus === 'active' ? '启用' : '停用';
         
-        // 实际项目中应该调用API更新状态
-        // await strategyStore.updateStrategyStatus(strategy.id, newStatus);
+        const response = await strategyApi.updateStrategyStatus(strategy.id, newStatus);
         
-        // 模拟API调用
-        await new Promise(resolve => setTimeout(resolve, 300));
-        
-        // 更新本地状态
-        const index = strategies.value.findIndex(s => s.id === strategy.id);
-        if (index !== -1) {
-          strategies.value[index].status = newStatus;
+        if (response.success) {
+          // 更新本地状态
+          const index = strategies.value.findIndex(s => s.id === strategy.id);
+          if (index !== -1) {
+            strategies.value[index].status = newStatus;
+          }
+          ElMessage.success(`策略${actionText}成功`);
+        } else {
+          throw new Error(response.message || '操作失败');
         }
-        
-        ElMessage.success(`策略${actionText}成功`);
       } catch (error) {
-        ElMessage.error('操作失败: ' + error.message);
+        console.error('切换策略状态失败:', error);
+        ElMessage.error('操作失败: ' + (error instanceof Error ? error.message : '未知错误'));
       }
     };
     
     // 复制策略
     const duplicateStrategy = async (strategy) => {
       try {
-        // 实际项目中应该调用API复制策略
-        // const newStrategy = await strategyStore.duplicateStrategy(strategy.id);
-        // router.push({ name: 'EditStrategy', params: { id: newStrategy.id } });
+        const response = await strategyApi.duplicateStrategy(strategy.id);
         
-        // 模拟API调用
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        ElMessage.success('策略复制成功');
-        loadStrategies();
+        if (response.success) {
+          ElMessage.success('策略复制成功');
+          loadStrategies();
+        } else {
+          throw new Error(response.message || '复制失败');
+        }
       } catch (error) {
-        ElMessage.error('复制失败: ' + error.message);
+        console.error('复制策略失败:', error);
+        ElMessage.error('复制失败: ' + (error instanceof Error ? error.message : '未知错误'));
       }
     };
     
@@ -494,20 +426,21 @@ const strategyTypes = [
       
       deleting.value = true;
       try {
-        // 实际项目中应该调用API删除策略
-        // await strategyStore.deleteStrategy(selectedStrategy.value.id);
+        const response = await strategyApi.deleteStrategy(selectedStrategy.value.id);
         
-        // 模拟API调用
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        // 更新本地状态
-        strategies.value = strategies.value.filter(s => s.id !== selectedStrategy.value.id);
-        totalStrategies.value = strategies.value.length;
-        
-        ElMessage.success('策略删除成功');
-        deleteDialogVisible.value = false;
+        if (response.success) {
+          // 更新本地状态
+          strategies.value = strategies.value.filter(s => s.id !== selectedStrategy.value.id);
+          totalStrategies.value = Math.max(0, totalStrategies.value - 1);
+          
+          ElMessage.success('策略删除成功');
+          deleteDialogVisible.value = false;
+        } else {
+          throw new Error(response.message || '删除失败');
+        }
       } catch (error) {
-        ElMessage.error('删除失败: ' + error.message);
+        console.error('删除策略失败:', error);
+        ElMessage.error('删除失败: ' + (error instanceof Error ? error.message : '未知错误'));
       } finally {
         deleting.value = false;
       }

@@ -4,8 +4,8 @@ import config from '../config';
 
 // General rate limiter
 export const rateLimiter = rateLimit({
-  windowMs: parseInt(config.RATE_LIMIT_WINDOW_MS as string),
-  max: parseInt(config.RATE_LIMIT_MAX_REQUESTS as string),
+  windowMs: config.RATE_LIMIT_WINDOW_MS as number,
+  max: config.RATE_LIMIT_MAX_REQUESTS as number,
   message: {
     success: false,
     message: 'Too many requests, please try again later'

@@ -306,7 +306,7 @@
 import { ref, reactive, onMounted, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { useStrategyStore } from '@/stores/strategy';
+import * as strategyApi from '@/api/strategy';
 import { 
   Edit, Document, Setting, Code, View, MagicStick, 
   FullScreen, CircleCheck 
@@ -324,7 +324,7 @@ import 'codemirror/addon/fold/brace-fold';
 import 'codemirror/addon/fold/indent-fold';
 import 'codemirror/addon/hint/show-hint';
 import 'codemirror/addon/hint/show-hint.css';
-import 'codemirror/addon/hint/python-hint';
+// import 'codemirror/addon/hint/python-hint';
 
 export default {
   name: 'EditStrategy',
@@ -625,17 +625,20 @@ class MyStrategy(StrategyBase):
       if (!isNew.value && strategy.id) {
         loading.value = true;
         try {
-          const data = await strategyStore.getStrategy(strategy.id);
-          if (data) {
-            Object.assign(strategy, data);
+          const response = await strategyApi.getStrategyById(strategy.id);
+          if (response.success) {
+            Object.assign(strategy, response.data);
             nextTick(() => {
               if (editor) {
                 editor.setValue(strategy.code || '');
               }
             });
+          } else {
+            throw new Error(response.message || '加载策略失败');
           }
         } catch (error) {
-          ElMessage.error('加载策略失败: ' + error.message);
+          console.error('加载策略失败:', error);
+          ElMessage.error('加载策略失败: ' + (error instanceof Error ? error.message : '未知错误'));
         } finally {
           loading.value = false;
         }
@@ -650,16 +653,22 @@ class MyStrategy(StrategyBase):
         if (valid) {
           saving.value = true;
           try {
+            let response;
             if (isNew.value) {
-              await strategyStore.createStrategy(strategy);
-              ElMessage.success('策略创建成功');
+              response = await strategyApi.createStrategy(strategy);
             } else {
-              await strategyStore.updateStrategy(strategy);
-              ElMessage.success('策略更新成功');
+              response = await strategyApi.updateStrategy(strategy.id, strategy);
             }
-            router.push({ name: 'StrategyList' });
+            
+            if (response.success) {
+              ElMessage.success(isNew.value ? '策略创建成功' : '策略更新成功');
+              router.push({ name: 'StrategyList' });
+            } else {
+              throw new Error(response.message || '保存策略失败');
+            }
           } catch (error) {
-            ElMessage.error('保存策略失败: ' + error.message);
+            console.error('保存策略失败:', error);
+            ElMessage.error('保存策略失败: ' + (error instanceof Error ? error.message : '未知错误'));
           } finally {
             saving.value = false;
           }

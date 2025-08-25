@@ -420,4 +420,292 @@ router.post('/validate', [
   });
 }));
 
+// Start strategy
+router.post('/:id/start', [
+  authenticate
+], asyncHandler(async (req: AuthRequest, res) => {
+  const { id } = req.params;
+
+  const strategy = await prisma.strategy.findFirst({
+    where: {
+      id,
+      OR: [
+        { userId: req.user!.id },
+        { user: { role: 'admin' } }
+      ]
+    }
+  });
+
+  if (!strategy) {
+    throw createError('Strategy not found', 404);
+  }
+
+  await prisma.strategy.update({
+    where: { id },
+    data: { status: 'active' }
+  });
+
+  res.json({
+    success: true,
+    message: 'Strategy started successfully'
+  });
+}));
+
+// Stop strategy
+router.post('/:id/stop', [
+  authenticate
+], asyncHandler(async (req: AuthRequest, res) => {
+  const { id } = req.params;
+
+  const strategy = await prisma.strategy.findFirst({
+    where: {
+      id,
+      OR: [
+        { userId: req.user!.id },
+        { user: { role: 'admin' } }
+      ]
+    }
+  });
+
+  if (!strategy) {
+    throw createError('Strategy not found', 404);
+  }
+
+  await prisma.strategy.update({
+    where: { id },
+    data: { status: 'inactive' }
+  });
+
+  res.json({
+    success: true,
+    message: 'Strategy stopped successfully'
+  });
+}));
+
+// Get strategy performance
+router.get('/:id/performance', [
+  authenticate
+], asyncHandler(async (req: AuthRequest, res) => {
+  const { id } = req.params;
+
+  const strategy = await prisma.strategy.findFirst({
+    where: {
+      id,
+      OR: [
+        { userId: req.user!.id },
+        { user: { role: 'admin' } }
+      ]
+    }
+  });
+
+  if (!strategy) {
+    throw createError('Strategy not found', 404);
+  }
+
+  // Get performance metrics from trades
+  const trades = await prisma.trade.findMany({
+    where: {
+      strategyId: id,
+      userId: req.user!.id
+    }
+  });
+
+  const performance = {
+    totalTrades: trades.length,
+    profitableTrades: trades.filter(t => t.profit && t.profit > 0).length,
+    winRate: trades.length > 0 ? (trades.filter(t => t.profit && t.profit > 0).length / trades.length) * 100 : 0,
+    totalProfit: trades.reduce((sum, t) => sum + (t.profit || 0), 0),
+    averageProfit: trades.length > 0 ? trades.reduce((sum, t) => sum + (t.profit || 0), 0) / trades.length : 0
+  };
+
+  res.json({
+    success: true,
+    data: { performance }
+  });
+}));
+
+// Get strategy logs
+router.get('/:id/logs', [
+  authenticate,
+  query('page').optional().isInt({ min: 1 }),
+  query('limit').optional().isInt({ min: 1, max: 100 }),
+  query('level').optional().isIn(['info', 'warning', 'error', 'debug'])
+], asyncHandler(async (req: AuthRequest, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      success: false,
+      message: 'Validation failed',
+      errors: errors.array()
+    });
+  }
+
+  const { id } = req.params;
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 50;
+  const offset = (page - 1) * limit;
+  const { level } = req.query;
+
+  const where: any = {
+    strategyId: id,
+    userId: req.user!.id
+  };
+
+  if (level) where.level = level;
+
+  const [logs, total] = await Promise.all([
+    prisma.strategyLog.findMany({
+      where,
+      orderBy: { timestamp: 'desc' },
+      skip: offset,
+      take: limit
+    }),
+    prisma.strategyLog.count({ where })
+  ]);
+
+  res.json({
+    success: true,
+    data: {
+      logs,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    }
+  });
+}));
+
+// Get strategy trades
+router.get('/:id/trades', [
+  authenticate,
+  query('page').optional().isInt({ min: 1 }),
+  query('limit').optional().isInt({ min: 1, max: 100 })
+], asyncHandler(async (req: AuthRequest, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      success: false,
+      message: 'Validation failed',
+      errors: errors.array()
+    });
+  }
+
+  const { id } = req.params;
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 20;
+  const offset = (page - 1) * limit;
+
+  const where: any = {
+    strategyId: id,
+    userId: req.user!.id
+  };
+
+  const [trades, total] = await Promise.all([
+    prisma.trade.findMany({
+      where,
+      orderBy: { timestamp: 'desc' },
+      skip: offset,
+      take: limit
+    }),
+    prisma.trade.count({ where })
+  ]);
+
+  res.json({
+    success: true,
+    data: {
+      trades,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    }
+  });
+}));
+
+// Update strategy status
+router.put('/:id/status', [
+  authenticate,
+  body('status').isIn(['draft', 'active', 'inactive', 'archived'])
+], asyncHandler(async (req: AuthRequest, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      success: false,
+      message: 'Validation failed',
+      errors: errors.array()
+    });
+  }
+
+  const { id } = req.params;
+  const { status } = req.body;
+
+  const strategy = await prisma.strategy.findFirst({
+    where: {
+      id,
+      OR: [
+        { userId: req.user!.id },
+        { user: { role: 'admin' } }
+      ]
+    }
+  });
+
+  if (!strategy) {
+    throw createError('Strategy not found', 404);
+  }
+
+  const updatedStrategy = await prisma.strategy.update({
+    where: { id },
+    data: { status }
+  });
+
+  res.json({
+    success: true,
+    message: 'Strategy status updated successfully',
+    data: { strategy: updatedStrategy }
+  });
+}));
+
+// Duplicate strategy
+router.post('/:id/duplicate', [
+  authenticate
+], asyncHandler(async (req: AuthRequest, res) => {
+  const { id } = req.params;
+
+  const originalStrategy = await prisma.strategy.findFirst({
+    where: {
+      id,
+      OR: [
+        { userId: req.user!.id },
+        { user: { role: 'admin' } }
+      ]
+    }
+  });
+
+  if (!originalStrategy) {
+    throw createError('Strategy not found', 404);
+  }
+
+  const duplicatedStrategy = await prisma.strategy.create({
+    data: {
+      name: `${originalStrategy.name} (Copy)`,
+      description: originalStrategy.description,
+      code: originalStrategy.code,
+      type: originalStrategy.type,
+      parameters: originalStrategy.parameters,
+      status: 'draft',
+      userId: req.user!.id
+    }
+  });
+
+  res.status(201).json({
+    success: true,
+    message: 'Strategy duplicated successfully',
+    data: { strategy: duplicatedStrategy }
+  });
+}));
+
 export default router;

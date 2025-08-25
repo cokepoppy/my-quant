@@ -471,6 +471,7 @@ const handleNavClick = (item: string) => {
     'strategies': 'StrategyList',
     'strategy-editor': 'CreateStrategy',
     'backtest': 'BacktestSettings',
+    'backtest-results': 'BacktestResult',
     'trading': 'TradingPanel',
     'risk-control': 'Monitoring'
   }
@@ -480,6 +481,7 @@ const handleNavClick = (item: string) => {
     'strategies': '策略列表',
     'strategy-editor': '策略编辑器',
     'backtest': '回测设置',
+    'backtest-results': '回测结果',
     'trading': '交易面板',
     'risk-control': '风控设置'
   }
@@ -489,6 +491,7 @@ const handleNavClick = (item: string) => {
     'strategies': 'TrendCharts',
     'strategy-editor': 'Edit',
     'backtest': 'VideoPlay',
+    'backtest-results': 'DataLine',
     'trading': 'Money',
     'risk-control': 'Warning'
   }

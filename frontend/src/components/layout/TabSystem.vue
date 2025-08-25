@@ -81,11 +81,12 @@ import { Close, MoreFilled, Loading } from '@element-plus/icons-vue'
 
 // 组件映射
 const componentMap = {
-  'DashboardOverview': defineAsyncComponent(() => import('@/views/DashboardOverview.vue')),
+  'DashboardOverview': defineAsyncComponent(() => import('@/views/dashboard/DashboardOverview.vue')),
   'StrategyList': defineAsyncComponent(() => import('@/views/strategy/StrategyList.vue')),
   'CreateStrategy': defineAsyncComponent(() => import('@/views/strategy/CreateStrategy.vue')),
-  'BacktestSettings': defineAsyncComponent(() => import('@/views/BacktestSettings.vue')),
-  'TradingPanel': defineAsyncComponent(() => import('@/views/TradingPanel.vue')),
+  'BacktestSettings': defineAsyncComponent(() => import('@/views/backtest/BacktestSettings.vue')),
+  'BacktestResult': defineAsyncComponent(() => import('@/views/backtest/BacktestResult.vue')),
+  'TradingPanel': defineAsyncComponent(() => import('@/views/trading/TradingPanel.vue')),
   'Monitoring': defineAsyncComponent(() => import('@/views/monitoring/Monitoring.vue'))
 }
 

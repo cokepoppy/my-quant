@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { ElMessage } from "element-plus";
-import { get, post } from "@/api";
+import * as monitoringApi from "@/api/monitoring";
 
 interface MonitoringState {
   systemStatus: {
@@ -238,16 +238,17 @@ export const useMonitoringStore = defineStore("monitoring", {
       try {
         this.setLoading(true);
 
-        const response = await get("/monitoring/status");
+        const response = await monitoringApi.getServiceStatus();
         this.systemStatus = {
-          ...response.data,
+          overall: "healthy",
           lastUpdate: new Date().toISOString(),
+          services: response.data || {},
         };
 
         this.setError(null);
       } catch (error: any) {
         console.error("获取系统状态失败:", error);
-        this.setError(error.response?.data?.message || "获取系统状态失败");
+        this.setError(error.message || "获取系统状态失败");
       } finally {
         this.setLoading(false);
       }
@@ -256,7 +257,7 @@ export const useMonitoringStore = defineStore("monitoring", {
     // 获取系统指标
     async fetchSystemMetrics() {
       try {
-        const response = await get("/monitoring/metrics");
+        const response = await monitoringApi.getResourceUsage();
         this.systemMetrics = response.data;
 
         // 更新历史数据
@@ -267,14 +268,14 @@ export const useMonitoringStore = defineStore("monitoring", {
         this.setError(null);
       } catch (error: any) {
         console.error("获取系统指标失败:", error);
-        this.setError(error.response?.data?.message || "获取系统指标失败");
+        this.setError(error.message || "获取系统指标失败");
       }
     },
 
     // 获取服务状态
     async fetchServiceStatus() {
       try {
-        const response = await get("/monitoring/services");
+        const response = await monitoringApi.getServiceStatus();
         this.serviceStatus = response.data.map((service) => ({
           ...service,
           checking: false,
@@ -283,20 +284,20 @@ export const useMonitoringStore = defineStore("monitoring", {
         this.setError(null);
       } catch (error: any) {
         console.error("获取服务状态失败:", error);
-        this.setError(error.response?.data?.message || "获取服务状态失败");
+        this.setError(error.message || "获取服务状态失败");
       }
     },
 
     // 获取警报
     async fetchAlerts() {
       try {
-        const response = await get("/monitoring/alerts");
-        this.alerts = response.data;
+        const response = await monitoringApi.getAlerts();
+        this.alerts = response.data.alerts || [];
 
         this.setError(null);
       } catch (error: any) {
         console.error("获取警报失败:", error);
-        this.setError(error.response?.data?.message || "获取警报失败");
+        this.setError(error.message || "获取警报失败");
       }
     },
 
@@ -304,13 +305,13 @@ export const useMonitoringStore = defineStore("monitoring", {
     async fetchLogs(level = "") {
       try {
         const params = level ? { level } : {};
-        const response = await get("/monitoring/logs", { params });
-        this.logs = response.data;
+        const response = await monitoringApi.getSystemLogs(params);
+        this.logs = response.data.logs || [];
 
         this.setError(null);
       } catch (error: any) {
         console.error("获取日志失败:", error);
-        this.setError(error.response?.data?.message || "获取日志失败");
+        this.setError(error.message || "获取日志失败");
       }
     },
 
@@ -443,8 +444,10 @@ export const useMonitoringStore = defineStore("monitoring", {
     // 导出监控报告
     async exportMonitoringReport() {
       try {
-        const response = await get("/monitoring/export/report", {
-          responseType: "blob",
+        const response = await monitoringApi.exportMonitoringData({
+          type: "metrics",
+          format: "csv",
+          timeRange: "24h"
         });
 
         // 创建下载链接
@@ -453,7 +456,7 @@ export const useMonitoringStore = defineStore("monitoring", {
         link.href = url;
         link.setAttribute(
           "download",
-          `monitoring_report_${new Date().toISOString().split("T")[0]}.pdf`,
+          `monitoring_report_${new Date().toISOString().split("T")[0]}.csv`,
         );
         document.body.appendChild(link);
         link.click();
@@ -463,7 +466,7 @@ export const useMonitoringStore = defineStore("monitoring", {
         this.setError(null);
       } catch (error: any) {
         console.error("导出监控报告失败:", error);
-        this.setError(error.response?.data?.message || "导出监控报告失败");
+        this.setError(error.message || "导出监控报告失败");
       }
     },
 

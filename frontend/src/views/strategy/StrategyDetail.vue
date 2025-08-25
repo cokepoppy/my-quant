@@ -217,6 +217,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { ArrowDown, Warning } from '@element-plus/icons-vue'
+import * as strategyApi from '@/api/strategy'
 
 // 定义props和emits
 const props = defineProps({
@@ -295,99 +296,33 @@ const timeframes = [
 // 加载策略数据
 const loadStrategy = async () => {
   try {
+    console.log('🔥 StrategyDetail: 开始加载策略数据，ID:', props.strategyId)
+    
     // 如果有传入的 strategy prop，直接使用
     if (props.strategy && Object.keys(props.strategy).length > 0) {
       Object.assign(strategy, props.strategy)
       console.log('🔥 StrategyDetail: 使用传入的策略数据', strategy)
     } else {
-      // 否则使用模拟数据
-      await new Promise(resolve => setTimeout(resolve, 500))
+      // 从API获取策略数据
+      console.log('🔥 StrategyDetail: 从API获取策略数据')
+      const response = await strategyApi.getStrategyById(props.strategyId)
       
-      // 模拟策略数据
-      Object.assign(strategy, {
-        name: 'BTC趋势跟踪策略',
-        description: '基于移动平均线的趋势跟踪策略，当短期均线上穿长期均线时买入，下穿时卖出。',
-        type: 'trend_following',
-        symbol: 'BTCUSDT',
-        timeframe: '1h',
-        initialCapital: 10000,
-        maxPosition: 20,
-        stopLossRatio: 2.0,
-        takeProfitRatio: 5.0,
-        status: 'active',
-        profitRate: 12.5,
-        sharpeRatio: 1.8,
-        maxDrawdown: 8.3,
-        winRate: 65.2,
-        createdAt: new Date(2023, 5, 15),
-        updatedAt: new Date(2023, 6, 20),
-        code: `# 策略名称: BTC趋势跟踪策略
-# 交易品种: BTCUSDT
-# 时间周期: 1h
-
-import pandas as pd
-import numpy as np
-from strategy_base import StrategyBase
-
-class MyStrategy(StrategyBase):
-    """
-    基于移动平均线的趋势跟踪策略
-    当短期均线上穿长期均线时买入，下穿时卖出
-    """
-    
-    def __init__(self):
-        super().__init__()
-        # 初始化策略参数
-        self.short_window = 20  # 短期均线窗口
-        self.long_window = 50   # 长期均线窗口
-        
-    def initialize(self):
-        """策略初始化函数，在回测/实盘开始前调用"""
-        self.log("策略初始化...")
-        
-    def on_bar(self, bar):
-        """
-        K线数据处理函数，每个新的K线数据到来时调用
-        
-        参数:
-            bar: K线数据，包含open, high, low, close, volume等属性
-        """
-        # 获取历史数据
-        if len(self.data.close) < self.long_window:
-            return
-            
-        # 计算技术指标
-        short_ma = np.mean(self.data.close[-self.short_window:])
-        long_ma = np.mean(self.data.close[-self.long_window:])
-        
-        # 交易逻辑
-        if short_ma > long_ma and not self.position:
-            # 做多信号
-            self.buy(bar.close, 1)
-            self.log(f"买入信号: 价格={bar.close}")
-        elif short_ma < long_ma and self.position > 0:
-            # 平仓信号
-            self.sell(bar.close, self.position)
-            self.log(f"卖出信号: 价格={bar.close}")
-            
-    def on_order_filled(self, order):
-        """订单成交回调函数"""
-        self.log(f"订单成交: {order.direction} {order.filled_amount} @ {order.filled_price}")
-        
-    def on_stop(self):
-        """策略结束时调用"""
-        self.log("策略运行结束")
-`
-      })
+      if (response.success) {
+        Object.assign(strategy, response.data)
+        console.log('🔥 StrategyDetail: API数据加载成功', strategy)
+      } else {
+        throw new Error(response.message || '获取策略数据失败')
+      }
     }
     
-    // 加载最近交易
-    loadRecentTrades()
+    // 加载最近交易数据
+    await loadRecentTrades()
+    
   } catch (error) {
-    ElMessage.error('加载策略失败: ' + error.message)
+    console.error('🔥 StrategyDetail: 加载策略失败:', error)
+    ElMessage.error('加载策略失败: ' + (error instanceof Error ? error.message : '未知错误'))
   }
 }
-
 // 加载最近交易
 const loadRecentTrades = async () => {
   loadingTrades.value = true
@@ -451,15 +386,17 @@ const toggleStrategyStatus = async () => {
     const newStatus = strategy.status === 'active' ? 'inactive' : 'active'
     const actionText = newStatus === 'active' ? '启用' : '停用'
     
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 300))
+    const response = await strategyApi.updateStrategyStatus(props.strategyId, newStatus)
     
-    // 更新本地状态
-    strategy.status = newStatus
-    
-    ElMessage.success(`策略${actionText}成功`)
+    if (response.success) {
+      strategy.status = newStatus
+      ElMessage.success(`策略${actionText}成功`)
+    } else {
+      throw new Error(response.message || '操作失败')
+    }
   } catch (error) {
-    ElMessage.error('操作失败: ' + error.message)
+    console.error('切换策略状态失败:', error)
+    ElMessage.error('操作失败: ' + (error instanceof Error ? error.message : '未知错误'))
   }
 }
 
@@ -484,12 +421,17 @@ const handleCommand = (command) => {
 // 复制策略
 const duplicateStrategy = async () => {
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 500))
+    const response = await strategyApi.duplicateStrategy(props.strategyId)
     
-    ElMessage.success('策略复制成功')
+    if (response.success) {
+      ElMessage.success('策略复制成功')
+      emit('back-to-list')
+    } else {
+      throw new Error(response.message || '复制失败')
+    }
   } catch (error) {
-    ElMessage.error('复制失败: ' + error.message)
+    console.error('复制策略失败:', error)
+    ElMessage.error('复制失败: ' + (error instanceof Error ? error.message : '未知错误'))
   }
 }
 
@@ -542,14 +484,18 @@ const exportStrategy = () => {
 const confirmDelete = async () => {
   deleting.value = true
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 800))
+    const response = await strategyApi.deleteStrategy(props.strategyId)
     
-    ElMessage.success('策略删除成功')
-    deleteDialogVisible.value = false
-    emit('back-to-list')
+    if (response.success) {
+      ElMessage.success('策略删除成功')
+      deleteDialogVisible.value = false
+      emit('back-to-list')
+    } else {
+      throw new Error(response.message || '删除失败')
+    }
   } catch (error) {
-    ElMessage.error('删除失败: ' + error.message)
+    console.error('删除策略失败:', error)
+    ElMessage.error('删除失败: ' + (error instanceof Error ? error.message : '未知错误'))
   } finally {
     deleting.value = false
   }

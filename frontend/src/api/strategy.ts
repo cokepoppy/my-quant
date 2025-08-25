@@ -23,13 +23,7 @@ export const getStrategies = async (params?: {
     };
   }>("/strategies", { params });
   
-  // 转换后端响应格式为前端期望的格式
-  return {
-    strategies: response.strategies,
-    total: response.pagination.total,
-    page: response.pagination.page,
-    limit: response.pagination.limit,
-  };
+  return response;
 };
 
 // 获取策略详情
@@ -103,6 +97,30 @@ export const getStrategyLogs = async (
   return response;
 };
 
+// 获取策略交易记录
+export const getStrategyTrades = async (
+  id: string,
+  params?: {
+    page?: number;
+    limit?: number;
+  },
+) => {
+  const response = await get(`/strategies/${id}/trades`, { params });
+  return response;
+};
+
+// 更新策略状态
+export const updateStrategyStatus = async (id: string, status: string) => {
+  const response = await put(`/strategies/${id}/status`, { status });
+  return response;
+};
+
+// 复制策略
+export const duplicateStrategy = async (id: string) => {
+  const response = await post(`/strategies/${id}/duplicate`);
+  return response;
+};
+
 export default {
   getStrategies,
   getStrategyById,
@@ -115,4 +133,7 @@ export default {
   stopStrategy,
   getStrategyPerformance,
   getStrategyLogs,
+  getStrategyTrades,
+  updateStrategyStatus,
+  duplicateStrategy,
 };

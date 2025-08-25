@@ -253,6 +253,7 @@
 import { ref, reactive, onMounted } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import TradingChart from "@/components/charts/TradingChart.vue";
+import * as tradingApi from "@/api/trading";
 
 const positionsLoading = ref(false);
 const ordersLoading = ref(false);
@@ -361,10 +362,46 @@ const fetchTradingData = async () => {
   ordersLoading.value = true;
 
   try {
-    // TODO: 从API获取交易数据
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    // 获取账户余额
+    const accountsResponse = await tradingApi.getTradingAccounts();
+    if (accountsResponse.success && accountsResponse.data.length > 0) {
+      const account = accountsResponse.data[0];
+      const balanceResponse = await tradingApi.getAccountBalance(account.id);
+      if (balanceResponse.success) {
+        Object.assign(balance, balanceResponse.data);
+      }
+    }
+    
+    // 获取持仓数据
+    const positionsResponse = await tradingApi.getPositions();
+    if (positionsResponse.success) {
+      currentPositions.value = positionsResponse.data || [];
+      // 更新持仓统计
+      const profitablePositions = currentPositions.value.filter(p => p.pnl && p.pnl > 0).length;
+      const losingPositions = currentPositions.value.filter(p => p.pnl && p.pnl < 0).length;
+      Object.assign(positions, {
+        total: currentPositions.value.length,
+        profitable: profitablePositions,
+        losing: losingPositions
+      });
+    }
+    
+    // 获取订单数据
+    const ordersResponse = await tradingApi.getOrders();
+    if (ordersResponse.success) {
+      currentOrders.value = ordersResponse.data.orders || [];
+      // 更新订单统计
+      const filledOrders = currentOrders.value.filter(o => o.status === 'filled').length;
+      const filledRate = currentOrders.value.length > 0 ? (filledOrders / currentOrders.value.length * 100).toFixed(1) : '0';
+      Object.assign(orders, {
+        total: currentOrders.value.length,
+        filled: filledOrders,
+        filledRate: filledRate
+      });
+    }
   } catch (error) {
-    ElMessage.error("获取交易数据失败");
+    console.error('获取交易数据失败:', error);
+    ElMessage.error('获取交易数据失败');
   } finally {
     positionsLoading.value = false;
     ordersLoading.value = false;
@@ -387,11 +424,13 @@ const handleClosePosition = async (position: any) => {
       },
     );
 
-    // TODO: 调用API平仓
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    ElMessage.success("平仓成功");
-    fetchTradingData();
+    const response = await tradingApi.closePosition(position.id);
+    if (response.success) {
+      ElMessage.success("平仓成功");
+      fetchTradingData();
+    } else {
+      throw new Error(response.message || '平仓失败');
+    }
   } catch (error) {
     if (error !== "cancel") {
       ElMessage.error("平仓失败");
@@ -406,14 +445,44 @@ const handleShowChart = (position: any) => {
 
 const handlePlaceOrder = async () => {
   try {
-    // TODO: 调用API下单
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    ElMessage.success("下单成功");
-    tradeDialogVisible.value = false;
-    fetchTradingData();
+    // 获取第一个账户作为默认账户
+    const accountsResponse = await tradingApi.getTradingAccounts();
+    if (!accountsResponse.success || accountsResponse.data.length === 0) {
+      throw new Error('没有可用的交易账户');
+    }
+    
+    const accountId = accountsResponse.data[0].id;
+    const orderData = {
+      accountId,
+      symbol: newOrder.symbol,
+      type: newOrder.type,
+      side: newOrder.side,
+      quantity: newOrder.quantity,
+      price: newOrder.type === 'limit' ? newOrder.price : undefined,
+      stopPrice: newOrder.type === 'stop' ? newOrder.stopPrice : undefined
+    };
+    
+    const response = await tradingApi.placeOrder(orderData);
+    
+    if (response.success) {
+      ElMessage.success("下单成功");
+      tradeDialogVisible.value = false;
+      fetchTradingData();
+      // 重置表单
+      Object.assign(newOrder, {
+        symbol: '',
+        type: 'market',
+        side: 'buy',
+        quantity: 0,
+        price: 0,
+        stopPrice: 0
+      });
+    } else {
+      throw new Error(response.message || '下单失败');
+    }
   } catch (error) {
-    ElMessage.error("下单失败");
+    console.error('下单失败:', error);
+    ElMessage.error('下单失败: ' + (error instanceof Error ? error.message : '未知错误'));
   }
 };
 

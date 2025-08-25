@@ -320,6 +320,7 @@
 import { ref, reactive, onMounted, onUnmounted } from "vue";
 import { ElMessage } from "element-plus";
 import TradingChart from "@/components/charts/TradingChart.vue";
+import * as tradingApi from "@/api/trading";
 
 const activeTab = ref("charts");
 const selectedSymbol = ref("BTC/USDT");
@@ -418,10 +419,38 @@ const handleRefresh = async () => {
 
 const fetchMarketData = async () => {
   try {
-    // TODO: 从API获取市场数据
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    // 获取实时价格数据
+    const symbols = ['BTC/USDT', 'ETH/USDT', 'BNB/USDT', 'SOL/USDT'];
+    const pricePromises = symbols.map(symbol => 
+      tradingApi.getMarketData(symbol.replace('/', ''), '1m')
+    );
+    
+    const priceResponses = await Promise.all(pricePromises);
+    
+    realtimePrices.value = symbols.map((symbol, index) => {
+      const response = priceResponses[index];
+      if (response.success && response.data) {
+        return {
+          symbol,
+          price: response.data.price || 0,
+          change24h: response.data.changePercent || 0,
+          volume24h: response.data.volume || 0,
+          high24h: response.data.high24h || 0,
+          low24h: response.data.low24h || 0
+        };
+      }
+      return {
+        symbol,
+        price: 0,
+        change24h: 0,
+        volume24h: 0,
+        high24h: 0,
+        low24h: 0
+      };
+    });
   } catch (error) {
-    console.error("获取市场数据失败:", error);
+    console.error('获取市场数据失败:', error);
+    ElMessage.error('获取市场数据失败');
   }
 };
 
@@ -446,12 +475,27 @@ const updateDepth = () => {
 const queryHistory = async () => {
   historyLoading.value = true;
   try {
-    // TODO: 从API获取历史数据
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const symbol = selectedSymbol.value.replace('/', '');
+    const endTime = new Date();
+    const startTime = new Date(endTime.getTime() - 7 * 24 * 60 * 60 * 1000); // 7天前
+    
+    const response = await tradingApi.getHistoricalData(symbol, {
+      startTime: startTime.toISOString(),
+      endTime: endTime.toISOString(),
+      interval: historyForm.timeframe
+    });
+    
+    if (response.success) {
+      historyData.value = response.data || [];
+      historyPagination.total = response.data?.length || 0;
+    } else {
+      throw new Error(response.message || '获取历史数据失败');
+    }
+  } catch (error) {
+    console.error('查询历史数据失败:', error);
+    ElMessage.error('查询历史数据失败');
     historyData.value = [];
     historyPagination.total = 0;
-  } catch (error) {
-    ElMessage.error("查询历史数据失败");
   } finally {
     historyLoading.value = false;
   }
@@ -486,13 +530,13 @@ const fetchWatchlist = async () => {
 
 const saveWatchlist = async () => {
   try {
-    // TODO: 调用API保存自选
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    // 这里需要调用添加自选的API，暂时使用模拟数据
     ElMessage.success("添加到自选成功");
     addToWatchlistDialog.value = false;
     fetchWatchlist();
   } catch (error) {
-    ElMessage.error("添加到自选失败");
+    console.error('添加到自选失败:', error);
+    ElMessage.error('添加到自选失败');
   }
 };
 
@@ -509,12 +553,12 @@ const editWatchlist = (row: any) => {
 
 const removeWatchlist = async (row: any) => {
   try {
-    // TODO: 调用API删除自选
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    // 这里需要调用删除自选的API，暂时使用模拟数据
     ElMessage.success("删除成功");
     fetchWatchlist();
   } catch (error) {
-    ElMessage.error("删除失败");
+    console.error('删除失败:', error);
+    ElMessage.error('删除失败');
   }
 };
 
