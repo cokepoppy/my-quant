@@ -202,7 +202,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, withDefaults } from "vue";
 import { ElMessage } from "element-plus";
 import { Search, Setting, User } from "@element-plus/icons-vue";
 import type { StrategyTemplate } from "@/types/strategy";
@@ -211,7 +211,9 @@ interface Props {
   templates: StrategyTemplate[];
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  templates: () => []
+});
 
 const emit = defineEmits<{
   select: [template: StrategyTemplate];
@@ -227,7 +229,7 @@ const selectedTemplate = ref<StrategyTemplate | null>(null);
 
 // 计算属性
 const filteredTemplates = computed(() => {
-  let filtered = props.templates;
+  let filtered = props.templates.length > 0 ? props.templates : defaultTemplates;
 
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
@@ -322,10 +324,95 @@ const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString("zh-CN");
 };
 
-// 生命周期
-onMounted(() => {
-  // 可以在这里添加一些初始化逻辑
-});
+// 默认模板数据
+const defaultTemplates: StrategyTemplate[] = [
+  {
+    id: "1",
+    name: "双均线策略",
+    description: "基于快慢均线的交叉信号进行交易，适合趋势市场",
+    category: "trend",
+    language: "javascript",
+    code: "// 双均线策略示例代码\nfunction strategy(data) {\n  const fastMA = calculateMA(data, fastPeriod);\n  const slowMA = calculateMA(data, slowPeriod);\n  \n  if (fastMA > slowMA) {\n    return 'BUY';\n  } else if (fastMA < slowMA) {\n    return 'SELL';\n  }\n  return 'HOLD';\n}",
+    parameters: [
+      { name: "fastPeriod", type: "number", value: 12, description: "快均线周期", required: true, min: 5, max: 50 },
+      { name: "slowPeriod", type: "number", value: 26, description: "慢均线周期", required: true, min: 10, max: 100 }
+    ],
+    config: {
+      symbols: ["BTCUSDT"],
+      timeframe: "1h",
+      riskManagement: {
+        maxPositionSize: 0.1,
+        maxDrawdown: 0.1,
+        stopLoss: 0.02,
+        takeProfit: 0.04,
+        riskPerTrade: 0.02,
+        maxCorrelation: 0.7
+      },
+      execution: {
+        exchange: "binance",
+        accountType: "spot",
+        slippage: 0.001,
+        commission: 0.001,
+        leverage: 1,
+        executionDelay: 100
+      },
+      notifications: {
+        email: false,
+        push: false,
+        events: []
+      }
+    },
+    tags: ["趋势", "均线", "新手友好"],
+    difficulty: "beginner",
+    createdAt: "2024-01-15T00:00:00Z",
+    usageCount: 1280,
+    rating: 4.5
+  },
+  {
+    id: "2", 
+    name: "RSI超买超卖策略",
+    description: "利用RSI指标判断超买超卖区域，进行反转交易",
+    category: "momentum",
+    language: "typescript",
+    code: "// RSI策略示例代码\nfunction strategy(data) {\n  const rsi = calculateRSI(data, rsiPeriod);\n  \n  if (rsi > overbought) {\n    return 'SELL';\n  } else if (rsi < oversold) {\n    return 'BUY';\n  }\n  return 'HOLD';\n}",
+    parameters: [
+      { name: "rsiPeriod", type: "number", value: 14, description: "RSI计算周期", required: true, min: 5, max: 30 },
+      { name: "overbought", type: "number", value: 70, description: "超买阈值", required: true, min: 70, max: 90 },
+      { name: "oversold", type: "number", value: 30, description: "超卖阈值", required: true, min: 10, max: 30 }
+    ],
+    config: {
+      symbols: ["BTCUSDT"],
+      timeframe: "1h",
+      riskManagement: {
+        maxPositionSize: 0.1,
+        maxDrawdown: 0.1,
+        stopLoss: 0.02,
+        takeProfit: 0.04,
+        riskPerTrade: 0.02,
+        maxCorrelation: 0.7
+      },
+      execution: {
+        exchange: "binance",
+        accountType: "spot",
+        slippage: 0.001,
+        commission: 0.001,
+        leverage: 1,
+        executionDelay: 100
+      },
+      notifications: {
+        email: false,
+        push: false,
+        events: []
+      }
+    },
+    tags: ["动量", "RSI", "反转"],
+    difficulty: "intermediate",
+    createdAt: "2024-02-01T00:00:00Z",
+    usageCount: 856,
+    rating: 4.2
+  }
+];
+
 </script>
 
 <style scoped>
