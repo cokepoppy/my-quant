@@ -476,6 +476,7 @@ const handleNavClick = (item: string) => {
     'backtest-results': 'BacktestResult',
     'trading': 'TradingPanel',
     'orders': 'OrdersManagement',
+    'positions': 'PositionsManagement',
     'risk-control': 'Monitoring'
   }
 
@@ -489,6 +490,7 @@ const handleNavClick = (item: string) => {
     'backtest-results': '回测结果',
     'trading': '交易面板',
     'orders': '订单管理',
+    'positions': '持仓管理',
     'risk-control': '风控设置'
   }
 
@@ -502,6 +504,7 @@ const handleNavClick = (item: string) => {
     'backtest-results': 'DataLine',
     'trading': 'Money',
     'orders': 'List',
+    'positions': 'PieChart',
     'risk-control': 'Warning'
   }
 

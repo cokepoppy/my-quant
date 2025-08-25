@@ -90,6 +90,7 @@ const componentMap = {
   'BacktestResult': defineAsyncComponent(() => import('@/views/backtest/BacktestResult.vue')),
   'TradingPanel': defineAsyncComponent(() => import('@/views/trading/TradingPanel.vue')),
   'OrdersManagement': defineAsyncComponent(() => import('@/views/trading/OrdersManagement.vue')),
+  'PositionsManagement': defineAsyncComponent(() => import('@/views/trading/PositionsManagement.vue')),
   'Monitoring': defineAsyncComponent(() => import('@/views/monitoring/Monitoring.vue'))
 }
 
