@@ -20,6 +20,7 @@ import dataRoutes from './routes/data';
 import backtestRoutes from './routes/backtest';
 import tradingRoutes from './routes/trading';
 import monitoringRoutes from './routes/monitoring';
+import systemRoutes from './routes/system';
 
 // Load environment variables
 dotenv.config();
@@ -57,6 +58,7 @@ app.use('/data', dataRoutes);
 app.use('/backtest', backtestRoutes);
 app.use('/trading', tradingRoutes);
 app.use('/monitoring', monitoringRoutes);
+app.use('/system', systemRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {
