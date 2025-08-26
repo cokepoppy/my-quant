@@ -21,6 +21,7 @@ import backtestRoutes from './routes/backtest';
 import tradingRoutes from './routes/trading';
 import monitoringRoutes from './routes/monitoring';
 import systemRoutes from './routes/system';
+import dataTestRoutes from './routes/data-simple';
 
 // Load environment variables
 dotenv.config();
@@ -59,6 +60,7 @@ app.use('/backtest', backtestRoutes);
 app.use('/trading', tradingRoutes);
 app.use('/monitoring', monitoringRoutes);
 app.use('/system', systemRoutes);
+app.use('/data-test', dataTestRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {
@@ -70,6 +72,14 @@ app.use('*', (req, res) => {
 
 // Error handling middleware
 app.use(errorHandler);
+
+// Setup Socket.IO
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"]
+  }
+});
 
 // Setup Real-time Data Service
 let realTimeDataService: RealTimeDataService | null = null;

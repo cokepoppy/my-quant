@@ -176,6 +176,35 @@ const routes = [
       requiresAuth: true,
       title: "市场数据",
     },
+    children: [
+      {
+        path: "",
+        name: "MarketDataMain",
+        component: () => import("@/views/market/MarketData.vue"),
+        meta: {
+          requiresAuth: true,
+          title: "市场数据",
+        },
+      },
+      {
+        path: "data-source-test",
+        name: "DataSourceTest",
+        component: () => import("@/views/market/DataSourceTest.vue"),
+        meta: {
+          requiresAuth: true,
+          title: "数据源测试",
+        },
+      },
+      {
+        path: "data-import",
+        name: "DataImport",
+        component: () => import("@/views/market/DataImport.vue"),
+        meta: {
+          requiresAuth: true,
+          title: "数据导入",
+        },
+      },
+    ],
   },
   {
     path: "/monitoring",

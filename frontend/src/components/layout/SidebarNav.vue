@@ -160,6 +160,14 @@
           </div>
           <div
             class="nav-item"
+            :class="{ active: activeItem === 'data-source-test' }"
+            @click="selectNavItem('data-source-test')"
+          >
+            <el-icon class="nav-icon"><Connection /></el-icon>
+            <span class="nav-text" v-if="!isCollapsed">数据源测试</span>
+          </div>
+          <div
+            class="nav-item"
             :class="{ active: activeItem === 'data-import' }"
             @click="selectNavItem('data-import')"
           >
@@ -231,6 +239,7 @@ import {
   Warning,
   Bell,
   DataBoard,
+  Connection,
   Upload,
   User,
   Setting,
