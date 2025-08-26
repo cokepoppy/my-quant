@@ -6,8 +6,40 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 
+// Import new data services
+import { 
+  initDataManager, 
+  getDataManager, 
+  YahooFinanceAdapter,
+  DataSourceConfig 
+} from '../services/data';
+
 const router = Router();
 const prisma = new PrismaClient();
+
+// Initialize data manager and adapters
+let dataManagerInitialized = false;
+
+async function ensureDataManagerInitialized() {
+  if (!dataManagerInitialized) {
+    const manager = initDataManager();
+    
+    // Initialize Yahoo Finance adapter
+    const yahooConfig: DataSourceConfig = {
+      name: 'Yahoo Finance',
+      type: 'rest',
+      rateLimit: 100,
+      timeout: 10000,
+      enabled: true
+    };
+    
+    const yahooAdapter = new YahooFinanceAdapter(yahooConfig);
+    manager.registerAdapter(yahooAdapter);
+    
+    await manager.initialize();
+    dataManagerInitialized = true;
+  }
+}
 
 // 配置 multer 用于文件上传
 const storage = multer.diskStorage({
@@ -751,6 +783,281 @@ router.delete('/imports/:id', optionalAuth, async (req: AuthRequest, res) => {
     res.status(500).json({
       success: false,
       message: '删除导入记录失败',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// New data source API endpoints
+
+// Get data sources status
+router.get('/sources/status', optionalAuth, async (req: AuthRequest, res) => {
+  try {
+    await ensureDataManagerInitialized();
+    const manager = getDataManager();
+    const statuses = manager.getAdapterStatuses();
+
+    res.json({
+      success: true,
+      message: 'Data sources status retrieved successfully',
+      data: statuses
+    });
+  } catch (error) {
+    console.error('Error fetching data sources status:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch data sources status',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// Get real-time market data from external sources
+router.get('/external/realtime', optionalAuth, [
+  query('symbols').notEmpty().withMessage('Symbols are required'),
+  query('source').optional().isIn(['yahoo', 'binance', 'alpha_vantage']).withMessage('Invalid source')
+], async (req: AuthRequest, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+
+    await ensureDataManagerInitialized();
+    const manager = getDataManager();
+    
+    const symbols = (req.query.symbols as string).split(',');
+    const realTimeData = await manager.fetchRealTimeData(symbols);
+
+    res.json({
+      success: true,
+      message: 'Real-time data retrieved successfully',
+      data: realTimeData,
+      count: realTimeData.length
+    });
+  } catch (error) {
+    console.error('Error fetching real-time data:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch real-time data',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// Get historical data from external sources
+router.post('/external/historical', optionalAuth, [
+  body('symbol').notEmpty().withMessage('Symbol is required'),
+  body('startTime').isISO8601().withMessage('Start time must be valid ISO8601 date'),
+  body('endTime').isISO8601().withMessage('End time must be valid ISO8601 date'),
+  body('interval').optional().isIn(['1m', '5m', '15m', '30m', '1h', '4h', '1d', '1w', '1M']).withMessage('Invalid interval')
+], async (req: AuthRequest, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+
+    await ensureDataManagerInitialized();
+    const manager = getDataManager();
+    
+    const { symbol, startTime, endTime, interval = '1d' } = req.body;
+    
+    const historicalData = await manager.fetchHistoricalData({
+      symbol,
+      startTime: new Date(startTime),
+      endTime: new Date(endTime),
+      interval
+    });
+
+    res.json({
+      success: true,
+      message: 'Historical data retrieved successfully',
+      data: {
+        symbol,
+        interval,
+        data: historicalData,
+        count: historicalData.length
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching historical data:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch historical data',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// Get data quality report
+router.get('/quality/:symbol', optionalAuth, async (req: AuthRequest, res) => {
+  try {
+    const { symbol } = req.params;
+    
+    await ensureDataManagerInitialized();
+    const manager = getDataManager();
+    
+    const qualityReport = manager.getDataQualityReport([symbol]);
+
+    res.json({
+      success: true,
+      message: 'Data quality report retrieved successfully',
+      data: qualityReport[0] || {
+        symbol,
+        totalRecords: 0,
+        validRecords: 0,
+        averageQualityScore: 0,
+        errors: ['No data available']
+      }
+    });
+  } catch (error) {
+    console.error('Error generating data quality report:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to generate data quality report',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// Get supported symbols from external sources
+router.get('/external/symbols', optionalAuth, [
+  query('source').optional().isIn(['yahoo', 'binance']).withMessage('Invalid source')
+], async (req: AuthRequest, res) => {
+  try {
+    const source = req.query.source as string || 'yahoo';
+    
+    let symbols: any[] = [];
+    
+    if (source === 'yahoo') {
+      symbols = [
+        ...YahooFinanceAdapter.POPULAR_STOCKS.map(symbol => ({
+          symbol,
+          name: symbol,
+          type: 'stock',
+          source: 'Yahoo Finance'
+        })),
+        ...YahooFinanceAdapter.POPULAR_CRYPTO.map(symbol => ({
+          symbol,
+          name: symbol,
+          type: 'crypto',
+          source: 'Yahoo Finance'
+        })),
+        ...YahooFinanceAdapter.INDICES.map(symbol => ({
+          symbol,
+          name: symbol,
+          type: 'index',
+          source: 'Yahoo Finance'
+        }))
+      ];
+    }
+
+    res.json({
+      success: true,
+      message: 'Supported symbols retrieved successfully',
+      data: {
+        source,
+        symbols,
+        count: symbols.length
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching supported symbols:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch supported symbols',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// Quick data fetch for popular symbols
+router.get('/external/quick/:symbol', optionalAuth, [
+  query('days').optional().isInt({ min: 1, max: 365 }).withMessage('Days must be between 1 and 365'),
+  query('interval').optional().isIn(['1d', '1h', '4h']).withMessage('Invalid interval')
+], async (req: AuthRequest, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+
+    const { symbol } = req.params;
+    const days = parseInt(req.query.days as string) || 30;
+    const interval = req.query.interval as string || '1d';
+
+    await ensureDataManagerInitialized();
+    const manager = getDataManager();
+    
+    const endTime = new Date();
+    const startTime = new Date(endTime.getTime() - days * 24 * 60 * 60 * 1000);
+
+    const historicalData = await manager.fetchHistoricalData({
+      symbol,
+      startTime,
+      endTime,
+      interval
+    });
+
+    // Calculate basic statistics
+    if (historicalData.length > 0) {
+      const prices = historicalData.map(d => d.close);
+      const minPrice = Math.min(...prices);
+      const maxPrice = Math.max(...prices);
+      const firstPrice = prices[0];
+      const lastPrice = prices[prices.length - 1];
+      const change = lastPrice - firstPrice;
+      const changePercent = (change / firstPrice) * 100;
+
+      res.json({
+        success: true,
+        message: 'Quick data fetch completed successfully',
+        data: {
+          symbol,
+          interval,
+          days,
+          summary: {
+            currentPrice: lastPrice,
+            change,
+            changePercent,
+            minPrice,
+            maxPrice,
+            dataPoints: historicalData.length
+          },
+          historicalData: historicalData.slice(-50) // Return last 50 points
+        }
+      });
+    } else {
+      res.json({
+        success: true,
+        message: 'No data available for the specified parameters',
+        data: {
+          symbol,
+          interval,
+          days,
+          summary: null,
+          historicalData: []
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Error in quick data fetch:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch quick data',
       error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
