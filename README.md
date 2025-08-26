@@ -61,12 +61,27 @@ npm run docker:down
 
 ### 策略管理
 ![策略列表](images/readme/策略列表.png)
-
-### 策略详情
 ![策略详情](images/readme/策略详情.png)
 
-### 交易面板
+### 交易功能
 ![交易面板](images/readme/交易面板.png)
+![订单管理](images/readme/订单管理.png)
+![持仓管理](images/readme/持仓管理.png)
+![账户管理](images/readme/账户管理.png)
+
+### 数据与分析
+![市场数据](images/readme/市场数据.png)
+![数据导入](images/readme/数据导入.png)
+
+### 回测系统
+![回测设置](images/readme/回测设置.png)
+![回测结果](images/readme/回测结果.png)
+
+### 参数优化
+![参数优化](images/readme/参数优化.png)
+
+### 系统管理
+![用户管理](images/readme/用户管理.png)
 
 ## 📁 项目结构
 
@@ -89,6 +104,8 @@ quant-trading-system/
 │   │   ├── models/        # 数据模型
 │   │   └── routes/        # 路由
 │   └── package.json
+├── images/                 # 图片资源
+│   └── readme/           # README图片
 ├── docker/                 # Docker配置
 ├── docker-compose.yml      # 容器编排
 └── package.json           # 根目录配置
@@ -143,6 +160,11 @@ cd backend && npm run db:studio
 - `POST /api/backtest/run` - 运行回测
 - `GET /api/backtest/results/:id` - 获取回测结果
 
+### 系统管理
+- `GET /api/system/logs` - 获取系统日志
+- `GET /api/users` - 用户管理 (管理员)
+- `GET /api/monitoring` - 系统监控
+
 ## 🚀 部署指南
 
 ### 生产环境部署
@@ -170,6 +192,44 @@ cd backend && npm run db:studio
 - test: 测试相关
 - chore: 构建工具或辅助工具的变动
 
+## 🛠️ 开发命令
+
+### 根目录命令
+```bash
+npm run install:all        # 安装所有依赖
+npm run dev                # 同时启动前端和后端
+npm run build              # 构建所有应用
+npm run test               # 运行测试
+npm run docker:up          # 启动所有服务
+npm run docker:down        # 停止所有服务
+npm run docker:logs        # 查看服务日志
+```
+
+### 后端命令
+```bash
+cd backend
+npm run dev                # 启动后端开发服务器
+npm run build              # 构建后端应用
+npm run test               # 运行后端测试
+npm run db:generate        # 生成Prisma客户端
+npm run db:migrate         # 运行数据库迁移
+npm run db:push            # 推送schema更改
+npm run db:studio          # 打开数据库管理界面
+npm run lint               # ESLint检查和修复
+npm run format             # Prettier格式化
+```
+
+### 前端命令
+```bash
+cd frontend
+npm run dev                # 启动前端开发服务器
+npm run build              # 构建前端应用
+npm run preview            # 预览生产构建
+npm run test               # 运行前端测试
+npm run lint               # ESLint检查和修复
+npm run format             # Prettier格式化
+```
+
 ## 📝 许可证
 
 MIT License
@@ -177,3 +237,7 @@ MIT License
 ## 🙋‍♂️ 支持
 
 如有问题请提交Issue或联系开发团队。
+
+---
+
+**系统特点**: 本系统采用微服务架构，支持高并发处理，具备完善的权限管理和数据安全保障。适合个人投资者和小型机构使用。
