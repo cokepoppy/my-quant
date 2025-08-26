@@ -118,11 +118,19 @@ export const getTradeHistory = async (params?: {
 };
 
 // 获取市场数据
-export const getMarketData = async (symbol: string, interval?: string) => {
-  const response = await get(`/data/market/${symbol}`, {
-    params: { interval },
-  });
-  return response;
+export const getMarketData = async (symbols: string, interval?: string) => {
+  // 如果symbols包含逗号，使用批量API，否则使用单个API
+  if (symbols.includes(',')) {
+    const response = await get(`/data/market`, {
+      params: { symbols, interval },
+    });
+    return response;
+  } else {
+    const response = await get(`/data/market/${symbols}`, {
+      params: { interval },
+    });
+    return response;
+  }
 };
 
 // 获取历史数据

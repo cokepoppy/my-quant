@@ -8,6 +8,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AssetCurveChart: typeof import('./src/components/charts/AssetCurveChart.vue')['default']
+    ElAlert: typeof import('element-plus/es')['ElAlert']
     ElAvatar: typeof import('element-plus/es')['ElAvatar']
     ElBadge: typeof import('element-plus/es')['ElBadge']
     ElButton: typeof import('element-plus/es')['ElButton']
@@ -50,6 +51,7 @@ declare module 'vue' {
     ElTabs: typeof import('element-plus/es')['ElTabs']
     ElTag: typeof import('element-plus/es')['ElTag']
     ElTooltip: typeof import('element-plus/es')['ElTooltip']
+    ElUpload: typeof import('element-plus/es')['ElUpload']
     InteractiveDashboard: typeof import('./src/components/layout/InteractiveDashboard.vue')['default']
     ProfitDistributionChart: typeof import('./src/components/charts/ProfitDistributionChart.vue')['default']
     ResponsiveLayout: typeof import('./src/components/layout/ResponsiveLayout.vue')['default']

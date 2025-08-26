@@ -91,6 +91,7 @@ const componentMap = {
   'TradingPanel': defineAsyncComponent(() => import('@/views/trading/TradingPanel.vue')),
   'OrdersManagement': defineAsyncComponent(() => import('@/views/trading/OrdersManagement.vue')),
   'PositionsManagement': defineAsyncComponent(() => import('@/views/trading/PositionsManagement.vue')),
+  'Accounts': defineAsyncComponent(() => import('@/views/accounts/Accounts.vue')),
   'Monitoring': defineAsyncComponent(() => import('@/views/monitoring/Monitoring.vue'))
 }
 

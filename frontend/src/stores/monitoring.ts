@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { ElMessage } from "element-plus";
+import { get, post } from "@/api/base";
 import * as monitoringApi from "@/api/monitoring";
 
 interface MonitoringState {
@@ -240,9 +241,9 @@ export const useMonitoringStore = defineStore("monitoring", {
 
         const response = await monitoringApi.getServiceStatus();
         this.systemStatus = {
-          overall: "healthy",
+          overall: response.data?.overall || "healthy",
           lastUpdate: new Date().toISOString(),
-          services: response.data || {},
+          services: response.data?.services || {},
         };
 
         this.setError(null);
@@ -258,12 +259,26 @@ export const useMonitoringStore = defineStore("monitoring", {
     async fetchSystemMetrics() {
       try {
         const response = await monitoringApi.getResourceUsage();
-        this.systemMetrics = response.data;
+        const data = response.data?.resources || response.data || {};
+        this.systemMetrics = {
+          cpu: data.cpu?.usage || 0,
+          memory: data.memory?.usage || 0,
+          disk: data.disk?.usage || 0,
+          network: {
+            incoming: data.network?.incoming || 0,
+            outgoing: data.network?.outgoing || 0,
+          },
+          load: {
+            "1m": data.cpu?.loadAverage?.[0] || 0,
+            "5m": data.cpu?.loadAverage?.[1] || 0,
+            "15m": data.cpu?.loadAverage?.[2] || 0,
+          },
+        };
 
         // 更新历史数据
-        this.updateMetricsHistory("cpu", response.data.cpu);
-        this.updateMetricsHistory("memory", response.data.memory);
-        this.updateMetricsHistory("disk", response.data.disk);
+        this.updateMetricsHistory("cpu", this.systemMetrics.cpu);
+        this.updateMetricsHistory("memory", this.systemMetrics.memory);
+        this.updateMetricsHistory("disk", this.systemMetrics.disk);
 
         this.setError(null);
       } catch (error: any) {
@@ -276,8 +291,14 @@ export const useMonitoringStore = defineStore("monitoring", {
     async fetchServiceStatus() {
       try {
         const response = await monitoringApi.getServiceStatus();
-        this.serviceStatus = response.data.map((service) => ({
-          ...service,
+        const services = response.data?.services || [];
+        this.serviceStatus = services.map((service) => ({
+          name: service.name || service.id || "Unknown",
+          status: service.status || "unknown",
+          responseTime: 0,
+          uptime: service.uptime || 0,
+          lastCheck: new Date().toISOString(),
+          error: "",
           checking: false,
         }));
 
@@ -292,7 +313,16 @@ export const useMonitoringStore = defineStore("monitoring", {
     async fetchAlerts() {
       try {
         const response = await monitoringApi.getAlerts();
-        this.alerts = response.data.alerts || [];
+        const alerts = response.data?.alerts || [];
+        this.alerts = alerts.map((alert) => ({
+          id: alert.id || "",
+          title: alert.title || "",
+          message: alert.message || "",
+          severity: alert.severity || "medium",
+          timestamp: alert.timestamp?.toISOString?.() || new Date().toISOString(),
+          acknowledged: alert.status === "resolved",
+          dismissed: false,
+        }));
 
         this.setError(null);
       } catch (error: any) {
@@ -306,7 +336,14 @@ export const useMonitoringStore = defineStore("monitoring", {
       try {
         const params = level ? { level } : {};
         const response = await monitoringApi.getSystemLogs(params);
-        this.logs = response.data.logs || [];
+        const logs = response.data?.logs || [];
+        this.logs = logs.map((log) => ({
+          id: log.id || "",
+          timestamp: log.createdAt?.toISOString?.() || new Date().toISOString(),
+          level: log.level || "info",
+          service: log.source || "system",
+          message: log.message || "",
+        }));
 
         this.setError(null);
       } catch (error: any) {
