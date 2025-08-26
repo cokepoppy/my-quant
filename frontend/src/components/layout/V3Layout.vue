@@ -488,7 +488,10 @@ const handleNavClick = (item: string) => {
     'risk-control': 'Monitoring',
     'alerts': 'Monitoring',
     'market-data': () => import('@/views/market/MarketData.vue'),
-    'data-import': () => import('@/views/market/DataImport.vue')
+    'data-import': () => import('@/views/market/DataImport.vue'),
+    'users': () => import('@/views/user/Users.vue'),
+    'settings': 'Settings',
+    'logs': 'SystemLogs'
   }
 
   const tabTitles: Record<string, string> = {
@@ -506,7 +509,10 @@ const handleNavClick = (item: string) => {
     'risk-control': '风控设置',
     'alerts': '预警监控',
     'market-data': '市场数据',
-    'data-import': '数据导入'
+    'data-import': '数据导入',
+    'users': '用户管理',
+    'settings': '系统设置',
+    'logs': '系统日志'
   }
 
   const tabIcons: Record<string, any> = {
@@ -524,7 +530,10 @@ const handleNavClick = (item: string) => {
     'risk-control': 'Warning',
     'alerts': 'Bell',
     'market-data': 'DataBoard',
-    'data-import': 'Upload'
+    'data-import': 'Upload',
+    'users': 'User',
+    'settings': 'Setting',
+    'logs': 'Document'
   }
 
   if (tabComponents[item]) {

@@ -92,7 +92,10 @@ const componentMap = {
   'OrdersManagement': defineAsyncComponent(() => import('@/views/trading/OrdersManagement.vue')),
   'PositionsManagement': defineAsyncComponent(() => import('@/views/trading/PositionsManagement.vue')),
   'Accounts': defineAsyncComponent(() => import('@/views/accounts/Accounts.vue')),
-  'Monitoring': defineAsyncComponent(() => import('@/views/monitoring/Monitoring.vue'))
+  'Monitoring': defineAsyncComponent(() => import('@/views/monitoring/Monitoring.vue')),
+  'Users': defineAsyncComponent(() => import('@/views/user/Users.vue')),
+  'Settings': defineAsyncComponent(() => import('@/views/settings/Settings.vue')),
+  'SystemLogs': defineAsyncComponent(() => import('@/views/logs/SystemLogs.vue'))
 }
 
 interface Tab {
