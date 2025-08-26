@@ -537,6 +537,10 @@ const handleNavClick = (item: string) => {
   }
 
   if (tabComponents[item]) {
+    console.log('🔥 Creating tab for item:', item)
+    console.log('🔥 Component type:', typeof tabComponents[item])
+    console.log('🔥 Component:', tabComponents[item])
+    
     const newTab: Tab = {
       id: item,
       title: tabTitles[item],
@@ -545,9 +549,18 @@ const handleNavClick = (item: string) => {
       props: {}
     }
 
+    console.log('🔥 New tab object:', newTab)
+    console.log('🔥 tabSystemRef.value:', tabSystemRef.value)
+
     if (tabSystemRef.value) {
+      console.log('🔥 Adding tab to TabSystem')
       tabSystemRef.value.addTab(newTab)
+    } else {
+      console.error('🔥 tabSystemRef.value is null')
     }
+  } else {
+    console.error('🔥 No component found for item:', item)
+    console.error('🔥 Available components:', Object.keys(tabComponents))
   }
 }
 
