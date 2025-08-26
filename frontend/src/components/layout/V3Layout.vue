@@ -490,8 +490,8 @@ const handleNavClick = (item: string) => {
     'market-data': () => import('@/views/market/MarketData.vue'),
     'data-import': () => import('@/views/market/DataImport.vue'),
     'users': () => import('@/views/user/Users.vue'),
-    'settings': 'Settings',
-    'logs': 'SystemLogs'
+    'settings': () => import('@/views/settings/Settings.vue'),
+    'logs': () => import('@/views/logs/SystemLogs.vue')
   }
 
   const tabTitles: Record<string, string> = {
