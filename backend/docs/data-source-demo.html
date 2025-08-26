@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据源功能演示</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .button:hover {
+            background: #0056b3;
+        }
+        .result {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        .success {
+            color: #155724;
+            background: #d4edda;
+            border-color: #c3e6cb;
+        }
+        .loading {
+            color: #007bff;
+            font-style: italic;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .input-group {
+            margin: 10px 0;
+        }
+        input, select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 数据源功能演示</h1>
+    
+    <div class="container">
+        <h2>📊 数据源状态</h2>
+        <button class="button" onclick="checkDataSources()">检查数据源状态</button>
+        <div id="dataSourceStatus" class="result"></div>
+    </div>
+    
+    <div class="container">
+        <h2>📈 历史数据查询</h2>
+        <div class="input-group">
+            <input type="text" id="symbol" placeholder="股票代码 (如: AAPL)" value="AAPL">
+            <select id="interval">
+                <option value="1d">日线</option>
+                <option value="1h">小时线</option>
+                <option value="5m">5分钟线</option>
+            </select>
+            <input type="number" id="days" placeholder="天数" value="7" min="1" max="365">
+            <button class="button" onclick="fetchHistoricalData()">获取历史数据</button>
+        </div>
+        <div id="historicalData" class="result"></div>
+    </div>
+    
+    <div class="container">
+        <h2>⚡ 实时数据查询</h2>
+        <div class="input-group">
+            <input type="text" id="realtimeSymbols" placeholder="股票代码，用逗号分隔 (如: AAPL,GOOGL,TSLA)" value="AAPL,GOOGL">
+            <button class="button" onclick="fetchRealtimeData()">获取实时数据</button>
+        </div>
+        <div id="realtimeData" class="result"></div>
+    </div>
+    
+    <div class="container">
+        <h2>🔍 数据质量报告</h2>
+        <div class="input-group">
+            <input type="text" id="qualitySymbols" placeholder="股票代码，用逗号分隔 (如: AAPL,GOOGL)" value="AAPL">
+            <button class="button" onclick="fetchQualityReport()">获取质量报告</button>
+        </div>
+        <div id="qualityReport" class="result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        
+        function showResult(elementId, content, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.className = `result ${type}`;
+            element.innerHTML = content;
+        }
+        
+        function showLoading(elementId) {
+            showResult(elementId, '<div class="loading">加载中...</div>');
+        }
+        
+        async function apiCall(endpoint, params = {}) {
+            try {
+                const url = new URL(`${API_BASE}${endpoint}`);
+                Object.keys(params).forEach(key => {
+                    if (params[key]) {
+                        url.searchParams.append(key, params[key]);
+                    }
+                });
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(data.message || 'API请求失败');
+                }
+                
+                return data.data;
+            } catch (error) {
+                throw error;
+            }
+        }
+        
+        async function checkDataSources() {
+            const statusElement = 'dataSourceStatus';
+            showLoading(statusElement);
+            
+            try {
+                const data = await apiCall('/api/data/sources/status');
+                const html = data.map(source => `
+                    <div style="margin-bottom: 10px; padding: 10px; border-left: 4px solid ${source.isConnected ? '#28a745' : '#dc3545'}; background: #f8f9fa;">
+                        <h4>${source.name}</h4>
+                        <p><strong>状态:</strong> ${source.isConnected ? '✅ 已连接' : '❌ 未连接'}</p>
+                        <p><strong>请求次数:</strong> ${source.requestCount}</p>
+                        <p><strong>错误次数:</strong> ${source.errorCount}</p>
+                        <p><strong>响应时间:</strong> ${source.responseTime}ms</p>
+                        <p><strong>最后更新:</strong> ${new Date(source.lastUpdate).toLocaleString()}</p>
+                    </div>
+                `).join('');
+                
+                showResult(statusElement, html, 'success');
+            } catch (error) {
+                showResult(statusElement, `❌ 错误: ${error.message}`, 'error');
+            }
+        }
+        
+        async function fetchHistoricalData() {
+            const resultElement = 'historicalData';
+            showLoading(resultElement);
+            
+            try {
+                const symbol = document.getElementById('symbol').value;
+                const interval = document.getElementById('interval').value;
+                const days = document.getElementById('days').value;
+                
+                const data = await apiCall('/api/data/external/historical', {
+                    symbol, interval, days
+                });
+                
+                if (data.length === 0) {
+                    showResult(resultElement, '⚠️ 没有获取到数据，请检查股票代码或网络连接', 'error');
+                    return;
+                }
+                
+                const latest = data[data.length - 1];
+                const prices = data.map(d => d.close);
+                const minPrice = Math.min(...prices);
+                const maxPrice = Math.max(...prices);
+                
+                const html = `
+                    <div style="margin-bottom: 15px;">
+                        <h4>${symbol} - 最新数据</h4>
+                        <p><strong>日期:</strong> ${new Date(latest.timestamp).toLocaleDateString()}</p>
+                        <p><strong>开盘:</strong> $${latest.open}</p>
+                        <p><strong>最高:</strong> $${latest.high}</p>
+                        <p><strong>最低:</strong> $${latest.low}</p>
+                        <p><strong>收盘:</strong> $${latest.close}</p>
+                        <p><strong>成交量:</strong> ${latest.volume.toLocaleString()}</p>
+                        <p><strong>数据点数:</strong> ${data.length}</p>
+                        <p><strong>价格区间:</strong> $${minPrice.toFixed(2)} - $${maxPrice.toFixed(2)}</p>
+                    </div>
+                    <div>
+                        <h5>最近5条记录:</h5>
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: #f8f9fa;">
+                                    <th style="border: 1px solid #dee2e6; padding: 5px;">日期</th>
+                                    <th style="border: 1px solid #dee2e6; padding: 5px;">开盘</th>
+                                    <th style="border: 1px solid #dee2e6; padding: 5px;">收盘</th>
+                                    <th style="border: 1px solid #dee2e6; padding: 5px;">成交量</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.slice(-5).map(d => `
+                                    <tr>
+                                        <td style="border: 1px solid #dee2e6; padding: 5px;">${new Date(d.timestamp).toLocaleDateString()}</td>
+                                        <td style="border: 1px solid #dee2e6; padding: 5px;">$${d.open}</td>
+                                        <td style="border: 1px solid #dee2e6; padding: 5px;">$${d.close}</td>
+                                        <td style="border: 1px solid #dee2e6; padding: 5px;">${d.volume.toLocaleString()}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                
+                showResult(resultElement, html, 'success');
+            } catch (error) {
+                showResult(resultElement, `❌ 错误: ${error.message}`, 'error');
+            }
+        }
+        
+        async function fetchRealtimeData() {
+            const resultElement = 'realtimeData';
+            showLoading(resultElement);
+            
+            try {
+                const symbols = document.getElementById('realtimeSymbols').value;
+                const data = await apiCall('/api/data/external/realtime', {
+                    symbols
+                });
+                
+                if (data.length === 0) {
+                    showResult(resultElement, '⚠️ 没有获取到实时数据，请检查股票代码或网络连接', 'error');
+                    return;
+                }
+                
+                const html = `
+                    <div style="margin-bottom: 15px;">
+                        <h4>实时数据</h4>
+                        <p><strong>更新时间:</strong> ${new Date().toLocaleString()}</p>
+                        <p><strong>数据源:</strong> ${data[0].source}</p>
+                    </div>
+                    <div>
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: #f8f9fa;">
+                                    <th style="border: 1px solid #dee2e6; padding: 5px;">代码</th>
+                                    <th style="border: 1px solid #dee2e6; padding: 5px;">当前价</th>
+                                    <th style="border: 1px solid #dee2e6; padding: 5px;">最高</th>
+                                    <th style="border: 1px solid #dee2e6; padding: 5px;">最低</th>
+                                    <th style="border: 1px solid #dee2e6; padding: 5px;">成交量</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.map(d => `
+                                    <tr>
+                                        <td style="border: 1px solid #dee2e6; padding: 5px;"><strong>${d.symbol}</strong></td>
+                                        <td style="border: 1px solid #dee2e6; padding: 5px;">$${d.close.toFixed(2)}</td>
+                                        <td style="border: 1px solid #dee2e6; padding: 5px;">$${d.high.toFixed(2)}</td>
+                                        <td style="border: 1px solid #dee2e6; padding: 5px;">$${d.low.toFixed(2)}</td>
+                                        <td style="border: 1px solid #dee2e6; padding: 5px;">${d.volume.toLocaleString()}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                
+                showResult(resultElement, html, 'success');
+            } catch (error) {
+                showResult(resultElement, `❌ 错误: ${error.message}`, 'error');
+            }
+        }
+        
+        async function fetchQualityReport() {
+            const resultElement = 'qualityReport';
+            showLoading(resultElement);
+            
+            try {
+                const symbols = document.getElementById('qualitySymbols').value;
+                const data = await apiCall('/api/data/external/quality', {
+                    symbols
+                });
+                
+                const html = data.map(report => `
+                    <div style="margin-bottom: 15px; padding: 15px; border: 1px solid #dee2e6; border-radius: 4px;">
+                        <h4>${report.symbol} - 数据质量报告</h4>
+                        <p><strong>总记录数:</strong> ${report.totalRecords}</p>
+                        <p><strong>有效记录数:</strong> ${report.validRecords}</p>
+                        <p><strong>平均质量分数:</strong> ${report.averageQualityScore.toFixed(2)}</p>
+                        <p><strong>数据完整性:</strong> ${((report.validRecords / report.totalRecords) * 100).toFixed(1)}%</p>
+                        ${report.errors.length > 0 ? `
+                            <div style="margin-top: 10px;">
+                                <strong>错误信息:</strong>
+                                <ul style="margin: 5px 0; padding-left: 20px;">
+                                    ${report.errors.map(error => `<li style="color: #dc3545;">${error}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : '<p style="color: #28a745;">✅ 无错误</p>'}
+                    </div>
+                `).join('');
+                
+                showResult(resultElement, html, 'success');
+            } catch (error) {
+                showResult(resultElement, `❌ 错误: ${error.message}`, 'error');
+            }
+        }
+        
+        // 页面加载时自动检查数据源状态
+        window.onload = function() {
+            checkDataSources();
+        };
+    </script>
+</body>
+</html>
