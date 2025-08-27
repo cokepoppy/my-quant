@@ -86,6 +86,7 @@
           @view-strategy="handleViewStrategy"
           @edit-strategy="handleEditStrategy"
           @create-strategy="handleCreateStrategy"
+          @create-success="handleCreateSuccess"
           ref="tabSystemRef"
         />
       </div>
@@ -634,6 +635,20 @@ const handleCreateStrategy = () => {
   if (tabSystemRef.value) {
     tabSystemRef.value.addTab(tabConfig)
   }
+}
+
+// 处理创建策略成功
+const handleCreateSuccess = () => {
+  console.log('🔥 V3Layout handleCreateSuccess called - refreshing strategy list')
+  
+  // 切换到策略列表标签
+  const strategyListTab = tabs.value.find(tab => tab.id === 'strategies')
+  if (strategyListTab) {
+    activeTab.value = 'strategies'
+  }
+  
+  // 这里可以通过其他方式刷新策略列表，比如通过事件总线或者直接调用策略列表的刷新方法
+  ElMessage.success('策略创建成功！')
 }
 
 const toggleSidebar = () => {

@@ -78,6 +78,12 @@ export const stopStrategy = async (id: string) => {
   return response;
 };
 
+// 更新策略状态
+export const updateStrategyStatus = async (id: string, status: string) => {
+  const response = await put(`/strategies/${id}/status`, { status });
+  return response;
+};
+
 // 获取策略性能
 export const getStrategyPerformance = async (id: string) => {
   const response = await get(`/strategies/${id}/performance`);
@@ -106,12 +112,6 @@ export const getStrategyTrades = async (
   },
 ) => {
   const response = await get(`/strategies/${id}/trades`, { params });
-  return response;
-};
-
-// 更新策略状态
-export const updateStrategyStatus = async (id: string, status: string) => {
-  const response = await put(`/strategies/${id}/status`, { status });
   return response;
 };
 

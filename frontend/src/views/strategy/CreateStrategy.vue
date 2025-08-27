@@ -2,7 +2,7 @@
   <div class="create-strategy">
     <div class="page-header">
       <h2>{{ isFromTemplate ? '从模板创建策略' : '创建策略' }}</h2>
-      <el-button @click="$router.go(-1)">返回</el-button>
+      <el-button @click="handleBack">返回</el-button>
     </div>
 
     <el-card>
@@ -149,12 +149,19 @@ const formRef = ref<FormInstance>();
 interface Props {
   template?: any;
   isFromTemplate?: boolean;
+  onBackToList?: () => void;
+  onCreateSuccess?: () => void;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   template: undefined,
   isFromTemplate: false
 });
+
+const emit = defineEmits<{
+  (e: 'back-to-list'): void
+  (e: 'create-success'): void
+}>();
 
 const form = reactive({
   name: "",
@@ -177,16 +184,20 @@ const populateFormFromTemplate = (template: any) => {
   if (template.name) form.name = template.name;
   if (template.description) form.description = template.description;
   if (template.category) form.type = template.category;
-  if (template.code) form.code = template.code;
+  if (template.language) form.code = template.code || `// ${template.name} 策略代码\n// 语言: ${template.language}`;
   
   // 从配置中提取交易品种
   if (template.config?.symbols?.length > 0) {
     form.symbol = template.config.symbols[0];
+  } else if (template.parameters?.symbol) {
+    form.symbol = template.parameters.symbol;
   }
   
   // 从配置中提取时间周期
   if (template.config?.timeframe) {
     form.timeframe = template.config.timeframe;
+  } else if (template.parameters?.timeframe) {
+    form.timeframe = template.parameters.timeframe;
   }
   
   // 从配置中提取资金管理参数
@@ -196,7 +207,21 @@ const populateFormFromTemplate = (template: any) => {
     if (risk.stopLoss) form.stopLoss = risk.stopLoss * 100; // 转换为百分比
     if (risk.takeProfit) form.takeProfit = risk.takeProfit * 100; // 转换为百分比
     if (risk.initialCapital) form.initialCapital = risk.initialCapital;
+  } else if (template.parameters) {
+    const params = template.parameters;
+    if (params.maxPosition) form.maxPosition = params.maxPosition;
+    if (params.stopLoss) form.stopLoss = params.stopLoss;
+    if (params.takeProfit) form.takeProfit = params.takeProfit;
+    if (params.initialCapital) form.initialCapital = params.initialCapital;
   }
+  
+  // 如果没有配置，使用默认值
+  if (!form.symbol) form.symbol = 'BTC/USDT';
+  if (!form.timeframe) form.timeframe = '1h';
+  if (!form.initialCapital) form.initialCapital = 10000;
+  if (!form.maxPosition) form.maxPosition = 10;
+  if (!form.stopLoss) form.stopLoss = 2;
+  if (!form.takeProfit) form.takeProfit = 3;
   
   console.log('🔥 Form populated:', form);
 };
@@ -287,7 +312,16 @@ const handleSubmit = async () => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     ElMessage.success("策略创建成功");
-    router.push("/strategies");
+    
+    // 触发创建成功事件
+    emit('create-success');
+    
+    // 如果有回调函数，调用它
+    if (props.onCreateSuccess) {
+      props.onCreateSuccess();
+    } else {
+      router.push("/strategies");
+    }
   } catch (error) {
     console.error("Form validation failed:", error);
   }
@@ -303,6 +337,14 @@ const handleBacktest = () => {
   // TODO: 实现回测逻辑
   ElMessage.info("回测功能开发中");
 };
+
+const handleBack = () => {
+  if (props.onBackToList) {
+    props.onBackToList();
+  } else {
+    router.go(-1);
+  }
+};
 </script>
 
 <style scoped>
@@ -310,7 +352,7 @@ const handleBacktest = () => {
   padding: 20px;
   height: 100%;
   overflow-y: auto;
-  background: var(--bg-primary);
+  background: var(--bg-secondary);
 }
 
 .page-header {
@@ -397,18 +439,19 @@ const handleBacktest = () => {
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
   width: 100%;
   max-width: 100%;
   min-height: 400px;
+  margin-bottom: 20px;
 }
 
 .code-editor :deep(.el-textarea__inner) {
   border: none;
   background: transparent;
-  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
-  font-size: var(--font-sm);
-  line-height: 1.6;
+  font-family: "Monaco", "Menlo", "Ubuntu Mono", "Consolas", monospace;
+  font-size: 13px;
+  line-height: 1.5;
   resize: none;
   color: var(--text-primary);
   width: 100% !important;

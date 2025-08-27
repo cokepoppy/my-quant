@@ -84,6 +84,8 @@ import { Close, MoreFilled, Loading } from '@element-plus/icons-vue'
 const componentMap = {
   'DashboardOverview': defineAsyncComponent(() => import('@/views/dashboard/DashboardOverview.vue')),
   'StrategyList': defineAsyncComponent(() => import('@/views/strategy/StrategyList.vue')),
+  'StrategyDetail': defineAsyncComponent(() => import('@/views/strategy/StrategyDetail.vue')),
+  'EditStrategy': defineAsyncComponent(() => import('@/views/strategy/EditStrategy.vue')),
   'CreateStrategy': defineAsyncComponent(() => import('@/views/strategy/CreateStrategy.vue')),
   'StrategyTemplates': defineAsyncComponent(() => import('@/components/strategy/TemplateList.vue')),
   'ParameterOptimization': defineAsyncComponent(() => import('@/views/optimization/ParameterOptimization.vue')),
@@ -475,7 +477,9 @@ defineExpose({
   justify-content: space-between;
   border-bottom: 1px solid var(--border-primary);
   background: var(--surface-elevated);
+  height: 40px;
   min-height: 40px;
+  max-height: 40px;
 }
 
 .tab-list {
@@ -484,6 +488,8 @@ defineExpose({
   flex: 1;
   overflow-x: auto;
   overflow-y: hidden;
+  flex-wrap: nowrap;
+  min-height: 40px;
 }
 
 .tab-list::-webkit-scrollbar {
@@ -511,6 +517,8 @@ defineExpose({
   user-select: none;
   min-width: 80px;
   max-width: 200px;
+  flex-shrink: 0;
+  height: 40px;
 }
 
 .tab-item:hover {
