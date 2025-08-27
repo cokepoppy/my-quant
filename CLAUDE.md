@@ -269,3 +269,11 @@ npm run format         # Prettier formatting
   - 代码检查通过
   - 文档已更新
   - 修改记录已更新
+
+### Development Environment Rules
+- **不要去启动服务端和测试端，我会在另外一个终端里启动**
+- **Do not start backend or test services, I will start them in a separate terminal**
+- Focus on code implementation, testing, and documentation
+- Assume services are running when testing API endpoints
+- Use curl or existing test scripts for API verification
+- Never use `npm run dev`, `npm start`, or similar service启动命令
