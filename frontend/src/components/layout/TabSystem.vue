@@ -60,6 +60,7 @@
               @back-to-detail="handleBackToDetail"
               @save-success="handleSaveSuccess"
               @create-success="handleCreateSuccess"
+              @select="handleTemplateSelect"
             />
           </template>
           <template #fallback>
@@ -132,6 +133,7 @@ interface Emits {
   (e: 'back-to-detail'): void
   (e: 'save-success'): void
   (e: 'create-success'): void
+  (e: 'select', template: any): void
 }
 
 const instance = getCurrentInstance()
@@ -396,6 +398,53 @@ const handleCreateSuccess = () => {
     props.onCreateSuccess()
   } else {
     emit('create-success')
+  }
+}
+
+// 处理策略模板选择
+const handleTemplateSelect = (template: any) => {
+  console.log('🔥 TabSystem handleTemplateSelect called with:', template)
+  
+  // 如果模板有完整的策略信息，创建一个新的策略编辑标签页
+  if (template && template.config) {
+    const strategyConfig = {
+      id: `new-strategy-${Date.now()}`,
+      name: template.name,
+      description: template.description,
+      code: template.code,
+      parameters: template.parameters,
+      config: template.config,
+      category: template.category,
+      tags: template.tags,
+      difficulty: template.difficulty,
+      language: template.language,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      status: 'draft'
+    }
+    
+    // 创建策略编辑标签页
+    const tabConfig: Tab = {
+      id: `strategy-create-from-template-${Date.now()}`,
+      title: `创建策略 - ${template.name}`,
+      icon: 'Edit',
+      component: 'CreateStrategy',
+      props: {
+        template: strategyConfig,
+        isFromTemplate: true
+      }
+    }
+    
+    console.log('🔥 Creating strategy from template, tab config:', tabConfig)
+    
+    // 添加新的标签页
+    addTab(tabConfig)
+    
+    // 显示成功消息
+    ElMessage.success(`已使用模板"${template.name}"创建策略`)
+  } else {
+    // 如果只是模板信息，发出select事件
+    emit('select', template)
   }
 }
 
