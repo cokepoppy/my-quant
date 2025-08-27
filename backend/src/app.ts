@@ -17,7 +17,7 @@ import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
 import strategyRoutes from './routes/strategies';
 import dataRoutes from './routes/data';
-import backtestRoutes from './routes/backtest-simple';
+import backtestRoutes from './routes/backtest';
 import tradingRoutes from './routes/trading';
 import monitoringRoutes from './routes/monitoring';
 import systemRoutes from './routes/system';
