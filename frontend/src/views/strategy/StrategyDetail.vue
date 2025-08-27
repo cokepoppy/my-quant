@@ -19,13 +19,15 @@
         >
           {{ strategy.status === 'active' ? '停用策略' : '启用策略' }}
         </el-button>
+        <el-button type="warning" @click="handleBacktest" :icon="TrendCharts">
+          回测策略
+        </el-button>
         <el-dropdown trigger="click" @command="handleCommand">
           <el-button>
             更多操作<el-icon class="el-icon--right"><ArrowDown /></el-icon>
           </el-button>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item command="backtest">回测</el-dropdown-item>
               <el-dropdown-item command="duplicate">复制</el-dropdown-item>
               <el-dropdown-item command="export">导出</el-dropdown-item>
               <el-dropdown-item command="delete" divided>删除</el-dropdown-item>
@@ -216,7 +218,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { ArrowDown, Warning } from '@element-plus/icons-vue'
+import { ArrowDown, Warning, TrendCharts } from '@element-plus/icons-vue'
 import * as strategyApi from '@/api/strategy'
 
 // 定义props和emits
@@ -400,12 +402,14 @@ const toggleStrategyStatus = async () => {
   }
 }
 
+// 处理回测操作
+const handleBacktest = () => {
+  ElMessage.info('回测功能开发中')
+}
+
 // 处理下拉菜单命令
 const handleCommand = (command) => {
   switch (command) {
-    case 'backtest':
-      ElMessage.info('回测功能开发中')
-      break
     case 'duplicate':
       duplicateStrategy()
       break
