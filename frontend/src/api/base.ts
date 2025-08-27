@@ -32,7 +32,20 @@ api.interceptors.response.use(
 
     console.log("=== API响应拦截器 ===");
     console.log("请求URL:", response.config.url);
+    console.log("请求方法:", response.config.method);
+    console.log("请求头:", response.config.headers);
+    console.log("请求数据:", response.config.data);
+    console.log("响应状态:", response.status);
     console.log("响应数据:", data);
+    console.log("响应数据类型:", typeof data);
+    console.log("响应数据结构:", {
+      hasSuccess: 'success' in data,
+      success: data.success,
+      hasMessage: 'message' in data,
+      message: data.message,
+      hasData: 'data' in data,
+      data: data.data
+    });
 
     // 如果返回的是二进制数据（如文件下载），直接返回
     if (response.config.responseType === "blob") {
@@ -44,15 +57,54 @@ api.interceptors.response.use(
         "响应成功，返回的数据:",
         data.data !== undefined ? data.data : data,
       );
-      // 如果有 data 属性，返回 data.data，否则返回整个 data
-      return data.data !== undefined ? data.data : data;
+      // 保持原始响应结构，只提取data.data但不破坏success属性
+      const result = data.data !== undefined ? data.data : data;
+      console.log("拦截器返回的数据:", result);
+      console.log("拦截器返回的数据类型:", typeof result);
+      console.log("拦截器返回的数据结构:", {
+        hasSuccess: 'success' in result,
+        hasData: 'data' in result,
+        hasStrategy: 'strategy' in result,
+        keys: Object.keys(result)
+      });
+      
+      // 确保返回的数据包含success属性
+      if ('success' in result) {
+        return result;
+      } else {
+        // 如果result没有success属性，但原始data有，则保持原始结构
+        return {
+          success: data.success,
+          message: data.message,
+          data: result
+        };
+      }
     } else {
       console.error("响应失败:", data.message);
+      console.error("完整的错误响应:", data);
       ElMessage.error(data.message || "请求失败");
       return Promise.reject(new Error(data.message || "请求失败"));
     }
   },
   (error) => {
+    console.log("=== API请求错误 ===");
+    console.log("错误对象:", error);
+    console.log("错误消息:", error.message);
+    console.log("错误配置:", error.config);
+    
+    if (error.response) {
+      console.log("HTTP错误响应:", {
+        status: error.response.status,
+        statusText: error.response.statusText,
+        headers: error.response.headers,
+        data: error.response.data
+      });
+    }
+    
+    if (error.request) {
+      console.log("请求错误:", error.request);
+    }
+
     const { response } = error;
 
     if (response) {

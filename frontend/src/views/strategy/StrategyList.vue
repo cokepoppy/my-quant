@@ -275,6 +275,8 @@ const strategyTypes = [
     const loadStrategies = async () => {
       loading.value = true;
       try {
+        console.log('🔥 StrategyList: 开始加载策略列表');
+        
         const params = {
           page: currentPage.value,
           limit: pageSize.value,
@@ -283,12 +285,55 @@ const strategyTypes = [
           type: filterType.value || undefined
         };
         
+        console.log('🔥 StrategyList: 请求参数:', params);
+        
         const response = await strategyApi.getStrategies(params);
         
-        strategies.value = response.strategies || [];
-        totalStrategies.value = response.pagination.total || 0;
+        console.log('🔥 StrategyList: API响应:', response);
+        console.log('🔥 StrategyList: 响应结构:', {
+          hasStrategies: 'strategies' in response,
+          hasPagination: 'pagination' in response,
+          hasData: 'data' in response,
+          strategies: response.strategies,
+          pagination: response.pagination,
+          data: response.data
+        });
+        
+        // 处理不同的响应结构
+        let strategiesData = [];
+        let paginationData = { total: 0 };
+        
+        if (response.strategies && response.pagination) {
+          // 旧结构：直接包含strategies和pagination
+          strategiesData = response.strategies;
+          paginationData = response.pagination;
+        } else if (response.data && response.data.strategies && response.data.pagination) {
+          // 新结构：包含在data中
+          strategiesData = response.data.strategies;
+          paginationData = response.data.pagination;
+        } else if (response.data) {
+          // 其他结构：尝试从data中获取
+          strategiesData = response.data.strategies || [];
+          paginationData = response.data.pagination || { total: response.data.total || 0 };
+        }
+        
+        console.log('🔥 StrategyList: 处理后的数据:', {
+          strategies: strategiesData,
+          pagination: paginationData
+        });
+        
+        strategies.value = strategiesData || [];
+        totalStrategies.value = paginationData.total || 0;
+        
+        console.log('🔥 StrategyList: 加载完成，策略数量:', strategies.value.length, '总数:', totalStrategies.value);
+        
       } catch (error) {
-        console.error('加载策略列表失败:', error);
+        console.error('🔥 StrategyList: 加载策略列表失败:', error);
+        console.error('🔥 StrategyList: 错误详情:', {
+          message: error.message,
+          stack: error.stack,
+          response: error.response
+        });
         ElMessage.error('加载策略列表失败: ' + (error instanceof Error ? error.message : '未知错误'));
         strategies.value = [];
         totalStrategies.value = 0;

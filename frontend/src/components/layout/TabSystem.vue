@@ -3,7 +3,7 @@
     <div class="tab-header">
       <div class="tab-list">
         <div
-          v-for="tab in tabs"
+          v-for="tab in computedTabs"
           :key="tab.id"
           class="tab-item"
           :class="{ active: activeTabId === tab.id }"
@@ -43,7 +43,7 @@
 
     <div class="tab-content">
       <div
-        v-for="tab in tabs"
+        v-for="tab in computedTabs"
         :key="tab.id"
         class="tab-pane"
         :class="{ active: activeTabId === tab.id }"
@@ -158,7 +158,7 @@ const internalTabs = ref<Tab[]>([...props.tabs])
 const activeTabId = ref(props.modelValue || props.tabs[0]?.id || '')
 
 // 计算属性
-const tabs = computed({
+const computedTabs = computed({
   get: () => internalTabs.value,
   set: (value) => {
     internalTabs.value = value
@@ -167,7 +167,7 @@ const tabs = computed({
 })
 
 const activeTab = computed(() => {
-  return tabs.value.find(tab => tab.id === activeTabId.value)
+  return computedTabs.value.find(tab => tab.id === activeTabId.value)
 })
 
 // 监听props变化
@@ -191,7 +191,7 @@ const selectTab = (tabId: string) => {
   
   emit('update:modelValue', tabId)
   
-  const tab = tabs.value.find(t => t.id === tabId)
+  const tab = computedTabs.value.find(t => t.id === tabId)
   if (tab) {
     console.log('🔥 Found tab, emitting tab-change:', tab)
     emit('tab-change', tab)
@@ -201,11 +201,11 @@ const selectTab = (tabId: string) => {
 }
 
 const closeTab = (tabId: string) => {
-  const tab = tabs.value.find(t => t.id === tabId)
+  const tab = computedTabs.value.find(t => t.id === tabId)
   if (!tab || tab.pinned) return
 
-  const index = tabs.value.findIndex(t => t.id === tabId)
-  const newTabs = tabs.value.filter(t => t.id !== tabId)
+  const index = computedTabs.value.findIndex(t => t.id === tabId)
+  const newTabs = computedTabs.value.filter(t => t.id !== tabId)
   
   // 如果关闭的是当前活动标签页，需要选择新的活动标签页
   if (tabId === activeTabId.value) {
@@ -218,13 +218,13 @@ const closeTab = (tabId: string) => {
     }
   }
   
-  tabs.value = newTabs
+  computedTabs.value = newTabs
   emit('tab-close', tabId)
 }
 
 const closeAllTabs = () => {
-  const pinnedTabs = tabs.value.filter(tab => tab.pinned)
-  tabs.value = pinnedTabs
+  const pinnedTabs = computedTabs.value.filter(tab => tab.pinned)
+  computedTabs.value = pinnedTabs
   
   if (pinnedTabs.length > 0) {
     selectTab(pinnedTabs[0].id)
@@ -236,32 +236,32 @@ const closeAllTabs = () => {
 }
 
 const closeOtherTabs = () => {
-  const currentTab = tabs.value.find(tab => tab.id === activeTabId.value)
-  const pinnedTabs = tabs.value.filter(tab => tab.pinned)
+  const currentTab = computedTabs.value.find(tab => tab.id === activeTabId.value)
+  const pinnedTabs = computedTabs.value.filter(tab => tab.pinned)
   
   const newTabs = [...new Set([...pinnedTabs, currentTab])].filter(Boolean)
-  tabs.value = newTabs
+  computedTabs.value = newTabs
   
   ElMessage.success('已关闭其他标签页')
 }
 
 const closeLeftTabs = () => {
-  const currentIndex = tabs.value.findIndex(tab => tab.id === activeTabId.value)
+  const currentIndex = computedTabs.value.findIndex(tab => tab.id === activeTabId.value)
   if (currentIndex === -1) return
   
-  const pinnedTabs = tabs.value.filter(tab => tab.pinned)
-  const leftTabs = tabs.value.slice(0, currentIndex)
+  const pinnedTabs = computedTabs.value.filter(tab => tab.pinned)
+  const leftTabs = computedTabs.value.slice(0, currentIndex)
   const keepTabs = leftTabs.filter(tab => tab.pinned)
   
-  tabs.value = [...keepTabs, ...tabs.value.slice(currentIndex)]
+  computedTabs.value = [...keepTabs, ...computedTabs.value.slice(currentIndex)]
   ElMessage.success('已关闭左侧标签页')
 }
 
 const closeRightTabs = () => {
-  const currentIndex = tabs.value.findIndex(tab => tab.id === activeTabId.value)
+  const currentIndex = computedTabs.value.findIndex(tab => tab.id === activeTabId.value)
   if (currentIndex === -1) return
   
-  tabs.value = tabs.value.slice(0, currentIndex + 1)
+  computedTabs.value = computedTabs.value.slice(0, currentIndex + 1)
   ElMessage.success('已关闭右侧标签页')
 }
 
@@ -296,9 +296,9 @@ const handleDropdownCommand = (command: string) => {
 // 添加标签页的方法
 const addTab = (tab: Tab) => {
   console.log('🔥 TabSystem addTab called with:', tab)
-  console.log('🔥 Current tabs before add:', tabs.value)
+  console.log('🔥 Current tabs before add:', computedTabs.value)
   
-  const existingTab = tabs.value.find(t => t.id === tab.id)
+  const existingTab = computedTabs.value.find(t => t.id === tab.id)
   if (existingTab) {
     console.log('🔥 Tab already exists, selecting it:', existingTab)
     selectTab(tab.id)
@@ -306,8 +306,8 @@ const addTab = (tab: Tab) => {
   }
   
   console.log('🔥 Adding new tab to tabs array')
-  tabs.value.push(tab)
-  console.log('🔥 Tabs after add:', tabs.value)
+  computedTabs.value.push(tab)
+  console.log('🔥 Tabs after add:', computedTabs.value)
   
   console.log('🔥 Selecting new tab:', tab.id)
   selectTab(tab.id)
@@ -316,15 +316,15 @@ const addTab = (tab: Tab) => {
 
 // 更新标签页的方法
 const updateTab = (tabId: string, updates: Partial<Tab>) => {
-  const index = tabs.value.findIndex(t => t.id === tabId)
+  const index = computedTabs.value.findIndex(t => t.id === tabId)
   if (index !== -1) {
-    tabs.value[index] = { ...tabs.value[index], ...updates }
+    computedTabs.value[index] = { ...computedTabs.value[index], ...updates }
   }
 }
 
 // 检查标签页是否存在
 const hasTab = (tabId: string) => {
-  return tabs.value.some(t => t.id === tabId)
+  return computedTabs.value.some(t => t.id === tabId)
 }
 
 // 解析组件
@@ -458,7 +458,7 @@ defineExpose({
   hasTab,
   closeTab,
   selectTab,
-  tabs: tabs.value,
+  tabs: computedTabs.value,
   activeTab: activeTab.value
 })
 </script>

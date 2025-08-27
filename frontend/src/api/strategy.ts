@@ -13,6 +13,8 @@ export const getStrategies = async (params?: {
   status?: string;
   type?: string;
 }) => {
+  console.log('🔥 getStrategies API called with params:', params);
+  
   const response = await get<{
     strategies: Strategy[];
     pagination: {
@@ -23,13 +25,70 @@ export const getStrategies = async (params?: {
     };
   }>("/strategies", { params });
   
-  return response;
+  console.log('🔥 getStrategies API response:', response);
+  console.log('🔥 getStrategies response structure:', {
+    hasStrategies: 'strategies' in response,
+    hasPagination: 'pagination' in response,
+    hasData: 'data' in response,
+    hasSuccess: 'success' in response,
+    strategies: response.strategies,
+    pagination: response.pagination,
+    data: response.data,
+    success: response.success
+  });
+  
+  // 处理不同的响应结构
+  if (response.success !== undefined && response.data) {
+    // 新结构：{ success: true, data: { strategies: [...], pagination: {...} } }
+    console.log('🔥 getStrategies: 使用新响应结构');
+    return {
+      strategies: response.data.strategies || [],
+      pagination: response.data.pagination || { total: 0, page: 1, limit: 10, pages: 1 }
+    };
+  } else if (response.strategies && response.pagination) {
+    // 旧结构：{ strategies: [...], pagination: {...} }
+    console.log('🔥 getStrategies: 使用旧响应结构');
+    return response;
+  } else {
+    console.error('🔥 getStrategies: 未知的响应结构:', response);
+    // 返回默认结构
+    return {
+      strategies: [],
+      pagination: { total: 0, page: 1, limit: 10, pages: 1 }
+    };
+  }
 };
 
 // 获取策略详情
 export const getStrategyById = async (id: string) => {
+  console.log('🔥 getStrategyById API called with id:', id);
+  
   const response = await get<Strategy>(`/strategies/${id}`);
-  return response;
+  
+  console.log('🔥 getStrategyById API response:', response);
+  console.log('🔥 getStrategyById response structure:', {
+    hasStrategy: 'strategy' in response,
+    hasData: 'data' in response,
+    hasSuccess: 'success' in response,
+    strategy: response.strategy,
+    data: response.data,
+    success: response.success
+  });
+  
+  // 处理不同的响应结构
+  if (response.success !== undefined && response.data) {
+    // 新结构：{ success: true, data: { strategy: {...} } }
+    console.log('🔥 getStrategyById: 使用新响应结构');
+    return response.data.strategy || response.data;
+  } else if (response.strategy) {
+    // 旧结构：{ strategy: {...} }
+    console.log('🔥 getStrategyById: 使用旧响应结构');
+    return response.strategy;
+  } else {
+    // 直接返回策略对象
+    console.log('🔥 getStrategyById: 直接返回策略对象');
+    return response;
+  }
 };
 
 // 创建策略
@@ -80,8 +139,38 @@ export const stopStrategy = async (id: string) => {
 
 // 更新策略状态
 export const updateStrategyStatus = async (id: string, status: string) => {
+  console.log('🔥 updateStrategyStatus API called with:', { id, status });
+  
   const response = await put(`/strategies/${id}/status`, { status });
-  return response;
+  
+  console.log('🔥 updateStrategyStatus API response:', response);
+  console.log('🔥 updateStrategyStatus response structure:', {
+    hasStrategy: 'strategy' in response,
+    hasData: 'data' in response,
+    hasSuccess: 'success' in response,
+    strategy: response.strategy,
+    data: response.data,
+    success: response.success
+  });
+  
+  // 处理不同的响应结构
+  if (response.success !== undefined && response.data) {
+    // 新结构：{ success: true, data: { strategy: {...} } }
+    console.log('🔥 updateStrategyStatus: 使用新响应结构');
+    return response;
+  } else if (response.strategy) {
+    // 旧结构：{ strategy: {...} }
+    console.log('🔥 updateStrategyStatus: 使用旧响应结构');
+    return {
+      success: true,
+      message: 'Strategy status updated successfully',
+      data: { strategy: response.strategy }
+    };
+  } else {
+    // 直接返回响应
+    console.log('🔥 updateStrategyStatus: 直接返回响应');
+    return response;
+  }
 };
 
 // 获取策略性能

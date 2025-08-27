@@ -315,31 +315,82 @@ const timeframes = [
 // 加载策略数据
 const loadStrategy = async () => {
   try {
-    console.log('🔥 StrategyDetail: 开始加载策略数据，ID:', props.strategyId)
+    console.log('🔥 StrategyDetail: 开始加载策略数据')
+    console.log('🔥 Props信息:', {
+      strategyId: props.strategyId,
+      strategyIdType: typeof props.strategyId,
+      strategyIdLength: props.strategyId?.length,
+      hasStrategy: !!props.strategy,
+      strategyKeys: Object.keys(props.strategy || {}),
+      strategyLength: Object.keys(props.strategy || {}).length
+    })
     
     // 如果有传入的 strategy prop，直接使用
     if (props.strategy && Object.keys(props.strategy).length > 0) {
+      console.log('🔥 StrategyDetail: 使用传入的策略数据')
+      console.log('🔥 传入的策略数据:', props.strategy)
       Object.assign(strategy, props.strategy)
-      console.log('🔥 StrategyDetail: 使用传入的策略数据', strategy)
+      console.log('🔥 策略对象合并后:', strategy)
     } else {
       // 从API获取策略数据
       console.log('🔥 StrategyDetail: 从API获取策略数据')
+      console.log('🔥 调用API: strategyApi.getStrategyById')
+      console.log('🔥 API参数:', props.strategyId)
+      
       const response = await strategyApi.getStrategyById(props.strategyId)
       
-      if (response.success) {
+      console.log('🔥 API响应:', response)
+      console.log('🔥 API响应类型:', typeof response)
+      console.log('🔥 API响应结构:', {
+        hasSuccess: 'success' in response,
+        success: response.success,
+        hasMessage: 'message' in response,
+        message: response.message,
+        hasData: 'data' in response,
+        data: response.data
+      })
+      
+      if (response && response.success) {
+        console.log('🔥 StrategyDetail: API数据加载成功')
+        console.log('🔥 API返回的数据:', response.data)
         Object.assign(strategy, response.data)
-        console.log('🔥 StrategyDetail: API数据加载成功', strategy)
+        console.log('🔥 策略对象合并后:', strategy)
       } else {
-        throw new Error(response.message || '获取策略数据失败')
+        console.error('🔥 StrategyDetail: API数据加载失败')
+        console.error('🔥 API响应:', response)
+        const errorMessage = response?.message || '获取策略数据失败'
+        throw new Error(errorMessage)
       }
     }
     
+    console.log('🔥 StrategyDetail: 最终策略数据:', {
+      id: strategy.id,
+      name: strategy.name,
+      status: strategy.status,
+      hasStatus: 'status' in strategy
+    })
+    
     // 加载最近交易数据
+    console.log('🔥 StrategyDetail: 开始加载最近交易数据')
     await loadRecentTrades()
     
   } catch (error) {
-    console.error('🔥 StrategyDetail: 加载策略失败:', error)
-    ElMessage.error('加载策略失败: ' + (error instanceof Error ? error.message : '未知错误'))
+    console.error('🔥 StrategyDetail: 加载策略失败，详细错误信息:')
+    console.error('🔥 错误对象:', error)
+    console.error('🔥 错误消息:', error.message)
+    console.error('🔥 错误堆栈:', error.stack)
+    console.error('🔥 错误类型:', typeof error)
+    
+    if (error.response) {
+      console.error('🔥 HTTP错误响应:', {
+        status: error.response.status,
+        statusText: error.response.statusText,
+        data: error.response.data
+      })
+    }
+    
+    const userMessage = error instanceof Error ? error.message : '未知错误'
+    ElMessage.error('加载策略失败: ' + userMessage)
   }
 }
 // 加载最近交易
@@ -402,20 +453,78 @@ const loadRecentTrades = async () => {
 // 切换策略状态
 const toggleStrategyStatus = async () => {
   try {
+    console.log('🔥 开始切换策略状态...')
+    console.log('🔥 当前策略信息:', {
+      id: props.strategyId,
+      name: strategy.name,
+      currentStatus: strategy.status,
+      strategyIdType: typeof props.strategyId,
+      strategyIdLength: props.strategyId?.length
+    })
+    
     const newStatus = strategy.status === 'active' ? 'inactive' : 'active'
     const actionText = newStatus === 'active' ? '启用' : '停用'
     
+    console.log('🔥 计划状态切换:', {
+      from: strategy.status,
+      to: newStatus,
+      action: actionText
+    })
+    
+    console.log('🔥 调用API: strategyApi.updateStrategyStatus')
+    console.log('🔥 API参数:', {
+      id: props.strategyId,
+      status: newStatus
+    })
+    
     const response = await strategyApi.updateStrategyStatus(props.strategyId, newStatus)
     
-    if (response.success) {
+    console.log('🔥 API响应:', response)
+    console.log('🔥 API响应类型:', typeof response)
+    console.log('🔥 API响应结构:', {
+      hasSuccess: 'success' in response,
+      success: response.success,
+      hasMessage: 'message' in response,
+      message: response.message,
+      hasData: 'data' in response,
+      data: response.data
+    })
+    
+    if (response && response.success) {
+      console.log('🔥 状态切换成功，更新本地状态')
       strategy.status = newStatus
+      console.log('🔥 本地状态已更新:', strategy.status)
       ElMessage.success(`策略${actionText}成功`)
     } else {
-      throw new Error(response.message || '操作失败')
+      console.error('🔥 API返回失败状态:', response)
+      const errorMessage = response?.message || '操作失败'
+      console.error('🔥 错误消息:', errorMessage)
+      throw new Error(errorMessage)
     }
   } catch (error) {
-    console.error('切换策略状态失败:', error)
-    ElMessage.error('操作失败: ' + (error instanceof Error ? error.message : '未知错误'))
+    console.error('🔥 切换策略状态失败，详细错误信息:')
+    console.error('🔥 错误对象:', error)
+    console.error('🔥 错误消息:', error.message)
+    console.error('🔥 错误堆栈:', error.stack)
+    console.error('🔥 错误类型:', typeof error)
+    console.error('🔥 是否为Error实例:', error instanceof Error)
+    
+    // 尝试获取更多错误信息
+    if (error.response) {
+      console.error('🔥 HTTP错误响应:', {
+        status: error.response.status,
+        statusText: error.response.statusText,
+        data: error.response.data
+      })
+    }
+    
+    if (error.request) {
+      console.error('🔥 请求错误:', error.request)
+    }
+    
+    const userMessage = error instanceof Error ? error.message : '未知错误'
+    console.error('🔥 显示给用户的错误消息:', userMessage)
+    ElMessage.error('操作失败: ' + userMessage)
   }
 }
 
