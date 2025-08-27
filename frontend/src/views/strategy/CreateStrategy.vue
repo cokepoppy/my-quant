@@ -169,14 +169,6 @@ const form = reactive({
   code: "",
 });
 
-// 监听模板数据变化，自动填充表单
-watch(() => props.template, (newTemplate) => {
-  if (newTemplate) {
-    console.log('🔥 CreateStrategy received template:', newTemplate);
-    populateFormFromTemplate(newTemplate);
-  }
-}, { immediate: true });
-
 // 从模板数据填充表单
 const populateFormFromTemplate = (template: any) => {
   console.log('🔥 Populating form from template:', template);
@@ -208,6 +200,14 @@ const populateFormFromTemplate = (template: any) => {
   
   console.log('🔥 Form populated:', form);
 };
+
+// 监听模板数据变化，自动填充表单
+watch(() => props.template, (newTemplate) => {
+  if (newTemplate) {
+    console.log('🔥 CreateStrategy received template:', newTemplate);
+    populateFormFromTemplate(newTemplate);
+  }
+}, { immediate: true });
 
 // 组件挂载时检查是否有模板数据
 onMounted(() => {

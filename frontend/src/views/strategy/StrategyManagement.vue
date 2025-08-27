@@ -34,14 +34,28 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { Document, View, Edit, Plus } from '@element-plus/icons-vue'
 import TabSystem from '@/components/layout/TabSystem.vue'
+import { ElMessage } from 'element-plus'
 
 const route = useRoute()
 const tabSystemRef = ref()
 const strategyListRef = ref()
+
+// 定义props
+interface Props {
+  initialMode?: string
+  templateData?: any
+  isFromTemplate?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  initialMode: '',
+  templateData: undefined,
+  isFromTemplate: false
+})
 
 // 状态管理
 const currentStrategyId = ref(null)
@@ -240,6 +254,51 @@ const handleRouteParams = () => {
   }
 }
 
+// 处理从模板创建策略
+const handleCreateFromTemplate = () => {
+  if (props.templateData && props.isFromTemplate) {
+    console.log('🔥 StrategyManagement received template data:', props.templateData)
+    
+    // 延迟处理，确保TabSystem已加载
+    setTimeout(() => {
+      if (tabSystemRef.value) {
+        tabSystemRef.value.addTab({
+          id: 'strategy-create-from-template',
+          title: `创建策略 - ${props.templateData.name}`,
+          icon: Edit,
+          component: 'CreateStrategy',
+          props: {
+            template: props.templateData,
+            isFromTemplate: true,
+            onBackToList: handleBackToList,
+            onCreateSuccess: handleCreateSuccess
+          }
+        })
+        tabSystemRef.value.selectTab('strategy-create-from-template')
+        ElMessage.success(`已加载模板: ${props.templateData.name}`)
+      }
+    }, 200)
+  }
+}
+
+// 创建策略
+const handleCreateStrategy = () => {
+  // 添加创建策略页签
+  if (tabSystemRef.value) {
+    tabSystemRef.value.addTab({
+      id: 'strategy-create',
+      title: '创建策略',
+      icon: Plus,
+      component: 'CreateStrategy',
+      props: {
+        onBackToList: handleBackToList,
+        onCreateSuccess: handleCreateSuccess
+      }
+    })
+    tabSystemRef.value.selectTab('strategy-create')
+  }
+}
+
 // 测试事件函数
 const testEvent = () => {
   console.log('🔥 Test event button clicked')
@@ -251,6 +310,14 @@ const testEvent = () => {
     console.error('🔥 tabSystemRef is null!')
   }
 }
+
+// 组件挂载时处理模板数据
+onMounted(() => {
+  if (props.isFromTemplate && props.templateData) {
+    console.log('🔥 StrategyManagement mounted with template data')
+    handleCreateFromTemplate()
+  }
+})
 
 // 监听路由变化
 watch(() => route.query, handleRouteParams, { immediate: true })

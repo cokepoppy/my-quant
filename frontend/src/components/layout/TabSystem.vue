@@ -423,14 +423,15 @@ const handleTemplateSelect = (template: any) => {
       status: 'draft'
     }
     
-    // 创建策略编辑标签页
+    // 创建策略管理标签页，并通过路由参数控制显示创建策略页面
     const tabConfig: Tab = {
-      id: `strategy-create-from-template-${Date.now()}`,
+      id: `strategy-management-${Date.now()}`,
       title: `创建策略 - ${template.name}`,
       icon: 'Edit',
-      component: 'CreateStrategy',
+      component: () => import('@/views/strategy/StrategyManagement.vue'),
       props: {
-        template: strategyConfig,
+        initialMode: 'create',
+        templateData: strategyConfig,
         isFromTemplate: true
       }
     }
