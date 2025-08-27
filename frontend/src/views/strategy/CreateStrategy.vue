@@ -1,7 +1,7 @@
 <template>
   <div class="create-strategy">
     <div class="page-header">
-      <h2>创建策略</h2>
+      <h2>{{ isFromTemplate ? '从模板创建策略' : '创建策略' }}</h2>
       <el-button @click="$router.go(-1)">返回</el-button>
     </div>
 
@@ -138,12 +138,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from "vue";
+import { ref, reactive, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage, type FormInstance, type FormRules } from "element-plus";
 
 const router = useRouter();
 const formRef = ref<FormInstance>();
+
+// 定义props
+interface Props {
+  template?: any;
+  isFromTemplate?: boolean;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  template: undefined,
+  isFromTemplate: false
+});
 
 const form = reactive({
   name: "",
@@ -156,6 +167,55 @@ const form = reactive({
   stopLoss: 2,
   takeProfit: 3,
   code: "",
+});
+
+// 监听模板数据变化，自动填充表单
+watch(() => props.template, (newTemplate) => {
+  if (newTemplate) {
+    console.log('🔥 CreateStrategy received template:', newTemplate);
+    populateFormFromTemplate(newTemplate);
+  }
+}, { immediate: true });
+
+// 从模板数据填充表单
+const populateFormFromTemplate = (template: any) => {
+  console.log('🔥 Populating form from template:', template);
+  
+  // 基本信息填充
+  if (template.name) form.name = template.name;
+  if (template.description) form.description = template.description;
+  if (template.category) form.type = template.category;
+  if (template.code) form.code = template.code;
+  
+  // 从配置中提取交易品种
+  if (template.config?.symbols?.length > 0) {
+    form.symbol = template.config.symbols[0];
+  }
+  
+  // 从配置中提取时间周期
+  if (template.config?.timeframe) {
+    form.timeframe = template.config.timeframe;
+  }
+  
+  // 从配置中提取资金管理参数
+  if (template.config?.riskManagement) {
+    const risk = template.config.riskManagement;
+    if (risk.maxPositionSize) form.maxPosition = risk.maxPositionSize * 100; // 转换为百分比
+    if (risk.stopLoss) form.stopLoss = risk.stopLoss * 100; // 转换为百分比
+    if (risk.takeProfit) form.takeProfit = risk.takeProfit * 100; // 转换为百分比
+    if (risk.initialCapital) form.initialCapital = risk.initialCapital;
+  }
+  
+  console.log('🔥 Form populated:', form);
+};
+
+// 组件挂载时检查是否有模板数据
+onMounted(() => {
+  if (props.template && props.isFromTemplate) {
+    console.log('🔥 Component mounted with template:', props.template);
+    populateFormFromTemplate(props.template);
+    ElMessage.success(`已加载模板: ${props.template.name}`);
+  }
 });
 
 const rules: FormRules = {
