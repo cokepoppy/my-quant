@@ -1,9 +1,9 @@
 import { Server as HTTPServer } from 'http';
-import { Server as SocketIOServer } from 'socket.io';
+import { Server as SocketIOServer, Socket } from 'socket.io';
 import { PrismaClient } from '@prisma/client';
 import jwt from 'jsonwebtoken';
 
-interface AuthenticatedSocket extends SocketIOServer.Socket {
+interface AuthenticatedSocket extends Socket {
   userId?: string;
   username?: string;
 }
@@ -340,7 +340,7 @@ class RealTimeDataService {
   }
 
   private generateTradeUpdates() {
-    const updates = [];
+    const updates: any[] = [];
     
     // Generate 1-3 random trade updates
     const numUpdates = Math.floor(Math.random() * 3) + 1;

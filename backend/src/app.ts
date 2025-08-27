@@ -17,7 +17,7 @@ import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
 import strategyRoutes from './routes/strategies';
 import dataRoutes from './routes/data';
-import backtestRoutes from './routes/backtest';
+import backtestRoutes from './routes/backtest-simple';
 import tradingRoutes from './routes/trading';
 import monitoringRoutes from './routes/monitoring';
 import systemRoutes from './routes/system';
@@ -48,6 +48,14 @@ app.get('/health', (req, res) => {
     status: 'ok',
     timestamp: new Date().toISOString(),
     version: '1.0.0'
+  });
+});
+
+// Debug endpoint
+app.get('/debug', (req, res) => {
+  res.json({
+    message: 'Debug endpoint working',
+    routes: app._router.stack.map(layer => layer.route?.path).filter(Boolean)
   });
 });
 

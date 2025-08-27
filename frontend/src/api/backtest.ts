@@ -140,3 +140,21 @@ export const createBacktestWebSocket = (backtestId: string) => {
   const wsUrl = `${protocol}//${window.location.host}/ws/backtest/${backtestId}`
   return new WebSocket(wsUrl)
 }
+
+// 默认导出所有回测API
+export default {
+  startBacktest,
+  getBacktestResults,
+  getBacktestStatus,
+  cancelBacktest,
+  getBacktestHistory,
+  deleteBacktest,
+  exportBacktestReport,
+  getAvailableDataSources,
+  getSupportedTimeframes,
+  validateDataAvailability,
+  getBacktestStats,
+  startBatchBacktest,
+  getOptimizationResults,
+  createBacktestWebSocket,
+}

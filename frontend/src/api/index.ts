@@ -44,18 +44,20 @@ export { default as strategyApi } from "./strategy";
 
 // 回测API
 export {
-  runBacktest,
-  getBacktestResult,
-  getBacktestJobs,
-  getBacktestJob,
-  stopBacktestJob,
-  deleteBacktestJob,
-  getBacktestStats,
+  startBacktest,
+  getBacktestResults,
+  getBacktestStatus,
+  cancelBacktest,
+  getBacktestHistory,
+  deleteBacktest,
   exportBacktestReport,
-  getBacktestTemplates,
-  saveBacktestConfig,
-  getBacktestConfigs,
-  deleteBacktestConfig,
+  getAvailableDataSources,
+  getSupportedTimeframes,
+  validateDataAvailability,
+  getBacktestStats,
+  startBatchBacktest,
+  getOptimizationResults,
+  createBacktestWebSocket,
 } from "./backtest";
 export { default as backtestApi } from "./backtest";
 

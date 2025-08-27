@@ -54,7 +54,7 @@ async function demonstrateFeatures() {
       });
     }
   } catch (error) {
-    console.log('获取历史数据失败:', error.message);
+    console.log('获取历史数据失败:', error instanceof Error ? error.message : String(error));
   }
   console.log();
 
@@ -66,7 +66,7 @@ async function demonstrateFeatures() {
       console.log(`${data.symbol}: $${data.close}`);
     });
   } catch (error) {
-    console.log('获取实时数据失败:', error.message);
+    console.log('获取实时数据失败:', error instanceof Error ? error.message : String(error));
   }
   console.log();
 
@@ -75,7 +75,7 @@ async function demonstrateFeatures() {
     const qualityReport = manager.getDataQualityReport(['AAPL']);
     console.log('数据质量报告:', JSON.stringify(qualityReport[0], null, 2));
   } catch (error) {
-    console.log('获取数据质量报告失败:', error.message);
+    console.log('获取数据质量报告失败:', error instanceof Error ? error.message : String(error));
   }
   console.log();
 
