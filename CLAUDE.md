@@ -201,3 +201,71 @@ npm run format         # Prettier formatting
 - Check WebSocket URL configuration
 - Verify Socket.IO server is running
 - Test connection with browser dev tools
+
+## Implementation Requirements
+
+### Quality Assurance
+- **Make sure your implementation will not break existing features**
+- **All changes must be tested before committing**
+- **Run full test suite**: `npm run test` (both frontend and backend)
+- **Run linting**: `npm run lint` (both frontend and backend)
+- **Run type checking**: `npm run build` to verify TypeScript compilation
+- **Test API endpoints**: Use curl or Postman to verify API functionality
+- **Test frontend components**: Manual testing in browser for UI changes
+
+### Backward Compatibility
+- **Database schema changes**: Must include migration scripts
+- **API changes**: Maintain existing endpoint signatures when possible
+- **Breaking changes**: Require explicit justification and documentation
+- **Fallback mechanisms**: Always provide fallback for external dependencies
+
+### Testing Requirements
+- **Unit tests**: For new utility functions and services
+- **Integration tests**: For API endpoints and database operations
+- **Component tests**: For new Vue components
+- **Manual testing**: Verify user workflow completion
+- **Error handling**: Test both success and error scenarios
+
+### Code Quality
+- **TypeScript strict mode**: No `any` types without explicit reason
+- **Error handling**: Comprehensive try-catch blocks with user-friendly messages
+- **Logging**: Structured logging for debugging and monitoring
+- **Documentation**: Update relevant documentation for all changes
+- **Performance**: Consider impact on application performance
+
+## Documentation Requirements
+
+### Change Tracking
+- **每次修改后，修改点保存到 `doc/修改记录.md`**
+- **格式要求**：
+  - 日期标记 (## YYYY-MM-DD)
+  - 问题描述 (清晰说明要解决的问题)
+  - 根本原因分析 (分析问题的根本原因)
+  - 解决方案 (详细的解决步骤)
+  - 技术实现细节 (关键代码片段)
+  - 文件修改清单 (所有修改的文件列表)
+  - 验证结果 (测试结果和功能验证)
+  - 后续建议 (可能的改进方向)
+
+### Documentation Updates
+- **CLAUDE.md**: 更新项目配置和规则
+- **修改记录.md**: 记录所有技术修改
+- **API文档**: 更新API端点变更
+- **用户文档**: 更新功能使用说明
+
+### Commit Requirements
+- **提交信息格式**：
+  ```
+  类型: 具体描述
+  
+  详细说明修改内容和原因
+  
+  🤖 Generated with [Claude Code](https://claude.ai/code)
+  
+  Co-Authored-By: Claude <noreply@anthropic.com>
+  ```
+- **提交前检查**：
+  - 所有测试通过
+  - 代码检查通过
+  - 文档已更新
+  - 修改记录已更新
