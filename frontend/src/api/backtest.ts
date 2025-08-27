@@ -1,109 +1,142 @@
-import { get, post } from "./base";
-import { BacktestConfig, BacktestResult, BacktestJob } from "@/types/backtest";
+import { get, post } from './base'
 
-// 运行回测
-export const runBacktest = async (config: BacktestConfig) => {
-  const response = await post<{
-    jobId: string;
-    status: string;
-    message: string;
-  }>("/backtest/run", config);
-  return response;
-};
+// 回测配置接口
+export interface BacktestConfig {
+  strategyId: string
+  name: string
+  description: string
+  symbol: string
+  timeframe: string
+  startDate: Date
+  endDate: Date
+  initialCapital: number
+  maxPositionSize: number
+  leverage: number
+  stopLoss: number
+  takeProfit: number
+  maxRiskPerTrade: number
+  commission: number
+  slippage: number
+  params: Record<string, any>
+}
+
+// 回测结果接口
+export interface BacktestResult {
+  id: string
+  name: string
+  strategyId: string
+  status: 'pending' | 'running' | 'completed' | 'failed'
+  progress: number
+  config: BacktestConfig
+  metrics?: {
+    totalReturn: number
+    annualizedReturn: number
+    sharpeRatio: number
+    maxDrawdown: number
+    winRate: number
+    profitFactor: number
+    totalTrades: number
+  }
+  trades?: any[]
+  error?: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+// 启动回测
+export const startBacktest = async (config: BacktestConfig) => {
+  const response = await post('/backtest/run', config)
+  return response
+}
+
+// 获取回测状态
+export const getBacktestStatus = async (id: string) => {
+  const response = await get(`/backtest/${id}/status`)
+  return response
+}
 
 // 获取回测结果
-export const getBacktestResult = async (id: string) => {
-  const response = await get<BacktestResult>(`/backtest/results/${id}`);
-  return response;
-};
+export const getBacktestResults = async (id: string) => {
+  const response = await get(`/backtest/${id}/results`)
+  return response
+}
 
-// 获取回测任务列表
-export const getBacktestJobs = async (params?: {
-  page?: number;
-  limit?: number;
-  status?: string;
-  strategyId?: string;
+// 取消回测
+export const cancelBacktest = async (id: string) => {
+  const response = await post(`/backtest/${id}/cancel`)
+  return response
+}
+
+// 获取回测历史
+export const getBacktestHistory = async (params?: {
+  strategyId?: string
+  page?: number
+  limit?: number
 }) => {
-  const response = await get<{
-    jobs: BacktestJob[];
-    total: number;
-    page: number;
-    limit: number;
-  }>("/backtest/jobs", { params });
-  return response;
-};
+  const response = await get('/backtest/history', { params })
+  return response
+}
 
-// 获取回测任务详情
-export const getBacktestJob = async (id: string) => {
-  const response = await get<BacktestJob>(`/backtest/jobs/${id}`);
-  return response;
-};
-
-// 停止回测任务
-export const stopBacktestJob = async (id: string) => {
-  const response = await post(`/backtest/jobs/${id}/stop`);
-  return response;
-};
-
-// 删除回测任务
-export const deleteBacktestJob = async (id: string) => {
-  const response = await post(`/backtest/jobs/${id}/delete`);
-  return response;
-};
-
-// 获取回测统计
-export const getBacktestStats = async () => {
-  const response = await get("/backtest/stats");
-  return response;
-};
+// 删除回测记录
+export const deleteBacktest = async (id: string) => {
+  const response = await post(`/backtest/${id}/delete`)
+  return response
+}
 
 // 导出回测报告
-export const exportBacktestReport = async (
-  id: string,
-  format: "pdf" | "excel" | "json",
-) => {
-  const response = await get(`/backtest/results/${id}/export`, {
-    params: { format },
-    responseType: "blob",
-  });
-  return response;
-};
+export const exportBacktestReport = async (id: string, format: 'pdf' | 'excel' = 'pdf') => {
+  const response = await get(`/backtest/${id}/export/${format}`, {
+    responseType: 'blob'
+  })
+  return response
+}
 
-// 获取回测配置模板
-export const getBacktestTemplates = async () => {
-  const response = await get("/backtest/templates");
-  return response;
-};
+// 获取可用数据源
+export const getAvailableDataSources = async () => {
+  const response = await get('/data/sources')
+  return response
+}
 
-// 保存回测配置
-export const saveBacktestConfig = async (config: BacktestConfig) => {
-  const response = await post("/backtest/configs", config);
-  return response;
-};
+// 获取支持的时间周期
+export const getSupportedTimeframes = async () => {
+  const response = await get('/data/timeframes')
+  return response
+}
 
-// 获取保存的回测配置
-export const getBacktestConfigs = async () => {
-  const response = await get("/backtest/configs");
-  return response;
-};
+// 验证数据可用性
+export const validateDataAvailability = async (params: {
+  symbol: string
+  timeframe: string
+  startDate: Date
+  endDate: Date
+}) => {
+  const response = await post('/data/validate', params)
+  return response
+}
 
-// 删除回测配置
-export const deleteBacktestConfig = async (id: string) => {
-  const response = await del(`/backtest/configs/${id}`);
-  return response;
-};
+// 获取回测统计信息
+export const getBacktestStats = async (strategyId?: string) => {
+  const response = await get('/backtest/stats', {
+    params: { strategyId }
+  })
+  return response
+}
 
-export default {
-  runBacktest,
-  getBacktestResult,
-  getBacktestJobs,
-  getBacktestJob,
-  stopBacktestJob,
-  deleteBacktestJob,
-  getBacktestStats,
-  exportBacktestReport,
-  getBacktestTemplates,
-  saveBacktestConfig,
-  getBacktestConfigs,
-  deleteBacktestConfig,
-};
+// 批量启动回测（参数优化）
+export const startBatchBacktest = async (configs: BacktestConfig[]) => {
+  const response = await post('/backtest/batch', { configs })
+  return response
+}
+
+// 获取参数优化结果
+export const getOptimizationResults = async (batchId: string) => {
+  const response = await get(`/backtest/optimization/${batchId}`)
+  return response
+}
+
+// WebSocket 连接用于实时更新
+export const createBacktestWebSocket = (backtestId: string) => {
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+  const wsUrl = `${protocol}//${window.location.host}/ws/backtest/${backtestId}`
+  return new WebSocket(wsUrl)
+}

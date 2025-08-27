@@ -8,6 +8,8 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AssetCurveChart: typeof import('./src/components/charts/AssetCurveChart.vue')['default']
+    BacktestConfigDialog: typeof import('./src/components/backtest/BacktestConfigDialog.vue')['default']
+    BacktestProgress: typeof import('./src/components/backtest/BacktestProgress.vue')['default']
     ElAlert: typeof import('element-plus/es')['ElAlert']
     ElAvatar: typeof import('element-plus/es')['ElAvatar']
     ElBadge: typeof import('element-plus/es')['ElBadge']

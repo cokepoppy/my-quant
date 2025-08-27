@@ -37,6 +37,16 @@
       </div>
     </div>
 
+    <!-- 回测配置对话框 -->
+    <BacktestConfigDialog
+      v-model="backtestDialogVisible"
+      :strategy="strategy"
+      @submit="handleBacktestSubmit"
+    />
+
+    <!-- 回测进度显示 -->
+    <BacktestProgress />
+
     <el-row :gutter="20" class="detail-content">
       <!-- 左侧信息面板 -->
       <el-col :span="8">
@@ -214,12 +224,16 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { ArrowDown, Warning, TrendCharts } from '@element-plus/icons-vue'
 import * as strategyApi from '@/api/strategy'
+import { startBacktest } from '@/api/backtest'
+import { useBacktestStore } from '@/stores/backtest'
+import BacktestConfigDialog from '@/components/backtest/BacktestConfigDialog.vue'
+import BacktestProgress from '@/components/backtest/BacktestProgress.vue'
 
 // 定义props和emits
 const props = defineProps({
@@ -236,10 +250,13 @@ const props = defineProps({
 const emit = defineEmits(['back-to-list', 'edit-strategy'])
 
 const router = useRouter()
+const backtestStore = useBacktestStore()
 const performancePeriod = ref('30d')
 const deleteDialogVisible = ref(false)
 const deleting = ref(false)
 const loadingTrades = ref(false)
+const backtestDialogVisible = ref(false)
+const backtestLoading = ref(false)
 
 // 策略数据 - 使用传入的 strategy prop 或默认值
 const strategy = reactive({
@@ -404,7 +421,33 @@ const toggleStrategyStatus = async () => {
 
 // 处理回测操作
 const handleBacktest = () => {
-  ElMessage.info('回测功能开发中')
+  backtestDialogVisible.value = true
+}
+
+// 处理回测配置提交
+const handleBacktestSubmit = async (config: any) => {
+  try {
+    backtestLoading.value = true
+    
+    ElMessage.info('正在启动回测...')
+    
+    // 使用store启动回测
+    const backtest = await backtestStore.startBacktest(config)
+    
+    ElMessage.success('回测启动成功！')
+    
+    // 可以在这里跳转到回测结果页面或显示进度
+    console.log('回测启动成功:', backtest)
+    
+    // TODO: 跳转到回测结果页面
+    // router.push(`/backtest/${backtest.id}`)
+    
+  } catch (error: any) {
+    console.error('回测启动失败:', error)
+    ElMessage.error(`回测启动失败: ${error.message || '未知错误'}`)
+  } finally {
+    backtestLoading.value = false
+  }
 }
 
 // 处理下拉菜单命令
