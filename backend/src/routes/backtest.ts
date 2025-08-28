@@ -6,6 +6,8 @@ import { body, query, validationResult } from 'express-validator';
 const router = Router();
 const prisma = new PrismaClient();
 
+console.log('Original backtest routes loaded');
+
 // Simple backtest engine (for demonstration)
 class BacktestEngine {
   async runBacktest(strategy: any, marketData: any[], parameters: any) {

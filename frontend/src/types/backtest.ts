@@ -1,62 +1,88 @@
 // 回测相关类型
 export interface BacktestConfig {
-  id?: string;
-  name: string;
-  description: string;
   strategyId: string;
-  strategyVersion: number;
+  name: string;
+  description?: string;
   symbols: string[];
-  startTime: string;
-  endTime: string;
-  timeframe: string;
+  startDate: Date;
+  endDate: Date;
   initialCapital: number;
-  commission: number;
-  slippage: number;
-  leverage: number;
-  riskManagement: {
-    maxPositionSize: number;
-    maxDrawdown: number;
-    stopLoss: number;
-    takeProfit: number;
-  };
-  parameters: Record<string, any>;
-  saveResults: boolean;
-  notifications: boolean;
+  timeframe: string;
+  commission?: number;
+  slippage?: number;
+  leverage?: number;
+  riskLimits?: string[];
+  outputOptions?: string[];
+  parameters?: Record<string, any>;
 }
 
 export interface BacktestResult {
   id: string;
-  jobId: string;
-  config: BacktestConfig;
-  summary: BacktestSummary;
-  performance: BacktestPerformance;
-  trades: BacktestTrade[];
-  equity: Array<{
-    timestamp: string;
-    equity: number;
-    drawdown: number;
-  }>;
-  metrics: BacktestMetrics;
-  riskMetrics: RiskMetrics;
-  tradeStats: TradeStats;
-  monthlyReturns: Array<{
-    month: string;
-    return: number;
-    trades: number;
-  }>;
-  dailyReturns: Array<{
-    date: string;
-    return: number;
-    equity: number;
-  }>;
-  positions: BacktestPosition[];
-  orders: BacktestOrder[];
-  logs: BacktestLog[];
-  createdAt: string;
-  completedAt: string;
-  duration: number;
-  status: "completed" | "failed" | "running" | "cancelled";
+  name: string;
+  strategyId: string;
+  userId: string;
+  startDate: Date;
+  endDate: Date;
+  initialCapital: number;
+  finalCapital?: number;
+  totalReturn?: number;
+  annualizedReturn?: number;
+  sharpeRatio?: number;
+  maxDrawdown?: number;
+  winRate?: number;
+  profitFactor?: number;
+  totalTrades?: number;
+  averageTrade?: number;
+  benchmarkReturn?: number;
+  excessReturn?: number;
+  informationRatio?: number;
+  status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
+  progress: number;
+  currentStep: string;
   error?: string;
+  parameters?: any;
+  results?: {
+    totalReturn: number;
+    annualizedReturn: number;
+    sharpeRatio: number;
+    maxDrawdown: number;
+    winRate: number;
+    profitFactor: number;
+    totalTrades: number;
+    averageTrade: number;
+    benchmarkReturn: number;
+    excessReturn: number;
+    informationRatio: number;
+    volatility: number;
+    totalCommission: number;
+    totalSlippage: number;
+    equityCurve: Array<{
+      timestamp: string;
+      value: number;
+    }>;
+  };
+  strategy?: {
+    id: string;
+    name: string;
+    type: string;
+  };
+  trades?: Array<{
+    id: string;
+    symbol: string;
+    type: 'buy' | 'sell';
+    side: 'long' | 'short';
+    quantity: number;
+    price: number;
+    timestamp: Date;
+    status: string;
+    commission?: number;
+    slippage?: number;
+    pnl?: number;
+    profit?: number;
+    notes?: string;
+  }>;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface BacktestSummary {

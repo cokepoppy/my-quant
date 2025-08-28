@@ -142,6 +142,15 @@ const routes = [
     },
   },
   {
+    path: "/backtest/new",
+    name: "NewBacktestTest",
+    component: () => import("@/views/backtest/NewBacktestTest.vue"),
+    meta: {
+      requiresAuth: true,
+      title: "新回测测试",
+    },
+  },
+  {
     path: "/backtest/:id",
     name: "BacktestResult",
     component: () => import("@/views/backtest/BacktestResult.vue"),
