@@ -279,9 +279,9 @@ import {
   getBacktestHistory,
   getBacktestResults,
   cancelBacktest,
-  deleteBacktest as deleteBacktestAPI,
-  getStrategies
+  deleteBacktest as deleteBacktestAPI
 } from '@/api/backtest'
+import { getStrategies } from '@/api/strategy'
 import type { BacktestConfig, BacktestResult } from '@/types/backtest'
 
 const isRunning = ref(false)
@@ -342,7 +342,8 @@ const startNewBacktest = async () => {
 const loadBacktests = async () => {
   try {
     const response = await getBacktestHistory()
-    backtests.value = response.data.backtests || []
+    console.log('🔥 loadBacktests response:', response)
+    backtests.value = response.data?.backtests || []
   } catch (error: any) {
     ElMessage.error(`加载回测列表失败: ${error.message}`)
   }
@@ -351,7 +352,9 @@ const loadBacktests = async () => {
 const loadStrategies = async () => {
   try {
     const response = await getStrategies()
-    strategies.value = response.data.strategies || []
+    console.log('🔥 loadStrategies response:', response)
+    // getStrategies函数已经处理了不同的响应结构，返回的是 { strategies: [...], pagination: {...} }
+    strategies.value = response.strategies || []
   } catch (error: any) {
     ElMessage.error(`加载策略列表失败: ${error.message}`)
   }

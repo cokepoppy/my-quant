@@ -84,6 +84,14 @@
             <el-icon class="nav-icon"><Aim /></el-icon>
             <span class="nav-text" v-if="!isCollapsed">参数优化</span>
           </div>
+          <div
+            class="nav-item"
+            :class="{ active: activeItem === 'new-backtest' }"
+            @click="selectNavItem('new-backtest')"
+          >
+            <el-icon class="nav-icon"><Cpu /></el-icon>
+            <span class="nav-text" v-if="!isCollapsed">新策略回测</span>
+          </div>
         </div>
       </div>
 
@@ -232,6 +240,7 @@ import {
   VideoPlay,
   DataLine,
   Aim,
+  Cpu,
   Money,
   List,
   PieChart,
