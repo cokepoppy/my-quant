@@ -327,6 +327,26 @@ const startNewBacktest = async () => {
     return
   }
 
+  if (!backtestForm.symbols || backtestForm.symbols.length === 0) {
+    ElMessage.warning('请选择交易标的')
+    return
+  }
+
+  if (!backtestForm.startDate) {
+    ElMessage.warning('请选择开始时间')
+    return
+  }
+
+  if (!backtestForm.endDate) {
+    ElMessage.warning('请选择结束时间')
+    return
+  }
+
+  if (new Date(backtestForm.startDate) >= new Date(backtestForm.endDate)) {
+    ElMessage.warning('开始时间必须早于结束时间')
+    return
+  }
+
   try {
     isRunning.value = true
     await startBacktest(backtestForm)

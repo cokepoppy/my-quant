@@ -281,6 +281,24 @@ router.beforeEach(async (to, from, next) => {
 
   // 检查是否需要认证
   if (to.meta.requiresAuth) {
+    // 检查本地存储中是否有token，以防状态同步延迟
+    const hasToken = localStorage.getItem("token");
+    if (!authStore.isAuthenticated && !hasToken) {
+      ElMessage.warning("请先登录");
+      next("/login");
+      return;
+    }
+
+    // 如果有token但状态未更新，尝试初始化认证状态
+    if (hasToken && !authStore.isAuthenticated) {
+      try {
+        await authStore.initializeAuth();
+      } catch (error) {
+        console.error("Auth initialization failed:", error);
+      }
+    }
+
+    // 再次检查认证状态
     if (!authStore.isAuthenticated) {
       ElMessage.warning("请先登录");
       next("/login");

@@ -367,7 +367,7 @@ const handleSubmit = async () => {
       strategyId: props.strategy.id,
       name: form.name,
       description: form.description,
-      symbol: form.symbol,
+      symbols: [form.symbol], // 后端需要数组格式
       timeframe: form.timeframe,
       startDate: form.dateRange[0],
       endDate: form.dateRange[1],

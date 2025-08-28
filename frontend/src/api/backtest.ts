@@ -43,7 +43,7 @@ export interface BacktestResult {
 
 // 启动回测
 export const startBacktest = async (config: BacktestConfig) => {
-  const response = await post('/backtest-v2', config)
+  const response = await post('/backtest-v2/', config)
   return response
 }
 
@@ -72,7 +72,7 @@ export const getBacktestHistory = async (params?: {
   limit?: number
   status?: string
 }) => {
-  const response = await get('/backtest-v2', { params })
+  const response = await get('/backtest-v2/', { params })
   return response
 }
 
@@ -115,7 +115,7 @@ export const validateDataAvailability = async (params: {
 
 // 获取回测统计信息
 export const getBacktestStats = async () => {
-  const response = await get('/backtest-v2/stats')
+  const response = await get('/backtest-v2/stats/')
   return response
 }
 
@@ -130,7 +130,7 @@ export const getBacktestTrades = async (backtestId: string, params?: {
 
 // 获取回测模板
 export const getBacktestTemplates = async () => {
-  const response = await get('/backtest-v2/templates')
+  const response = await get('/backtest-v2/templates/')
   return response
 }
 

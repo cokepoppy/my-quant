@@ -540,16 +540,44 @@ const handleBacktestSubmit = async (config: any) => {
     
     ElMessage.info('正在启动回测...')
     
-    // 使用store启动回测
-    const backtest = await backtestStore.startBacktest(config)
+    // 验证必需字段
+    if (!config.strategyId || !config.name || !config.symbols || !config.startDate || !config.endDate) {
+      throw new Error('缺少必需的回测配置参数')
+    }
+    
+    // 确保日期格式正确
+    const formattedConfig = {
+      ...config,
+      startDate: new Date(config.startDate),
+      endDate: new Date(config.endDate)
+    }
+    
+    // 直接调用新的回测API
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/backtest-v2/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      body: JSON.stringify(formattedConfig)
+    })
+    
+    const data = await response.json()
+    
+    if (!response.ok) {
+      throw new Error(data.message || '回测启动失败')
+    }
     
     ElMessage.success('回测启动成功！')
     
     // 可以在这里跳转到回测结果页面或显示进度
-    console.log('回测启动成功:', backtest)
+    console.log('回测启动成功:', data.data)
+    
+    // 关闭对话框
+    backtestDialogVisible.value = false
     
     // TODO: 跳转到回测结果页面
-    // router.push(`/backtest/${backtest.id}`)
+    // router.push(`/backtest/${data.data.id}`)
     
   } catch (error: any) {
     console.error('回测启动失败:', error)

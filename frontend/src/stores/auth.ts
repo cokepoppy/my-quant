@@ -59,17 +59,32 @@ export const useAuthStore = defineStore("auth", () => {
       isLoading.value = true;
 
       const response = await loginApi(loginData);
+      console.log("=== 登录API响应 ===");
+      console.log("response类型:", typeof response);
+      console.log("response内容:", response);
+      console.log("response键:", Object.keys(response));
+
       const {
         user: userData,
         token: accessToken,
         refreshToken: refresh,
       } = response;
 
+      console.log("解构后的值:");
+      console.log("userData:", userData);
+      console.log("accessToken:", accessToken);
+      console.log("refresh:", refresh);
+
       setUser(userData);
       setTokens(accessToken, refresh);
 
       // 保存用户信息到localStorage
       localStorage.setItem("user", JSON.stringify(userData));
+
+      console.log("localStorage保存后的值:");
+      console.log("token:", localStorage.getItem("token"));
+      console.log("refreshToken:", localStorage.getItem("refreshToken"));
+      console.log("user:", localStorage.getItem("user"));
 
       ElMessage.success("登录成功");
 

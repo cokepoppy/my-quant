@@ -68,6 +68,11 @@ api.interceptors.response.use(
         keys: Object.keys(result)
       });
       
+      // 对于登录和注册请求，直接返回解包的数据
+      if (response.config.url?.includes('/auth/')) {
+        return result;
+      }
+      
       // 确保返回的数据包含success属性
       if ('success' in result) {
         return result;

@@ -41,35 +41,37 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
     const backtest = await prisma.backtest.create({
       data: {
         name,
-        description: description || '',
         strategyId: String(strategyId),
         userId: req.user!.id,
         startDate: new Date(startDate),
         endDate: new Date(endDate),
         initialCapital: Number(initialCapital),
-        timeframe,
-        commission: Number(commission),
-        slippage: Number(slippage),
-        leverage: Number(leverage),
-        symbols: symbols,
-        riskLimits: riskLimits || [],
-        outputOptions: outputOptions || [],
-        status: 'running',
-        progress: 0,
-        currentStep: 'Initializing',
-        parameters: parameters || {}
+        parameters: {
+          ...parameters,
+          timeframe,
+          commission: Number(commission),
+          slippage: Number(slippage),
+          leverage: Number(leverage),
+          symbols: symbols,
+          riskLimits: riskLimits || [],
+          outputOptions: outputOptions || [],
+          description: description || ''
+        }
       }
     });
 
     // Start backtest in background
     setImmediate(async () => {
       try {
-        // Update progress
+        // Update progress (stored in parameters since no progress field in DB)
         await prisma.backtest.update({
           where: { id: backtest.id },
           data: { 
-            progress: 0.25,
-            currentStep: 'Loading market data'
+            parameters: {
+              ...backtest.parameters,
+              progress: 0.25,
+              currentStep: 'Loading market data'
+            }
           }
         });
 
@@ -79,8 +81,11 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
         await prisma.backtest.update({
           where: { id: backtest.id },
           data: { 
-            progress: 0.5,
-            currentStep: 'Running strategy'
+            parameters: {
+              ...backtest.parameters,
+              progress: 0.5,
+              currentStep: 'Running strategy'
+            }
           }
         });
 
@@ -89,8 +94,11 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
         await prisma.backtest.update({
           where: { id: backtest.id },
           data: { 
-            progress: 0.75,
-            currentStep: 'Calculating results'
+            parameters: {
+              ...backtest.parameters,
+              progress: 0.75,
+              currentStep: 'Calculating results'
+            }
           }
         });
 
@@ -122,20 +130,12 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
           where: { id: backtest.id },
           data: {
             status: 'completed',
-            progress: 1,
-            currentStep: 'Completed',
             finalCapital: initialCapital * (1 + results.totalReturn / 100),
             totalReturn: results.totalReturn / 100,
-            annualizedReturn: results.annualizedReturn / 100,
             sharpeRatio: results.sharpeRatio,
             maxDrawdown: results.maxDrawdown / 100,
             winRate: results.winRate / 100,
-            profitFactor: results.profitFactor,
             totalTrades: results.totalTrades,
-            averageTrade: results.averageTrade,
-            benchmarkReturn: results.benchmarkReturn / 100,
-            excessReturn: results.excessReturn / 100,
-            informationRatio: results.informationRatio,
             results: results
           }
         });
@@ -166,6 +166,7 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
             data: {
               ...trade,
               backtestId: backtest.id,
+              strategyId: backtest.strategyId,
               userId: req.user!.id
             }
           });
@@ -177,8 +178,11 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
           where: { id: backtest.id },
           data: { 
             status: 'failed',
-            currentStep: 'Failed',
-            error: error instanceof Error ? error.message : 'Unknown error'
+            parameters: {
+              ...backtest.parameters,
+              currentStep: 'Failed',
+              error: error instanceof Error ? error.message : 'Unknown error'
+            }
           }
         });
       }
@@ -419,7 +423,10 @@ router.post('/:id/cancel', authenticate, async (req: AuthRequest, res) => {
       where: { id },
       data: {
         status: 'cancelled',
-        currentStep: 'Cancelled'
+        parameters: {
+          ...backtest.parameters,
+          currentStep: 'Cancelled'
+        }
       }
     });
 

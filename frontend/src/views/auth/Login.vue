@@ -123,6 +123,14 @@ const handleLogin = async () => {
     await authStore.login(loginForm);
     console.log("登录接口调用成功");
 
+    // 确保认证状态已更新
+    console.log("检查认证状态:", authStore.isAuthenticated);
+    
+    // 等待一下确保状态更新完成
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    console.log("最终认证状态:", authStore.isAuthenticated);
+    
     // 登录成功，跳转到首页
     await router.push("/");
   } catch (error) {
