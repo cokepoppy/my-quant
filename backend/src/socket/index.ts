@@ -1,6 +1,7 @@
 import { Server, Socket } from 'socket.io';
 import jwt from 'jsonwebtoken';
 import config from '../config';
+import { TradingWebSocketHandler } from './trading';
 
 interface AuthenticatedSocket extends Socket {
   user?: {
@@ -12,6 +13,9 @@ interface AuthenticatedSocket extends Socket {
 }
 
 export const setupSocketIO = (io: Server) => {
+  // Initialize trading WebSocket handler
+  const tradingHandler = new TradingWebSocketHandler(io);
+
   // Authentication middleware
   io.use((socket: AuthenticatedSocket, next) => {
     try {
@@ -96,6 +100,14 @@ export const setupSocketIO = (io: Server) => {
     
     broadcastSystemAlert: (alert: any) => {
       io.emit('system_alert', alert);
-    }
+    },
+
+    // Trading handler methods
+    tradingHandler,
+    
+    getTradingStats: () => ({
+      connectedUsers: tradingHandler.getConnectedUsers(),
+      accountSubscriptions: tradingHandler.getAccountSubscriptions()
+    })
   };
 };

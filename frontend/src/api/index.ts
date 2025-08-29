@@ -101,6 +101,12 @@ export {
 } from "./monitoring";
 export { default as monitoringApi } from "./monitoring";
 
+// 交易所相关API
+export { default as exchangeApi } from "./exchange";
+
+// 交易日志和监控API
+export { default as tradingLogsApi } from "./tradingLogs";
+
 // 通用API响应类型
 export interface ApiResponse<T = any> {
   success: boolean;

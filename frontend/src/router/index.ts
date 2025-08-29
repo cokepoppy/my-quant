@@ -169,6 +169,24 @@ const routes = [
     },
   },
   {
+    path: "/realtime-trading",
+    name: "RealTimeTrading",
+    component: () => import("@/views/trading/RealTimeTrading.vue"),
+    meta: {
+      requiresAuth: true,
+      title: "实时交易",
+    },
+  },
+  {
+    path: "/trading-logs",
+    name: "TradingLogs",
+    component: () => import("@/views/trading/TradingLogs.vue"),
+    meta: {
+      requiresAuth: true,
+      title: "交易日志",
+    },
+  },
+  {
     path: "/accounts",
     name: "Accounts",
     component: () => import("@/views/accounts/Accounts.vue"),

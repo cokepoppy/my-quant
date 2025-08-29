@@ -20,9 +20,12 @@ import dataRoutes from './routes/data';
 import backtestRoutes from './routes/backtest';
 import backtestV2Routes from './routes/backtest-v2';
 import tradingRoutes from './routes/trading';
+import exchangeRoutes from './routes/exchange';
+import riskRoutes from './routes/risk';
 import monitoringRoutes from './routes/monitoring';
 import systemRoutes from './routes/system';
-import dataTestRoutes from './routes/data-simple';
+import dataTestRoutes from './routes/data-simple'
+import tradingLogsRoutes from './routes/trading-logs';
 
 // Load environment variables
 dotenv.config();
@@ -68,9 +71,12 @@ app.use('/data', dataRoutes);
 app.use('/backtest', backtestRoutes);
 app.use('/backtest-v2', backtestV2Routes);
 app.use('/trading', tradingRoutes);
+app.use('/exchange', exchangeRoutes);
+app.use('/risk', riskRoutes);
 app.use('/monitoring', monitoringRoutes);
 app.use('/system', systemRoutes);
 app.use('/data-test', dataTestRoutes);
+app.use('/trading-logs', tradingLogsRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {
@@ -91,6 +97,12 @@ const io = new Server(server, {
   }
 });
 
+// Import Socket.IO setup
+import { setupSocketIO } from './socket';
+
+// Setup Socket.IO handlers
+const socketHandlers = setupSocketIO(io);
+
 // Setup Real-time Data Service
 let realTimeDataService: RealTimeDataService | null = null;
 
@@ -98,6 +110,7 @@ let realTimeDataService: RealTimeDataService | null = null;
 server.on('listening', () => {
   realTimeDataService = new RealTimeDataService(server);
   console.log('🔌 Real-time data service initialized');
+  console.log('🔄 Trading WebSocket handler initialized');
 });
 
 // Start server

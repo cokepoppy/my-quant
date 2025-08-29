@@ -146,19 +146,98 @@ model Account {
   userId        String
   name          String
   type          String   // 'demo', 'live'
+  exchange      String   // 'binance', 'okx', 'huobi', 'bybit'
+  accountId     String?  // 交易所账户ID
   balance       Float
   currency      String   @default("USD")
-  broker        String?
   apiKey        String?
   apiSecret     String?
+  passphrase    String?  // OKX等需要passphrase
+  testnet       Boolean  @default(false)
+  apiPermissions Json?   // API权限配置
+  lastSyncAt    DateTime? // 最后同步时间
+  syncStatus    String   @default("disconnected") // 'disconnected', 'connected', 'syncing', 'error'
+  errorLog      Json?    // 错误日志
   isActive      Boolean  @default(true)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   // Relations
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  positions     Position[]
+  orders        Order[]
+  balances      Balance[]
+  trades        Trade[]
   
   @@map("accounts")
+}
+
+model Position {
+  id            String   @id @default(cuid())
+  accountId     String
+  symbol        String
+  side          String   // 'long', 'short'
+  size          Float
+  entryPrice    Float
+  markPrice     Float?
+  pnl           Float?
+  roe           Float?   // 收益率
+  leverage      Float?
+  margin        Float?
+  liquidationPrice Float?
+  status        String   @default("open") // 'open', 'closed'
+  exchangeId    String?  // 交易所持仓ID
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  account       Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  
+  @@map("positions")
+}
+
+model Order {
+  id            String   @id @default(cuid())
+  accountId     String
+  exchangeId    String?  // 交易所订单ID
+  clientOrderId String?  // 客户端订单ID
+  symbol        String
+  type          String   // 'market', 'limit', 'stop', 'stop_limit', 'take_profit'
+  side          String   // 'buy', 'sell'
+  quantity      Float
+  price         Float?
+  stopPrice     Float?   // 止损价格
+  takeProfit    Float?   // 止盈价格
+  status        String   // 'pending', 'open', 'filled', 'cancelled', 'rejected'
+  filledQuantity Float    @default(0)
+  averagePrice  Float?
+  commission    Float?
+  feeCurrency   String?
+  createTime    DateTime
+  updateTime    DateTime?
+  executedTime  DateTime?
+  metadata      Json?    // 额外的订单信息
+
+  // Relations
+  account       Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  
+  @@map("orders")
+}
+
+model Balance {
+  id            String   @id @default(cuid())
+  accountId     String
+  asset         String   // 'BTC', 'ETH', 'USDT'等
+  free          Float    // 可用余额
+  locked        Float    // 锁定余额
+  total         Float    // 总余额
+  valueInUSD    Float?   // 美元价值
+  lastUpdated   DateTime @default(now())
+
+  // Relations
+  account       Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  
+  @@map("balances")
 }
 
 model SystemLog {
@@ -170,6 +249,58 @@ model SystemLog {
   createdAt DateTime @default(now())
   
   @@map("system_logs")
+}
+
+model TradingLog {
+  id            String   @id @default(cuid())
+  accountId     String?
+  userId        String?
+  level         String   // 'info', 'warning', 'error', 'debug'
+  category      String   // 'order', 'position', 'balance', 'connection', 'risk', 'execution'
+  action        String   // 'create', 'update', 'cancel', 'execute', 'sync', 'error'
+  symbol        String?
+  message       String
+  metadata      Json?
+  source        String   @default("trading")
+  createdAt     DateTime @default(now())
+  
+  // Relations
+  account       Account? @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  @@map("trading_logs")
+}
+
+model RiskRule {
+  id            String   @id @default(cuid())
+  name          String
+  description   String?
+  type          String   // 'position_size', 'loss_limit', 'drawdown', 'margin', 'execution'
+  parameters    Json     // 规则参数
+  enabled       Boolean  @default(true)
+  priority      Int      @default(1) // 1-10, 1为最高优先级
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@map("risk_rules")
+}
+
+model RiskAssessment {
+  id            String   @id @default(cuid())
+  accountId     String
+  ruleId        String
+  level         String   // 'low', 'medium', 'high', 'critical'
+  score         Float    // 风险评分 0-100
+  factors       Json     // 风险因素详情
+  triggered     Boolean  @default(false)
+  action        String?  // 触发的动作
+  createdAt     DateTime @default(now())
+  
+  // Relations
+  account       Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  rule          RiskRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  
+  @@map("risk_assessments")
 }
 
 model ApiKey {

@@ -108,6 +108,14 @@
           </div>
           <div
             class="nav-item"
+            :class="{ active: activeItem === 'realtime-trading' }"
+            @click="selectNavItem('realtime-trading')"
+          >
+            <el-icon class="nav-icon"><Lightning /></el-icon>
+            <span class="nav-text" v-if="!isCollapsed">实时交易</span>
+          </div>
+          <div
+            class="nav-item"
             :class="{ active: activeItem === 'orders' }"
             @click="selectNavItem('orders')"
           >
@@ -129,6 +137,14 @@
           >
             <el-icon class="nav-icon"><Wallet /></el-icon>
             <span class="nav-text" v-if="!isCollapsed">账户管理</span>
+          </div>
+          <div
+            class="nav-item"
+            :class="{ active: activeItem === 'trading-logs' }"
+            @click="selectNavItem('trading-logs')"
+          >
+            <el-icon class="nav-icon"><Document /></el-icon>
+            <span class="nav-text" v-if="!isCollapsed">交易日志</span>
           </div>
         </div>
       </div>
@@ -242,6 +258,7 @@ import {
   Aim,
   Cpu,
   Money,
+  Lightning,
   List,
   PieChart,
   Wallet,
