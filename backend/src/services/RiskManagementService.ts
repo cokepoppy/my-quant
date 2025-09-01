@@ -392,9 +392,9 @@ export class RiskManagementService extends EventEmitter {
     const recentTrades = await prisma.trade.findMany({
       where: {
         accountId,
-        createdAt: { gte: new Date(now - cooldownPeriod * 1000) }
+        timestamp: { gte: new Date(now - cooldownPeriod * 1000) }
       },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { timestamp: 'desc' }
     })
 
     if (recentTrades.length > 0) {
@@ -533,7 +533,7 @@ export class RiskManagementService extends EventEmitter {
     const trades = await prisma.trade.findMany({
       where: {
         accountId,
-        createdAt: { gte: today },
+        timestamp: { gte: today },
         status: 'completed'
       }
     })
@@ -802,6 +802,389 @@ export class RiskManagementService extends EventEmitter {
     }
   }
 
+  // 订单验证功能
+  async validateOrder(orderData: any): Promise<{
+    valid: boolean
+    errors: string[]
+    warnings: string[]
+    adjustedOrder?: any
+  }> {
+    const errors: string[] = []
+    const warnings: string[] = []
+    let adjustedOrder = { ...orderData }
+
+    try {
+      // 基础参数验证
+      const validationErrors = this.validateOrderParameters(orderData)
+      errors.push(...validationErrors)
+
+      if (errors.length > 0) {
+        return { valid: false, errors, warnings }
+      }
+
+      // 获取账户信息
+      const account = await prisma.account.findUnique({
+        where: { id: orderData.accountId }
+      })
+
+      if (!account) {
+        errors.push('账户不存在')
+        return { valid: false, errors, warnings }
+      }
+
+      // 余额验证
+      const balanceValidation = await this.validateAccountBalance(account, orderData)
+      if (!balanceValidation.valid) {
+        errors.push(...balanceValidation.errors)
+      }
+      warnings.push(...balanceValidation.warnings)
+
+      // 市场数据验证
+      const marketValidation = await this.validateMarketData(orderData)
+      if (!marketValidation.valid) {
+        errors.push(...marketValidation.errors)
+      }
+      warnings.push(...marketValidation.warnings)
+
+      // 风险评估
+      const riskAssessment = await this.assessTradeRisk(orderData.accountId, orderData)
+      if (!riskAssessment.passed) {
+        errors.push(...riskAssessment.violations.map(v => v.message))
+        
+        // 生成调整建议
+        if (riskAssessment.adjustedParameters) {
+          adjustedOrder = { ...adjustedOrder, ...riskAssessment.adjustedParameters }
+          warnings.push('订单参数已根据风险规则调整')
+        }
+      }
+
+      // 订单类型特定验证
+      const typeValidation = await this.validateOrderTypeSpecific(orderData)
+      if (!typeValidation.valid) {
+        errors.push(...typeValidation.errors)
+      }
+      warnings.push(...typeValidation.warnings)
+
+      // 流动性验证
+      const liquidityValidation = await this.validateLiquidity(orderData)
+      if (!liquidityValidation.valid) {
+        errors.push(...liquidityValidation.errors)
+      }
+      warnings.push(...liquidityValidation.warnings)
+
+      // 时间验证
+      const timeValidation = this.validateTradingTime(orderData)
+      if (!timeValidation.valid) {
+        errors.push(...timeValidation.errors)
+      }
+      warnings.push(...timeValidation.warnings)
+
+      return {
+        valid: errors.length === 0,
+        errors,
+        warnings,
+        adjustedOrder: errors.length === 0 ? adjustedOrder : undefined
+      }
+
+    } catch (error) {
+      console.error('Error validating order:', error)
+      return {
+        valid: false,
+        errors: ['订单验证失败，请稍后重试'],
+        warnings: []
+      }
+    }
+  }
+
+  private validateOrderParameters(orderData: any): string[] {
+    const errors: string[] = []
+
+    // 必填字段验证
+    const requiredFields = ['accountId', 'symbol', 'type', 'side', 'amount']
+    for (const field of requiredFields) {
+      if (!orderData[field]) {
+        errors.push(`${field} 是必填字段`)
+      }
+    }
+
+    // 订单类型验证
+    const validOrderTypes = ['market', 'limit', 'stop', 'stop_limit']
+    if (orderData.type && !validOrderTypes.includes(orderData.type)) {
+      errors.push(`无效的订单类型: ${orderData.type}`)
+    }
+
+    // 买卖方向验证
+    if (orderData.side && !['buy', 'sell'].includes(orderData.side)) {
+      errors.push(`无效的买卖方向: ${orderData.side}`)
+    }
+
+    // 数量验证
+    if (orderData.amount) {
+      const amount = parseFloat(orderData.amount)
+      if (isNaN(amount) || amount <= 0) {
+        errors.push('订单数量必须大于0')
+      }
+      if (amount > 1000000) {
+        errors.push('订单数量过大')
+      }
+    }
+
+    // 价格验证（限价单）
+    if (['limit', 'stop_limit'].includes(orderData.type)) {
+      if (!orderData.price) {
+        errors.push('限价单必须指定价格')
+      } else {
+        const price = parseFloat(orderData.price)
+        if (isNaN(price) || price <= 0) {
+          errors.push('价格必须大于0')
+        }
+      }
+    }
+
+    // 止损价格验证
+    if (['stop', 'stop_limit'].includes(orderData.type)) {
+      if (!orderData.stopPrice) {
+        errors.push('止损单必须指定止损价格')
+      } else {
+        const stopPrice = parseFloat(orderData.stopPrice)
+        if (isNaN(stopPrice) || stopPrice <= 0) {
+          errors.push('止损价格必须大于0')
+        }
+      }
+    }
+
+    return errors
+  }
+
+  private async validateAccountBalance(account: any, orderData: any): Promise<{
+    valid: boolean
+    errors: string[]
+    warnings: string[]
+  }> {
+    const errors: string[] = []
+    const warnings: string[] = []
+
+    try {
+      const orderValue = parseFloat(orderData.amount) * (parseFloat(orderData.price) || 0)
+      
+      if (orderData.side === 'buy') {
+        // 买入订单验证可用余额
+        if (account.balance < orderValue) {
+          errors.push('账户余额不足')
+        }
+        
+        // 预留保证金验证
+        const marginRequirement = orderValue * 0.1 // 10% 保证金
+        if (account.balance - orderValue < marginRequirement) {
+          warnings.push('交易后可用余额将低于保证金要求')
+        }
+      }
+
+      // 检查账户状态
+      if (!account.isActive) {
+        errors.push('账户已禁用')
+      }
+
+      // 检查账户限制
+      if (account.dailyLimit && orderValue > account.dailyLimit) {
+        errors.push(`超过每日交易限额 ${account.dailyLimit}`)
+      }
+
+    } catch (error) {
+      errors.push('余额验证失败')
+    }
+
+    return { valid: errors.length === 0, errors, warnings }
+  }
+
+  private async validateMarketData(orderData: any): Promise<{
+    valid: boolean
+    errors: string[]
+    warnings: string[]
+  }> {
+    const errors: string[] = []
+    const warnings: string[] = []
+
+    try {
+      // 获取当前市场价格
+      const marketData = await exchangeService.getMarketData(orderData.symbol)
+      
+      if (!marketData) {
+        errors.push('无法获取市场数据')
+        return { valid: false, errors, warnings }
+      }
+
+      const currentPrice = marketData.price
+
+      // 价格合理性检查
+      if (orderData.price) {
+        const price = parseFloat(orderData.price)
+        const priceDeviation = Math.abs(price - currentPrice) / currentPrice
+        
+        if (priceDeviation > 0.1) { // 10% 偏差
+          warnings.push(`订单价格与市场价格偏差较大: ${(priceDeviation * 100).toFixed(2)}%`)
+        }
+        
+        if (priceDeviation > 0.3) { // 30% 偏差
+          errors.push('订单价格偏离市场价格过大')
+        }
+      }
+
+      // 市场流动性检查
+      if (marketData.volume24h < 10000) {
+        warnings.push('交易对流动性较低')
+      }
+
+      // 价格波动性检查
+      if (marketData.change24h && Math.abs(marketData.change24h) > 20) {
+        warnings.push('市场价格波动较大，请谨慎交易')
+      }
+
+    } catch (error) {
+      warnings.push('无法获取实时市场数据')
+    }
+
+    return { valid: errors.length === 0, errors, warnings }
+  }
+
+  private async validateOrderTypeSpecific(orderData: any): Promise<{
+    valid: boolean
+    errors: string[]
+    warnings: string[]
+  }> {
+    const errors: string[] = []
+    const warnings: string[] = []
+
+    switch (orderData.type) {
+      case 'market':
+        // 市价单验证
+        if (parseFloat(orderData.amount) > 10000) {
+          warnings.push('大额市价单可能存在滑点风险')
+        }
+        break
+
+      case 'limit':
+        // 限价单验证
+        const marketData = await exchangeService.getMarketData(orderData.symbol)
+        if (marketData && orderData.price) {
+          const price = parseFloat(orderData.price)
+          const currentPrice = marketData.price
+          
+          if (orderData.side === 'buy' && price > currentPrice * 1.05) {
+            warnings.push('买入限价高于当前市场价格5%')
+          }
+          if (orderData.side === 'sell' && price < currentPrice * 0.95) {
+            warnings.push('卖出限价低于当前市场价格5%')
+          }
+        }
+        break
+
+      case 'stop':
+        // 止损单验证
+        if (orderData.stopPrice && orderData.price) {
+          const stopPrice = parseFloat(orderData.stopPrice)
+          const price = parseFloat(orderData.price)
+          
+          if (orderData.side === 'buy' && stopPrice >= price) {
+            errors.push('买入止损单的止损价格必须低于触发价格')
+          }
+          if (orderData.side === 'sell' && stopPrice <= price) {
+            errors.push('卖出止损单的止损价格必须高于触发价格')
+          }
+        }
+        break
+
+      case 'stop_limit':
+        // 止损限价单验证
+        if (orderData.stopPrice && orderData.price) {
+          const stopPrice = parseFloat(orderData.stopPrice)
+          const price = parseFloat(orderData.price)
+          
+          if (orderData.side === 'buy' && stopPrice >= price) {
+            errors.push('买入止损限价单的止损价格必须低于限价')
+          }
+          if (orderData.side === 'sell' && stopPrice <= price) {
+            errors.push('卖出止损限价单的止损价格必须高于限价')
+          }
+        }
+        break
+    }
+
+    return { valid: errors.length === 0, errors, warnings }
+  }
+
+  private async validateLiquidity(orderData: any): Promise<{
+    valid: boolean
+    errors: string[]
+    warnings: string[]
+  }> {
+    const errors: string[] = []
+    const warnings: string[] = []
+
+    try {
+      const orderValue = parseFloat(orderData.amount) * (parseFloat(orderData.price) || 0)
+      
+      // 获取市场深度数据
+      const orderBook = await exchangeService.getOrderBook(orderData.symbol)
+      
+      if (orderBook) {
+        const marketDepth = this.calculateMarketDepth(orderBook)
+        
+        // 检查订单大小相对于市场深度
+        const depthRatio = orderValue / marketDepth
+        
+        if (depthRatio > 0.1) { // 订单大小超过市场深度的10%
+          warnings.push('订单大小较大，可能影响市场价格')
+        }
+        
+        if (depthRatio > 0.3) { // 订单大小超过市场深度的30%
+          errors.push('订单大小过大，市场流动性不足')
+        }
+      }
+
+    } catch (error) {
+      warnings.push('无法验证市场流动性')
+    }
+
+    return { valid: errors.length === 0, errors, warnings }
+  }
+
+  private validateTradingTime(orderData: any): {
+    valid: boolean
+    errors: string[]
+    warnings: string[]
+  } {
+    const errors: string[] = []
+    const warnings: string[] = []
+
+    const now = new Date()
+    const dayOfWeek = now.getDay()
+    const hour = now.getHours()
+
+    // 周末检查
+    if (dayOfWeek === 0 || dayOfWeek === 6) {
+      warnings.push('当前为周末，市场流动性可能较低')
+    }
+
+    // 非交易时间检查
+    if (hour < 9 || hour > 16) {
+      warnings.push('当前为非交易时间，请注意风险')
+    }
+
+    return { valid: true, errors, warnings }
+  }
+
+  private calculateMarketDepth(orderBook: any): number {
+    // 计算订单簿深度（简化实现）
+    const bids = orderBook.bids || []
+    const asks = orderBook.asks || []
+    
+    const bidDepth = bids.reduce((sum: number, bid: any) => sum + parseFloat(bid[0]) * parseFloat(bid[1]), 0)
+    const askDepth = asks.reduce((sum: number, ask: any) => sum + parseFloat(ask[0]) * parseFloat(ask[1]), 0)
+    
+    return (bidDepth + askDepth) / 2
+  }
+
   // 公共方法
   async getRiskRules(): Promise<RiskRule[]> {
     return Array.from(this.rules.values())
@@ -868,7 +1251,7 @@ export class RiskManagementService extends EventEmitter {
       prisma.trade.findMany({
         where: {
           accountId,
-          createdAt: { gte: startDate }
+          timestamp: { gte: startDate }
         }
       })
     ])

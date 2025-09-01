@@ -1081,7 +1081,7 @@ const formatTime = (date: Date) => {
 
 <style scoped>
 .trading-panel {
-  padding: 20px;
+  padding: 16px;
   height: 100%;
   overflow-y: auto;
 }
@@ -1090,36 +1090,94 @@ const formatTime = (date: Date) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .page-header h2 {
   margin: 0;
   color: var(--primary-text);
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
 }
 
 .header-actions {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .trading-content {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+  .trading-panel {
+    padding: 12px;
+  }
+  
+  .page-header {
+    margin-bottom: 12px;
+  }
+  
+  .trading-content {
+    gap: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .trading-panel {
+    padding: 8px;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 8px;
+  }
+  
+  .page-header h2 {
+    font-size: 16px;
+  }
+  
+  .header-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  
+  .trading-content {
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .trading-panel {
+    padding: 4px;
+  }
+  
+  .page-header h2 {
+    font-size: 14px;
+  }
+  
+  .header-actions .el-button {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
 }
 
 /* 交易所选项卡 */
 .exchange-tabs {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .exchange-tabs-container {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 12px;
-  flex-wrap: wrap;
 }
 
 .exchange-tab {
@@ -1127,12 +1185,53 @@ const formatTime = (date: Date) => {
   border: 2px solid var(--border-color);
   border-radius: 12px;
   padding: 16px;
-  min-width: 200px;
+  min-width: 180px;
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+/* 响应式交易所选项卡 */
+@media (max-width: 768px) {
+  .exchange-tabs {
+    margin-bottom: 12px;
+  }
+  
+  .exchange-tabs-container {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 8px;
+  }
+  
+  .exchange-tab {
+    min-width: 140px;
+    padding: 12px;
+  }
+  
+  .exchange-name {
+    font-size: 14px;
+  }
+  
+  .balance {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .exchange-tabs-container {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  
+  .exchange-tab {
+    min-width: auto;
+    padding: 10px;
+  }
+  
+  .exchange-tab.add-exchange {
+    min-height: 60px;
+  }
 }
 
 .exchange-tab:hover {
@@ -1235,6 +1334,31 @@ const formatTime = (date: Date) => {
   gap: 20px;
 }
 
+/* 响应式资产明细 */
+@media (max-width: 768px) {
+  .asset-details {
+    flex-direction: column;
+    gap: 12px;
+    padding: 10px;
+  }
+  
+  .detail-item {
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 480px) {
+  .asset-details {
+    gap: 8px;
+    padding: 8px;
+  }
+  
+  .detail-item .label,
+  .detail-item .value {
+    font-size: 12px;
+  }
+}
+
 .detail-item {
   display: flex;
   align-items: center;
@@ -1259,6 +1383,36 @@ const formatTime = (date: Date) => {
   margin-bottom: 16px;
 }
 
+/* 响应式区域头部 */
+@media (max-width: 768px) {
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  
+  .section-header .header-actions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .section-header {
+    margin-bottom: 8px;
+  }
+  
+  .section-header h3 {
+    font-size: 14px;
+  }
+  
+  .section-header .header-actions {
+    gap: 4px;
+  }
+}
+
 .section-header h3 {
   margin: 0;
   color: var(--primary-text);
@@ -1271,6 +1425,21 @@ const formatTime = (date: Date) => {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 16px;
+}
+
+/* 响应式账户卡片 */
+@media (max-width: 768px) {
+  .account-cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .account-cards {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
 }
 
 .account-card {
@@ -1318,6 +1487,30 @@ const formatTime = (date: Date) => {
   margin-bottom: 16px;
 }
 
+/* 响应式交易表单 */
+@media (max-width: 768px) {
+  .trading-form {
+    padding: 16px;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .trading-form {
+    padding: 12px;
+  }
+  
+  .form-row {
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+}
+
 .form-group {
   display: flex;
   flex-direction: column;
@@ -1346,6 +1539,62 @@ const formatTime = (date: Date) => {
   overflow: hidden;
 }
 
+/* 响应式表格 */
+@media (max-width: 768px) {
+  .positions-table,
+  .orders-table {
+    font-size: 12px;
+  }
+  
+  :deep(.el-table) {
+    font-size: 12px;
+  }
+  
+  :deep(.el-table th) {
+    font-size: 11px;
+    padding: 8px 4px;
+  }
+  
+  :deep(.el-table td) {
+    padding: 6px 4px;
+  }
+  
+  :deep(.el-button--small) {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .positions-table,
+  .orders-table {
+    font-size: 11px;
+  }
+  
+  :deep(.el-table) {
+    font-size: 11px;
+  }
+  
+  :deep(.el-table th) {
+    font-size: 10px;
+    padding: 6px 2px;
+  }
+  
+  :deep(.el-table td) {
+    padding: 4px 2px;
+  }
+  
+  :deep(.el-button--small) {
+    padding: 3px 6px;
+    font-size: 10px;
+  }
+  
+  /* 隐藏次要列 */
+  :deep(.el-table .operation-column) {
+    display: none;
+  }
+}
+
 /* 通用样式 */
 .positive {
   color: var(--positive-color) !important;
@@ -1359,6 +1608,59 @@ const formatTime = (date: Date) => {
 :deep(.el-select .el-input__wrapper) {
   background: var(--card-bg);
   border-color: var(--border-color);
+}
+
+/* 响应式对话框 */
+@media (max-width: 768px) {
+  :deep(.el-dialog) {
+    width: 90% !important;
+    margin: 5vh auto !important;
+  }
+  
+  :deep(.el-dialog__body) {
+    padding: 16px;
+  }
+  
+  :deep(.el-form-item) {
+    margin-bottom: 16px;
+  }
+  
+  :deep(.el-form-item__label) {
+    font-size: 12px;
+    padding-bottom: 4px;
+  }
+}
+
+@media (max-width: 480px) {
+  :deep(.el-dialog) {
+    width: 95% !important;
+    margin: 2vh auto !important;
+  }
+  
+  :deep(.el-dialog__body) {
+    padding: 12px;
+  }
+  
+  :deep(.el-form-item) {
+    margin-bottom: 12px;
+  }
+  
+  :deep(.el-form-item__label) {
+    font-size: 11px;
+  }
+  
+  :deep(.el-dialog__footer) {
+    padding: 12px 16px;
+  }
+  
+  :deep(.dialog-footer) {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  :deep(.dialog-footer .el-button) {
+    width: 100%;
+  }
 }
 
 :deep(.el-input__wrapper) {
@@ -1445,12 +1747,58 @@ const formatTime = (date: Date) => {
   background: var(--card-bg);
   border-color: var(--border-color);
   color: var(--secondary-text);
+  transition: all 0.2s ease;
 }
 
 :deep(.el-button:hover) {
   background: var(--hover-bg);
   border-color: var(--primary-text);
   color: var(--primary-text);
+}
+
+/* 移动端按钮优化 */
+@media (max-width: 768px) {
+  :deep(.el-button) {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+  
+  :deep(.el-button--small) {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  
+  :deep(.el-button--large) {
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  :deep(.el-button) {
+    padding: 10px 14px;
+    font-size: 12px;
+    min-height: 40px;
+  }
+  
+  :deep(.el-button--small) {
+    padding: 6px 10px;
+    font-size: 11px;
+    min-height: 32px;
+  }
+  
+  :deep(.el-button--large) {
+    padding: 14px 18px;
+    font-size: 13px;
+    min-height: 48px;
+  }
+  
+  /* 触摸友好的最小点击区域 */
+  :deep(.el-button),
+  :deep(.el-radio-button__inner),
+  :deep(.el-select .el-input__wrapper) {
+    min-height: 44px;
+  }
 }
 
 :deep(.el-button--success) {

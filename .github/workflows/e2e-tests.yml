@@ -1,0 +1,110 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  e2e-tests:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: |
+        npm run install:all
+        
+    - name: Install Playwright browsers
+      run: |
+        npx playwright install --with-deps
+        
+    - name: Start services
+      run: |
+        npm run docker:up
+        sleep 30
+        
+    - name: Run E2E tests
+      run: |
+        npm run test:e2e
+      env:
+        CI: true
+        
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: playwright-report
+        path: |
+          playwright-report/
+          test-results/
+          
+    - name: Upload screenshots
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: playwright-screenshots
+        path: test-results-screenshots/
+        
+    - name: Upload videos
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: playwright-videos
+        path: test-results-videos/
+
+  e2e-tests-ui:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: |
+        npm run install:all
+        
+    - name: Install Playwright browsers
+      run: |
+        npx playwright install --with-deps
+        
+    - name: Start services
+      run: |
+        npm run docker:up
+        sleep 30
+        
+    - name: Run E2E tests with UI
+      run: |
+        npm run test:e2e:ui
+      env:
+        CI: true
+        PLAYWRIGHT_UI_PORT: 9323
+        
+    - name: Upload UI artifacts
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: playwright-ui-report
+        path: |
+          playwright-report/
+          test-results/

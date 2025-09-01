@@ -1,0 +1,326 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 用户模型
+model User {
+  id          String   @id @default(cuid())
+  username    String   @unique
+  email       String   @unique
+  password    String
+  isActive    Boolean  @default(true)
+  role        String   @default("user")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // 关联
+  accounts    Account[]
+  strategies  Strategy[]
+  trades      Trade[]
+  riskRules   RiskRule[]
+  riskAlerts  RiskAlert[]
+  riskAssessments RiskAssessment[]
+
+  @@map("users")
+}
+
+// 交易账户模型
+model Account {
+  id          String   @id @default(cuid())
+  name        String
+  type        String   // "spot", "margin", "futures"
+  broker      String   // "binance", "okx", "bybit", "huobi"
+  balance     Float    @default(0)
+  currency    String   @default("USDT")
+  isActive    Boolean  @default(true)
+  dailyLimit  Float?
+  leverage    Float    @default(1)
+  marginLevel Float    @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // 关联
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  positions   Position[]
+  trades      Trade[]
+  riskAlerts  RiskAlert[]
+  riskAssessments RiskAssessment[]
+
+  @@map("accounts")
+}
+
+// 策略模型
+model Strategy {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  type        String   // "grid", "momentum", "mean_reversion", "arbitrage"
+  status      String   @default("inactive") // "active", "inactive", "paused"
+  parameters  Json     // 策略参数配置
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // 关联
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trades      Trade[]
+  backtests   Backtest[]
+
+  @@map("strategies")
+}
+
+// 仓位模型
+model Position {
+  id          String   @id @default(cuid())
+  symbol      String
+  side        String   // "long", "short"
+  size        Float
+  entryPrice  Float
+  markPrice   Float
+  pnl         Float    @default(0)
+  pnlPercent  Float    @default(0)
+  status      String   @default("open") // "open", "closed"
+  leverage    Float    @default(1)
+  margin      Float    @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // 关联
+  accountId   String
+  account     Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@map("positions")
+}
+
+// 交易记录模型
+model Trade {
+  id          String   @id @default(cuid())
+  symbol      String
+  type        String   // "buy", "sell"
+  side        String   // "long", "short"
+  quantity    Float
+  price       Float
+  commission  Float    @default(0)
+  pnl         Float    @default(0)
+  status      String   @default("pending") // "pending", "executed", "cancelled", "failed"
+  timestamp   DateTime @default(now())
+  notes       Json?
+
+  // 关联
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId   String?
+  account     Account? @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  strategyId  String?
+  strategy    Strategy? @relation(fields: [strategyId], references: [id], onDelete: SetNull)
+
+  @@map("trades")
+}
+
+// 回测模型
+model Backtest {
+  id          String   @id @default(cuid())
+  name        String
+  strategyId  String
+  symbol      String
+  timeframe   String
+  startDate   DateTime
+  endDate     DateTime
+  initialBalance Float
+  finalBalance  Float
+  totalPnl    Float
+  totalReturn Float
+  winRate     Float
+  profitFactor Float
+  maxDrawdown Float
+  sharpeRatio Float
+  tradesCount Int
+  status      String   @default("pending") // "pending", "running", "completed", "failed"
+  parameters  Json     // 回测参数
+  results     Json?    // 详细回测结果
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // 关联
+  strategy    Strategy @relation(fields: [strategyId], references: [id], onDelete: Cascade)
+
+  @@map("backtests")
+}
+
+// 市场数据模型 (使用 TimescaleDB 超表)
+model MarketData {
+  id          String   @id @default(cuid())
+  symbol      String
+  timestamp   DateTime
+  open        Float
+  high        Float
+  low         Float
+  close       Float
+  volume      Float
+  timeframe   String   // "1m", "5m", "15m", "1h", "4h", "1d"
+  exchange    String   @default("binance")
+  
+  // 为 TimescaleDB 超表设置
+  @@map("market_data")
+}
+
+// 风控规则模型
+model RiskRule {
+  id          String   @id @default(cuid())
+  name        String
+  type        String   // "position_size", "daily_loss", "drawdown", "leverage", "cooldown", "correlation"
+  enabled     Boolean  @default(true)
+  parameters  Json     // 规则参数
+  priority    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // 关联
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("risk_rules")
+}
+
+// 风险评估模型
+model RiskAssessment {
+  id          String   @id @default(cuid())
+  accountId   String
+  tradeRequest Json
+  assessment  Json     // 风险评估结果
+  riskLevel   String   // "low", "medium", "high", "critical"
+  violationsCount Int  @default(0)
+  timestamp   DateTime @default(now())
+
+  // 关联
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account     Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@map("risk_assessments")
+}
+
+// 风险警告模型
+model RiskAlert {
+  id          String   @id @default(cuid())
+  accountId   String
+  type        String   // "HIGH_RISK_SCORE", "HIGH_DRAWDOWN", "DAILY_LOSS_LIMIT", "MARGIN_CALL", "POSITION_LIMIT"
+  severity    String   // "low", "medium", "high", "critical"
+  message     String
+  data        Json?
+  timestamp   DateTime @default(now())
+  status      String   @default("active") // "active", "acknowledged", "resolved"
+
+  // 关联
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account     Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@map("risk_alerts")
+}
+
+// API 密钥模型
+model ApiKey {
+  id          String   @id @default(cuid())
+  name        String
+  exchange    String   // "binance", "okx", "bybit", "huobi"
+  apiKey      String
+  apiSecret   String
+  permissions Json     // API 权限设置
+  isActive    Boolean  @default(true)
+  lastUsed    DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // 关联
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("api_keys")
+}
+
+// 系统配置模型
+model SystemConfig {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       Json
+  description String?
+  category    String   @default("general")
+  isSystem    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("system_configs")
+}
+
+// 交易会话模型
+model TradingSession {
+  id          String   @id @default(cuid())
+  accountId   String
+  strategyId  String?
+  startTime   DateTime @default(now())
+  endTime     DateTime?
+  status      String   @default("active") // "active", "closed", "error"
+  initialBalance Float
+  finalBalance  Float?
+  totalTrades Int      @default(0)
+  totalPnl    Float    @default(0)
+  maxDrawdown Float?
+  notes       String?
+
+  // 关联
+  account     Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  strategy    Strategy? @relation(fields: [strategyId], references: [id], onDelete: SetNull)
+
+  @@map("trading_sessions")
+}
+
+// 通知模型
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String
+  type        String   // "trade", "risk", "system", "strategy"
+  title       String
+  message     String
+  data        Json?
+  isRead      Boolean  @default(false)
+  priority    String   @default("normal") // "low", "normal", "high", "urgent"
+  createdAt   DateTime @default(now())
+  readAt      DateTime?
+
+  // 关联
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+// 创建 TimescaleDB 超表和索引
+// 在数据库迁移时需要执行以下 SQL:
+/*
+-- 创建超表
+SELECT create_hypertable('market_data', 'timestamp');
+
+-- 创建索引
+CREATE INDEX ON market_data (symbol, timestamp DESC);
+CREATE INDEX ON market_data (timestamp DESC, symbol);
+CREATE INDEX ON market_data (timeframe, symbol, timestamp DESC);
+
+-- 创建压缩策略
+ALTER TABLE market_data SET (
+  timescaledb.compress,
+  timescaledb.compress_segmentby = 'symbol'
+);
+
+-- 设置数据保留策略
+SELECT add_retention_policy('market_data', INTERVAL '30 days');
+*/

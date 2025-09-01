@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import { PrismaClient } from '@prisma/client';
 import { body, query, validationResult } from 'express-validator';
+import { riskManagementService } from '../services/RiskManagementService';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -174,6 +175,32 @@ router.post('/order', authenticate, [
       });
     }
 
+    // Enhanced order validation using RiskManagementService
+    const orderData = {
+      accountId,
+      symbol,
+      type,
+      side,
+      amount: quantity.toString(),
+      price: price?.toString(),
+      stopPrice: stopPrice?.toString(),
+      userId: req.user!.id
+    };
+
+    const validation = await riskManagementService.validateOrder(orderData);
+
+    if (!validation.valid) {
+      return res.status(400).json({
+        success: false,
+        message: 'Order validation failed',
+        errors: validation.errors,
+        warnings: validation.warnings
+      });
+    }
+
+    // Use adjusted order parameters if provided
+    const finalOrderData = validation.adjustedOrder || orderData;
+
     // Create trade record
     const trade = await prisma.trade.create({
       data: {
@@ -182,14 +209,15 @@ router.post('/order', authenticate, [
         symbol,
         type: side,
         side: side === 'buy' ? 'long' : 'short',
-        quantity,
-        price: price || 0, // Market orders will have price filled later
+        quantity: parseFloat(finalOrderData.amount),
+        price: parseFloat(finalOrderData.price) || 0, // Market orders will have price filled later
         timestamp: new Date(),
         status: 'pending',
         notes: JSON.stringify({
           orderType: type,
           accountId,
-          stopPrice
+          stopPrice: finalOrderData.stopPrice,
+          validationWarnings: validation.warnings
         })
       },
       include: {
@@ -207,14 +235,14 @@ router.post('/order', authenticate, [
     setTimeout(async () => {
       try {
         // Mock execution price
-        const executionPrice = price || (Math.random() * 1000 + 40000); // Mock price
+        const executionPrice = parseFloat(finalOrderData.price) || (Math.random() * 1000 + 40000); // Mock price
         
         await prisma.trade.update({
           where: { id: trade.id },
           data: {
             status: 'executed',
             price: executionPrice,
-            commission: executionPrice * quantity * 0.001, // 0.1% commission
+            commission: executionPrice * parseFloat(finalOrderData.amount) * 0.001, // 0.1% commission
             pnl: side === 'buy' ? 0 : 0 // PnL calculated on close
           }
         });
@@ -229,7 +257,8 @@ router.post('/order', authenticate, [
       data: {
         orderId: trade.id,
         status: trade.status,
-        timestamp: trade.timestamp
+        timestamp: trade.timestamp,
+        warnings: validation.warnings.length > 0 ? validation.warnings : undefined
       }
     });
   } catch (error) {
@@ -294,6 +323,46 @@ router.post('/close', authenticate, [
     res.status(500).json({
       success: false,
       message: 'Failed to close position',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// Get orders (simplified endpoint for frontend compatibility)
+router.get('/orders/simple', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const trades = await prisma.trade.findMany({
+      where: {
+        userId: req.user!.id
+      },
+      select: {
+        id: true,
+        symbol: true,
+        type: true,
+        side: true,
+        quantity: true,
+        price: true,
+        status: true,
+        timestamp: true,
+        commission: true,
+        pnl: true
+      },
+      orderBy: {
+        timestamp: 'desc'
+      },
+      take: 50 // Limit to recent 50 orders
+    });
+
+    res.json({
+      success: true,
+      message: 'Orders retrieved successfully',
+      data: trades
+    });
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch orders',
       error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
@@ -414,6 +483,599 @@ router.get('/stats', authenticate, async (req: AuthRequest, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to fetch trading statistics',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// Get account balance
+router.get('/balance', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const { accountId } = req.query;
+
+    if (!accountId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Account ID is required'
+      });
+    }
+
+    // Verify account exists and belongs to user
+    const account = await prisma.account.findFirst({
+      where: {
+        id: accountId as string,
+        userId: req.user!.id,
+        isActive: true
+      }
+    });
+
+    if (!account) {
+      return res.status(404).json({
+        success: false,
+        message: 'Account not found'
+      });
+    }
+
+    // Calculate current balance based on trades
+    const trades = await prisma.trade.findMany({
+      where: {
+        userId: req.user!.id,
+        status: 'executed'
+      }
+    });
+
+    const totalPnl = trades.reduce((sum, trade) => sum + (trade.pnl || 0), 0);
+    const totalCommission = trades.reduce((sum, trade) => sum + (trade.commission || 0), 0);
+
+    const balanceData = {
+      accountId,
+      totalBalance: account.balance + totalPnl - totalCommission,
+      availableBalance: account.balance,
+      totalPnl,
+      totalCommission,
+      currency: account.currency,
+      lastUpdated: new Date()
+    };
+
+    res.json({
+      success: true,
+      message: 'Balance retrieved successfully',
+      data: balanceData
+    });
+  } catch (error) {
+    console.error('Error fetching balance:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch balance',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// Get market data
+router.get('/market-data', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const { symbols } = req.query;
+    
+    // Default symbols if none provided
+    const defaultSymbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT'];
+    const requestedSymbols = symbols ? (symbols as string).split(',') : defaultSymbols;
+
+    // Mock market data (in real implementation, this would fetch from exchange API)
+    const marketData = requestedSymbols.map(symbol => ({
+      symbol,
+      price: Math.random() * 50000 + 1000, // Mock price
+      change24h: (Math.random() - 0.5) * 10, // Mock 24h change
+      volume24h: Math.random() * 1000000, // Mock volume
+      high24h: Math.random() * 50000 + 2000,
+      low24h: Math.random() * 50000 + 500,
+      timestamp: new Date()
+    }));
+
+    res.json({
+      success: true,
+      message: 'Market data retrieved successfully',
+      data: marketData
+    });
+  } catch (error) {
+    console.error('Error fetching market data:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch market data',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// Cancel order
+router.post('/order/cancel', authenticate, [
+  body('orderId').notEmpty().withMessage('Order ID is required')
+], async (req: AuthRequest, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+
+    const { orderId } = req.body;
+
+    // Find and update the order
+    const order = await prisma.trade.findFirst({
+      where: {
+        id: orderId,
+        userId: req.user!.id,
+        status: 'pending'
+      }
+    });
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found or cannot be cancelled'
+      });
+    }
+
+    await prisma.trade.update({
+      where: { id: orderId },
+      data: {
+        status: 'cancelled',
+        notes: JSON.stringify({
+          ...JSON.parse(order.notes || '{}'),
+          cancelledAt: new Date(),
+          cancelledBy: 'user'
+        })
+      }
+    });
+
+    res.json({
+      success: true,
+      message: 'Order cancelled successfully',
+      data: {
+        orderId,
+        status: 'cancelled',
+        timestamp: new Date()
+      }
+    });
+  } catch (error) {
+    console.error('Error cancelling order:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to cancel order',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// Place stop-loss order
+router.post('/order/stop-loss', authenticate, [
+  body('accountId').notEmpty().withMessage('Account ID is required'),
+  body('symbol').notEmpty().withMessage('Symbol is required'),
+  body('side').isIn(['buy', 'sell']).withMessage('Invalid order side'),
+  body('quantity').isFloat({ min: 0 }).withMessage('Quantity must be positive'),
+  body('stopPrice').isFloat({ min: 0 }).withMessage('Stop price must be positive'),
+  body('triggerPrice').optional().isFloat({ min: 0 }).withMessage('Trigger price must be positive'),
+  body('limitPrice').optional().isFloat({ min: 0 }).withMessage('Limit price must be positive')
+], async (req: AuthRequest, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+
+    const { accountId, symbol, side, quantity, stopPrice, triggerPrice, limitPrice } = req.body;
+
+    // Verify account exists and belongs to user
+    const account = await prisma.account.findFirst({
+      where: {
+        id: accountId,
+        userId: req.user!.id,
+        isActive: true
+      }
+    });
+
+    if (!account) {
+      return res.status(404).json({
+        success: false,
+        message: 'Account not found'
+      });
+    }
+
+    // Validate stop-loss order
+    const stopLossData = {
+      accountId,
+      symbol,
+      type: limitPrice ? 'stop_limit' : 'stop',
+      side,
+      amount: quantity.toString(),
+      stopPrice: stopPrice.toString(),
+      price: limitPrice?.toString(),
+      triggerPrice: triggerPrice?.toString(),
+      userId: req.user!.id,
+      orderType: 'stop_loss'
+    };
+
+    const validation = await riskManagementService.validateOrder(stopLossData);
+
+    if (!validation.valid) {
+      return res.status(400).json({
+        success: false,
+        message: 'Stop-loss order validation failed',
+        errors: validation.errors,
+        warnings: validation.warnings
+      });
+    }
+
+    // Use validated order data
+    const finalOrderData = validation.adjustedOrder || stopLossData;
+
+    // Create stop-loss order record
+    const stopLossOrder = await prisma.trade.create({
+      data: {
+        strategyId: 'stop_loss',
+        userId: req.user!.id,
+        symbol,
+        type: side,
+        side: side === 'buy' ? 'long' : 'short',
+        quantity: parseFloat(finalOrderData.amount),
+        price: parseFloat(finalOrderData.price) || 0,
+        timestamp: new Date(),
+        status: 'pending',
+        notes: JSON.stringify({
+          orderType: 'stop_loss',
+          accountId,
+          stopPrice: finalOrderData.stopPrice,
+          triggerPrice: finalOrderData.triggerPrice,
+          limitPrice: finalOrderData.price,
+          validationWarnings: validation.warnings
+        })
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            email: true
+          }
+        }
+      }
+    });
+
+    // Start monitoring for stop-loss trigger
+    startStopLossMonitoring(stopLossOrder.id, finalOrderData);
+
+    res.json({
+      success: true,
+      message: 'Stop-loss order placed successfully',
+      data: {
+        orderId: stopLossOrder.id,
+        status: stopLossOrder.status,
+        timestamp: stopLossOrder.timestamp,
+        stopPrice: finalOrderData.stopPrice,
+        limitPrice: finalOrderData.price,
+        warnings: validation.warnings.length > 0 ? validation.warnings : undefined
+      }
+    });
+  } catch (error) {
+    console.error('Error placing stop-loss order:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to place stop-loss order',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// Update stop-loss order
+router.put('/order/stop-loss/:orderId', authenticate, [
+  body('stopPrice').optional().isFloat({ min: 0 }).withMessage('Stop price must be positive'),
+  body('limitPrice').optional().isFloat({ min: 0 }).withMessage('Limit price must be positive'),
+  body('quantity').optional().isFloat({ min: 0 }).withMessage('Quantity must be positive')
+], async (req: AuthRequest, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+
+    const { orderId } = req.params;
+    const { stopPrice, limitPrice, quantity } = req.body;
+
+    // Find the stop-loss order
+    const order = await prisma.trade.findFirst({
+      where: {
+        id: orderId,
+        userId: req.user!.id,
+        status: 'pending'
+      }
+    });
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Stop-loss order not found or cannot be modified'
+      });
+    }
+
+    // Parse existing order notes
+    const notes = JSON.parse(order.notes || '{}');
+    
+    // Update order data
+    const updatedOrder = {
+      ...order,
+      quantity: quantity || order.quantity,
+      notes: JSON.stringify({
+        ...notes,
+        stopPrice: stopPrice || notes.stopPrice,
+        limitPrice: limitPrice || notes.limitPrice,
+        updatedAt: new Date()
+      })
+    };
+
+    // Validate updated order
+    const validation = await riskManagementService.validateOrder({
+      accountId: notes.accountId,
+      symbol: order.symbol,
+      type: notes.limitPrice ? 'stop_limit' : 'stop',
+      side: order.side,
+      amount: updatedOrder.quantity.toString(),
+      stopPrice: (stopPrice || notes.stopPrice).toString(),
+      price: limitPrice?.toString(),
+      userId: req.user!.id,
+      orderType: 'stop_loss'
+    });
+
+    if (!validation.valid) {
+      return res.status(400).json({
+        success: false,
+        message: 'Stop-loss order update validation failed',
+        errors: validation.errors,
+        warnings: validation.warnings
+      });
+    }
+
+    // Update the order
+    const updated = await prisma.trade.update({
+      where: { id: orderId },
+      data: updatedOrder
+    });
+
+    res.json({
+      success: true,
+      message: 'Stop-loss order updated successfully',
+      data: {
+        orderId: updated.id,
+        status: updated.status,
+        timestamp: updated.timestamp,
+        stopPrice: validation.adjustedOrder?.stopPrice || stopPrice || notes.stopPrice,
+        limitPrice: validation.adjustedOrder?.price || limitPrice || notes.limitPrice,
+        warnings: validation.warnings
+      }
+    });
+  } catch (error) {
+    console.error('Error updating stop-loss order:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update stop-loss order',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// Get stop-loss orders
+router.get('/orders/stop-loss', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const { accountId } = req.query;
+
+    const whereClause: any = {
+      userId: req.user!.id,
+      notes: {
+        path: ['orderType'],
+        equals: 'stop_loss'
+      }
+    };
+
+    if (accountId) {
+      whereClause.notes = {
+        path: ['accountId'],
+        equals: accountId
+      };
+    }
+
+    const stopLossOrders = await prisma.trade.findMany({
+      where: whereClause,
+      select: {
+        id: true,
+        symbol: true,
+        type: true,
+        side: true,
+        quantity: true,
+        price: true,
+        status: true,
+        timestamp: true,
+        notes: true
+      },
+      orderBy: {
+        timestamp: 'desc'
+      }
+    });
+
+    // Parse notes to extract stop-loss specific data
+    const formattedOrders = stopLossOrders.map(order => {
+      const notes = JSON.parse(order.notes || '{}');
+      return {
+        ...order,
+        stopPrice: notes.stopPrice,
+        limitPrice: notes.limitPrice,
+        triggerPrice: notes.triggerPrice,
+        accountId: notes.accountId
+      };
+    });
+
+    res.json({
+      success: true,
+      message: 'Stop-loss orders retrieved successfully',
+      data: formattedOrders
+    });
+  } catch (error) {
+    console.error('Error fetching stop-loss orders:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch stop-loss orders',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// Stop-loss monitoring function
+function startStopLossMonitoring(orderId: string, orderData: any): void {
+  try {
+    // Start monitoring price movements
+    const monitoringInterval = setInterval(async () => {
+      try {
+        // Get current market price (mock implementation)
+        const currentPrice = Math.random() * 1000 + 40000; // Mock price
+        const stopPrice = parseFloat(orderData.stopPrice);
+        const side = orderData.side;
+
+        // Check if stop-loss should be triggered
+        let shouldTrigger = false;
+        
+        if (side === 'sell' && currentPrice <= stopPrice) {
+          shouldTrigger = true; // Stop-loss for long position
+        } else if (side === 'buy' && currentPrice >= stopPrice) {
+          shouldTrigger = true; // Stop-loss for short position
+        }
+
+        if (shouldTrigger) {
+          clearInterval(monitoringInterval);
+          
+          // Execute stop-loss order
+          await executeStopLossOrder(orderId, orderData, currentPrice);
+        }
+      } catch (error) {
+        console.error('Error monitoring stop-loss order:', error);
+      }
+    }, 5000); // Check every 5 seconds
+
+    // Store monitoring interval reference for cleanup
+    global.stopLossMonitors = global.stopLossMonitors || {};
+    global.stopLossMonitors[orderId] = monitoringInterval;
+
+  } catch (error) {
+    console.error('Error starting stop-loss monitoring:', error);
+  }
+}
+
+// Execute stop-loss order
+async function executeStopLossOrder(orderId: string, orderData: any, triggerPrice: number): Promise<void> {
+  try {
+    const executionPrice = orderData.price ? parseFloat(orderData.price) : triggerPrice;
+    
+    // Update order status
+    await prisma.trade.update({
+      where: { id: orderId },
+      data: {
+        status: 'executed',
+        price: executionPrice,
+        notes: JSON.stringify({
+          ...JSON.parse(orderData.notes || '{}'),
+          executedAt: new Date(),
+          triggerPrice,
+          executionPrice
+        })
+      }
+    });
+
+    console.log(`Stop-loss order ${orderId} executed at price ${executionPrice}`);
+
+    // Clean up monitoring
+    if (global.stopLossMonitors && global.stopLossMonitors[orderId]) {
+      clearInterval(global.stopLossMonitors[orderId]);
+      delete global.stopLossMonitors[orderId];
+    }
+  } catch (error) {
+    console.error('Error executing stop-loss order:', error);
+  }
+}
+
+// Get positions by account
+router.get('/positions/by-account', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const { accountId } = req.query;
+
+    if (!accountId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Account ID is required'
+      });
+    }
+
+    // Verify account exists and belongs to user
+    const account = await prisma.account.findFirst({
+      where: {
+        id: accountId as string,
+        userId: req.user!.id,
+        isActive: true
+      }
+    });
+
+    if (!account) {
+      return res.status(404).json({
+        success: false,
+        message: 'Account not found'
+      });
+    }
+
+    // Get mock positions (in real implementation, this would fetch from broker API)
+    const positions = [
+      {
+        id: 'pos_1',
+        symbol: 'BTCUSDT',
+        side: 'long',
+        quantity: 0.5,
+        entryPrice: 45000,
+        currentPrice: 46500,
+        pnl: 750,
+        pnlPercentage: 1.67,
+        timestamp: new Date(),
+        accountId
+      },
+      {
+        id: 'pos_2',
+        symbol: 'ETHUSDT',
+        side: 'short',
+        quantity: 2.0,
+        entryPrice: 3200,
+        currentPrice: 3100,
+        pnl: 200,
+        pnlPercentage: 3.13,
+        timestamp: new Date(),
+        accountId
+      }
+    ];
+
+    res.json({
+      success: true,
+      message: 'Positions retrieved successfully',
+      data: positions
+    });
+  } catch (error) {
+    console.error('Error fetching positions:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch positions',
       error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
