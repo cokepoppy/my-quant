@@ -26,6 +26,7 @@ import monitoringRoutes from './routes/monitoring';
 import systemRoutes from './routes/system';
 import dataTestRoutes from './routes/data-simple'
 import tradingLogsRoutes from './routes/trading-logs';
+import multiExchangeRoutes from './routes/multi-exchange';
 
 // Load environment variables
 dotenv.config();
@@ -77,6 +78,7 @@ app.use('/monitoring', monitoringRoutes);
 app.use('/system', systemRoutes);
 app.use('/data-test', dataTestRoutes);
 app.use('/trading-logs', tradingLogsRoutes);
+app.use('/multi-exchange', multiExchangeRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {

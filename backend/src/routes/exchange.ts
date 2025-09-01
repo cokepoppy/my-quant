@@ -10,6 +10,60 @@ const prisma = new PrismaClient();
 
 console.log('Exchange management routes loaded');
 
+// 测试连接配置
+router.post('/test', [
+  body('exchange').isIn(['binance', 'okx', 'bybit']).withMessage('Invalid exchange'),
+  body('apiKey').notEmpty().withMessage('API key is required'),
+  body('apiSecret').notEmpty().withMessage('API secret is required'),
+  body('testnet').optional().isBoolean().withMessage('Testnet must be boolean')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+
+    const { exchange, apiKey, apiSecret, passphrase, testnet = false } = req.body;
+
+    // 创建交易所配置
+    const exchangeConfig: ExchangeConfig = {
+      id: exchange,
+      name: exchange.charAt(0).toUpperCase() + exchange.slice(1),
+      apiKey,
+      apiSecret,
+      passphrase,
+      testnet,
+      enableRateLimit: true
+    };
+
+    // 测试连接
+    const connectionSuccess = await exchangeService.testConnection(exchangeConfig);
+    
+    if (connectionSuccess) {
+      res.json({
+        success: true,
+        message: 'Connection test successful'
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        message: 'Connection test failed'
+      });
+    }
+  } catch (error) {
+    console.error('Error testing connection:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to test connection',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
 // 获取所有账户
 router.get('/', authenticate, async (req: AuthRequest, res) => {
   try {
@@ -45,7 +99,7 @@ router.get('/', authenticate, async (req: AuthRequest, res) => {
 // 创建账户
 router.post('/', authenticate, [
   body('name').notEmpty().withMessage('Account name is required'),
-  body('exchange').isIn(['binance', 'okx']).withMessage('Invalid exchange'),
+  body('exchange').isIn(['binance', 'okx', 'bybit']).withMessage('Invalid exchange'),
   body('type').isIn(['demo', 'live']).withMessage('Invalid account type'),
   body('apiKey').notEmpty().withMessage('API key is required'),
   body('apiSecret').notEmpty().withMessage('API secret is required'),
@@ -63,9 +117,11 @@ router.post('/', authenticate, [
 
     const { name, exchange, type, apiKey, apiSecret, passphrase, testnet } = req.body;
 
-    // 创建交易所配置
+    // 创建唯一的交易所实例ID（支持同一交易所类型的多个账户）
+    const instanceId = `${exchange}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
     const exchangeConfig: ExchangeConfig = {
-      id: exchange,
+      id: instanceId,
       name: exchange.charAt(0).toUpperCase() + exchange.slice(1),
       apiKey,
       apiSecret,
@@ -74,7 +130,7 @@ router.post('/', authenticate, [
       enableRateLimit: true
     };
 
-    // 测试连接
+    // 测试连接并添加交易所实例
     const connectionSuccess = await exchangeService.addExchange(exchangeConfig);
     if (!connectionSuccess) {
       return res.status(400).json({
@@ -90,10 +146,12 @@ router.post('/', authenticate, [
         name,
         exchange,
         type,
+        accountId: instanceId, // 存储交易所实例ID
         apiKey,
         apiSecret,
         passphrase,
         testnet,
+        balance: 0, // 初始余额为0，后续同步时会更新
         syncStatus: 'connected'
       }
     });

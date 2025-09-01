@@ -560,10 +560,10 @@ export class RiskManagementService extends EventEmitter {
     return await prisma.trade.findMany({
       where: {
         accountId,
-        createdAt: { gte: thirtyDaysAgo },
+        timestamp: { gte: thirtyDaysAgo },
         status: 'completed'
       },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { timestamp: 'desc' }
     })
   }
 
@@ -697,7 +697,7 @@ export class RiskManagementService extends EventEmitter {
   private async monitorAllAccounts(): Promise<void> {
     try {
       const accounts = await prisma.account.findMany({
-        where: { status: 'active' }
+        where: { isActive: true }
       })
 
       for (const account of accounts) {

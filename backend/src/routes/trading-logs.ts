@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { body, query, param, validationResult } from 'express-validator'
 import { authenticate } from '../middleware/auth'
-import { prisma } from '../lib/prisma'
+import prisma from '../config/database'
 
 const router = Router()
 

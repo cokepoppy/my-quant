@@ -1,6 +1,7 @@
 import { BaseExchange } from './base/BaseExchange';
 import { BinanceAdapter } from './adapters/BinanceAdapter';
 import { OKXAdapter } from './adapters/OKXAdapter';
+import { BybitAdapter } from './adapters/BybitAdapter';
 import {
   ExchangeConfig,
   Market,
@@ -101,6 +102,24 @@ export class ExchangeService {
       return connected;
     } catch (error) {
       console.error(`Failed to connect to exchange ${exchangeId}:`, error);
+      return false;
+    }
+  }
+
+  async testConnection(config: ExchangeConfig): Promise<boolean> {
+    try {
+      // 创建临时适配器实例
+      const adapter = this.createAdapter(config);
+      
+      // 测试连接
+      const connected = await adapter.testConnection();
+      
+      // 清理临时连接
+      await adapter.disconnect();
+      
+      return connected;
+    } catch (error) {
+      console.error(`Failed to test connection for ${config.name}:`, error);
       return false;
     }
   }
@@ -353,13 +372,18 @@ export class ExchangeService {
 
   // 私有方法
   private createAdapter(config: ExchangeConfig): BaseExchange {
-    switch (config.id) {
+    // 从实例ID中提取基础交易所类型
+    const exchangeType = config.id.split('_')[0];
+    
+    switch (exchangeType) {
       case 'binance':
         return new BinanceAdapter(config);
       case 'okx':
         return new OKXAdapter(config);
+      case 'bybit':
+        return new BybitAdapter(config);
       default:
-        throw new Error(`Unsupported exchange: ${config.id}`);
+        throw new Error(`Unsupported exchange: ${exchangeType}`);
     }
   }
 

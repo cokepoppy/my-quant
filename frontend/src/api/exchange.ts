@@ -12,6 +12,7 @@ export const exchangeApi = {
   connectAccount: (id: string) => api.post(`/exchange/${id}/connect`),
   disconnectAccount: (id: string) => api.post(`/exchange/${id}/disconnect`),
   testConnection: (id: string) => api.post(`/exchange/${id}/test`),
+  testConnectionConfig: (config: any) => api.post('/exchange/test', config),
   
   // 数据同步
   syncAccount: (id: string) => api.post(`/exchange/${id}/sync`),

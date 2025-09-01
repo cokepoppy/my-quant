@@ -30,6 +30,7 @@ model User {
   apiKeys       ApiKey[]
   dataImports   DataImport[]
   strategyLogs  StrategyLog[]
+  tradingLogs   TradingLog[]
   
   @@map("users")
 }
@@ -121,6 +122,8 @@ model Trade {
   strategy      Strategy  @relation(fields: [strategyId], references: [id], onDelete: Cascade)
   user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   backtest      Backtest? @relation(fields: [backtestId], references: [id], onDelete: Cascade)
+  account       Account?  @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  accountId     String?   // 添加 accountId 字段以支持与 Account 的关系
   
   @@map("trades")
 }
@@ -168,6 +171,8 @@ model Account {
   orders        Order[]
   balances      Balance[]
   trades        Trade[]
+  tradingLogs   TradingLog[]
+  riskAssessments RiskAssessment[]
   
   @@map("accounts")
 }
@@ -281,6 +286,9 @@ model RiskRule {
   priority      Int      @default(1) // 1-10, 1为最高优先级
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  
+  // Relations
+  riskAssessments RiskAssessment[]
   
   @@map("risk_rules")
 }
