@@ -324,7 +324,7 @@ const { chromium } = require('playwright');
         
         for (const selector of apiKeySelectors) {
             try {
-                await page.fill(selector, 'AOhvPLn0ql4CodaS2g');
+                await page.fill(selector, process.env.TEST_API_KEY || 'test_api_key_placeholder');
                 apiKeyFilled = true;
                 console.log('✅ API Key填写完成');
                 break;
@@ -347,7 +347,7 @@ const { chromium } = require('playwright');
         
         for (const selector of apiSecretSelectors) {
             try {
-                await page.fill(selector, 'hpe1oGrwqmP70x1QPChck6i04nTd1SGpOYEZ');
+                await page.fill(selector, process.env.TEST_API_SECRET || 'test_api_secret_placeholder');
                 apiSecretFilled = true;
                 console.log('✅ API Secret填写完成');
                 break;
@@ -485,8 +485,8 @@ const { chromium } = require('playwright');
             },
             testData: {
                 account: 'test@gmail.com',
-                apiKey: 'AOhvPLn0ql4CodaS2g',
-                apiSecret: 'hpe1oGrwqmP70x1QPChck6i04nTd1SGpOYEZ'
+                apiKey: process.env.TEST_API_KEY || 'test_api_key_placeholder',
+                apiSecret: process.env.TEST_API_SECRET || 'test_api_secret_placeholder'
             },
             finalResult: finalResult
         };
