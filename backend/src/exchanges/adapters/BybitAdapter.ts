@@ -14,7 +14,10 @@ export class BybitAdapter extends BaseExchange {
     console.log('BybitAdapter: Environment proxy http_proxy:', process.env.http_proxy);
     console.log('BybitAdapter: Environment proxy https_proxy:', process.env.https_proxy);
     
-    this.exchange = new ccxt.bybit({
+    // Get proxy URL from environment variables
+    const proxyUrl = process.env.http_proxy || process.env.https_proxy;
+    
+    const exchangeConfig: any = {
       apiKey: config.apiKey,
       secret: config.apiSecret,
       testnet: config.testnet,
@@ -23,22 +26,37 @@ export class BybitAdapter extends BaseExchange {
       options: {
         defaultType: 'spot' // 可以根据需要改为 'linear', 'inverse' 等
       }
-    });
+    };
     
-    // Note: CCXT will automatically use environment variables (http_proxy, https_proxy) if set
-    // Don't manually set proxy as it can cause URL concatenation issues
+    // Configure proxy for CCXT
+    if (proxyUrl) {
+      console.log('BybitAdapter: Configuring proxy:', proxyUrl);
+      exchangeConfig.proxy = proxyUrl;
+      
+      // Also set agent option for better proxy support
+      if (proxyUrl.startsWith('http://') || proxyUrl.startsWith('https://')) {
+        const HttpsProxyAgent = require('https-proxy-agent');
+        exchangeConfig.agent = new HttpsProxyAgent(proxyUrl);
+      }
+    }
+    
+    this.exchange = new ccxt.bybit(exchangeConfig);
   }
 
   async testConnection(): Promise<boolean> {
     try {
-      // 使用环境变量中的代理设置（如果存在）
+      console.log('🔗 Testing Bybit connection...');
+      
+      // First test: Basic API connectivity with axios
       const proxyUrl = process.env.http_proxy || process.env.https_proxy;
+      const baseUrl = this.exchange.testnet ? 'https://api-testnet.bybit.com' : 'https://api.bybit.com';
+      
+      console.log(`🔗 Testing basic connectivity to: ${baseUrl}/v5/market/time`);
       
       let axiosInstance;
       if (proxyUrl) {
         console.log('🔗 Using proxy:', proxyUrl);
         const proxyAgent = new HttpsProxyAgent(proxyUrl);
-        
         axiosInstance = axios.create({
           httpsAgent: proxyAgent,
           timeout: 15000
@@ -51,37 +69,52 @@ export class BybitAdapter extends BaseExchange {
         });
       }
       
-      // 获取基础URL
-      const baseUrl = this.exchange.testnet ? 'https://api-testnet.bybit.com' : 'https://api.bybit.com';
-      
-      // 使用axios测试连接，避免CCXT的代理问题
+      // Test basic connectivity
       const response = await axiosInstance.get(`${baseUrl}/v5/market/time`, {
         headers: {
           'Content-Type': 'application/json'
         }
       });
       
-      if (response.data.retCode === 0) {
-        console.log('✅ Server time test passed');
-        console.log(`   Server time: ${new Date(response.data.result.timeSecond * 1000).toISOString()}`);
+      if (response.data.retCode !== 0) {
+        console.error('❌ Basic API test failed:', response.data.retMsg);
+        return false;
+      }
+      
+      console.log('✅ Basic connectivity test passed');
+      console.log(`   Server time: ${new Date(response.data.result.timeSecond * 1000).toISOString()}`);
+      
+      // Second test: CCXT connectivity
+      try {
+        console.log('🔗 Testing CCXT connectivity...');
+        await this.exchange.fetchTime();
+        console.log('✅ CCXT connection test passed');
         
-        // 简单的API测试，不使用CCXT的fetchBalance
-        try {
-          const balanceResponse = await this.exchange.fetchTime();
-          console.log('✅ CCXT connection test passed');
-        } catch (ccxtError) {
-          console.log('⚠️  CCXT connection failed, but basic API works');
-          console.log('   CCXT Error:', ccxtError.message);
+        // Third test: Account access (if credentials are provided)
+        if (this.exchange.apiKey && this.exchange.secret) {
+          try {
+            console.log('🔗 Testing account access...');
+            await this.exchange.fetchBalance();
+            console.log('✅ Account access test passed');
+          } catch (balanceError) {
+            console.log('⚠️  Account access failed, but basic connectivity works');
+            console.log('   Balance Error:', balanceError.message);
+            // Don't fail the connection test for balance issues
+          }
         }
         
         return true;
-      } else {
-        console.error('❌ Server time test failed');
-        console.error('   Error:', response.data.retMsg);
+      } catch (ccxtError) {
+        console.error('❌ CCXT connection test failed:', ccxtError.message);
+        console.log('   This suggests a CCXT configuration issue');
         return false;
       }
     } catch (error) {
-      console.error('Bybit connection test failed:', error);
+      console.error('❌ Bybit connection test failed:', error.message);
+      if (error.response) {
+        console.error('   Status:', error.response.status);
+        console.error('   Data:', error.response.data);
+      }
       return false;
     }
   }
