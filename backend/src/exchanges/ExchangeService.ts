@@ -436,6 +436,53 @@ export class ExchangeService {
     });
   }
 
+  // 从数据库重新加载交易所实例
+  async loadExchangesFromDatabase(): Promise<void> {
+    try {
+      const { PrismaClient } = require('@prisma/client');
+      const prisma = new PrismaClient();
+      
+      // 获取所有账户
+      const accounts = await prisma.account.findMany({
+        where: { syncStatus: 'connected' }
+      });
+      
+      console.log(`Loading ${accounts.length} exchanges from database...`);
+      
+      for (const account of accounts) {
+        try {
+          const exchangeConfig: ExchangeConfig = {
+            id: account.accountId,
+            name: account.exchange.charAt(0).toUpperCase() + account.exchange.slice(1),
+            apiKey: account.apiKey,
+            apiSecret: account.apiSecret,
+            passphrase: account.passphrase || undefined,
+            testnet: account.testnet,
+            enableRateLimit: true
+          };
+          
+          // 测试连接并添加交易所实例
+          const connected = await this.createAdapter(exchangeConfig).testConnection();
+          if (connected) {
+            const adapter = this.createAdapter(exchangeConfig);
+            this.exchanges.set(account.accountId, adapter);
+            this.setupExchangeEventHandlers(adapter);
+            console.log(`✅ Loaded exchange: ${account.name} (${account.accountId})`);
+          } else {
+            console.log(`⚠️  Failed to connect to exchange: ${account.name}`);
+          }
+        } catch (error) {
+          console.error(`Failed to load exchange ${account.name}:`, error);
+        }
+      }
+      
+      await prisma.$disconnect();
+      console.log(`✅ Loaded ${this.exchanges.size} exchanges from database`);
+    } catch (error) {
+      console.error('Failed to load exchanges from database:', error);
+    }
+  }
+
   // 清理资源
   async cleanup(): Promise<void> {
     // 停止所有同步

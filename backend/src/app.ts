@@ -27,6 +27,7 @@ import systemRoutes from './routes/system';
 import dataTestRoutes from './routes/data-simple'
 import tradingLogsRoutes from './routes/trading-logs';
 import multiExchangeRoutes from './routes/multi-exchange';
+import { exchangeService } from './exchanges/ExchangeService';
 
 // Load environment variables
 dotenv.config();
@@ -117,10 +118,15 @@ server.on('listening', () => {
 
 // Start server
 const PORT = config.PORT;
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/health`);
   console.log(`🔧 Environment: ${config.NODE_ENV}`);
+  
+  // Load exchanges from database on startup
+  exchangeService.loadExchangesFromDatabase().catch(error => {
+    console.error('Failed to load exchanges on startup:', error);
+  });
 });
 
 // Graceful shutdown

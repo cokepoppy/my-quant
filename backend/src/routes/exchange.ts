@@ -10,6 +10,24 @@ const prisma = new PrismaClient();
 
 console.log('Exchange management routes loaded');
 
+// 重新加载交易所实例
+router.post('/reload', authenticate, async (req: AuthRequest, res) => {
+  try {
+    await exchangeService.loadExchangesFromDatabase();
+    res.json({
+      success: true,
+      message: 'Exchanges reloaded successfully'
+    });
+  } catch (error) {
+    console.error('Error reloading exchanges:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to reload exchanges',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
 // 测试连接配置
 router.post('/test', [
   body('exchange').isIn(['binance', 'okx', 'bybit']).withMessage('Invalid exchange'),
@@ -514,7 +532,7 @@ router.get('/:id/balance', authenticate, async (req: AuthRequest, res) => {
     }
 
     // 获取余额数据
-    const balances = await exchangeService.getBalance(account.exchange);
+    const balances = await exchangeService.getBalance(account.accountId);
 
     // 更新数据库中的余额数据
     await prisma.balance.deleteMany({
@@ -567,7 +585,7 @@ router.get('/:id/positions', authenticate, async (req: AuthRequest, res) => {
     }
 
     // 获取持仓数据
-    const positions = await exchangeService.getPositions(account.exchange);
+    const positions = await exchangeService.getPositions(account.accountId);
 
     // 更新数据库中的持仓数据
     await prisma.position.deleteMany({

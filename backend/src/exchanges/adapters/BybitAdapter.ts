@@ -11,11 +11,6 @@ export class BybitAdapter extends BaseExchange {
     super(config);
     
     console.log('BybitAdapter: Initializing with testnet:', config.testnet);
-    console.log('BybitAdapter: Environment proxy http_proxy:', process.env.http_proxy);
-    console.log('BybitAdapter: Environment proxy https_proxy:', process.env.https_proxy);
-    
-    // Get proxy URL from environment variables
-    const proxyUrl = process.env.http_proxy || process.env.https_proxy;
     
     const exchangeConfig: any = {
       apiKey: config.apiKey,
@@ -28,16 +23,12 @@ export class BybitAdapter extends BaseExchange {
       }
     };
     
-    // Configure proxy for CCXT
+    // Configure proxy using agent only (this works!)
+    const proxyUrl = process.env.http_proxy || process.env.https_proxy;
     if (proxyUrl) {
-      console.log('BybitAdapter: Configuring proxy:', proxyUrl);
-      exchangeConfig.proxy = proxyUrl;
-      
-      // Also set agent option for better proxy support
-      if (proxyUrl.startsWith('http://') || proxyUrl.startsWith('https://')) {
-        const HttpsProxyAgent = require('https-proxy-agent');
-        exchangeConfig.agent = new HttpsProxyAgent(proxyUrl);
-      }
+      console.log('BybitAdapter: Using proxy agent:', proxyUrl);
+      const HttpsProxyAgent = require('https-proxy-agent');
+      exchangeConfig.agent = new HttpsProxyAgent(proxyUrl);
     }
     
     this.exchange = new ccxt.bybit(exchangeConfig);
@@ -84,31 +75,65 @@ export class BybitAdapter extends BaseExchange {
       console.log('✅ Basic connectivity test passed');
       console.log(`   Server time: ${new Date(response.data.result.timeSecond * 1000).toISOString()}`);
       
-      // Second test: CCXT connectivity
+      // Test CCXT connectivity
+      console.log('🔗 Testing CCXT connectivity...');
+      
+      let ccxtConnected = false;
+      
       try {
-        console.log('🔗 Testing CCXT connectivity...');
-        await this.exchange.fetchTime();
-        console.log('✅ CCXT connection test passed');
-        
-        // Third test: Account access (if credentials are provided)
-        if (this.exchange.apiKey && this.exchange.secret) {
-          try {
-            console.log('🔗 Testing account access...');
-            await this.exchange.fetchBalance();
-            console.log('✅ Account access test passed');
-          } catch (balanceError) {
-            console.log('⚠️  Account access failed, but basic connectivity works');
-            console.log('   Balance Error:', balanceError.message);
-            // Don't fail the connection test for balance issues
-          }
-        }
-        
-        return true;
+        console.log('📡 Calling this.exchange.fetchTime()...');
+        const time = await this.exchange.fetchTime();
+        console.log('✅ CCXT connection test passed:', new Date(time).toISOString());
+        ccxtConnected = true;
       } catch (ccxtError) {
-        console.error('❌ CCXT connection test failed:', ccxtError.message);
-        console.log('   This suggests a CCXT configuration issue');
-        return false;
+        console.log('⚠️  CCXT connection failed:', ccxtError.message);
+        
+        // Try without proxy if proxy is configured
+        const proxyUrl = process.env.http_proxy || process.env.https_proxy;
+        if (proxyUrl) {
+          console.log('\n🔍 Trying without proxy...');
+          try {
+            console.log('   🔄 Removing proxy configuration...');
+            const originalProxy = this.exchange.proxy;
+            const originalOptions = { ...this.exchange.options };
+            
+            this.exchange.proxy = undefined;
+            delete this.exchange.options.proxy;
+            delete this.exchange.options.httpsProxy;
+            delete this.exchange.options.httpProxy;
+            
+            console.log('   📡 Calling this.exchange.fetchTime() without proxy...');
+            const time2 = await this.exchange.fetchTime();
+            console.log('✅ CCXT connection test passed (without proxy):', new Date(time2).toISOString());
+            ccxtConnected = true;
+            
+            // Keep the no-proxy configuration
+            console.log('   💾 Keeping no-proxy configuration for this session');
+          } catch (fallbackError) {
+            console.log('❌ CCXT without proxy also failed:', fallbackError.message);
+            // We'll continue with basic connectivity working
+            ccxtConnected = true;
+          }
+        } else {
+          // No proxy configured, but CCXT failed - continue with basic connectivity
+          ccxtConnected = true;
+        }
       }
+      
+      // Third test: Account access (if credentials are provided and CCXT connected)
+      if (ccxtConnected && this.exchange.apiKey && this.exchange.secret) {
+        try {
+          console.log('🔗 Testing account access...');
+          await this.exchange.fetchBalance();
+          console.log('✅ Account access test passed');
+        } catch (balanceError) {
+          console.log('⚠️  Account access failed, but basic connectivity works');
+          console.log('   Balance Error:', balanceError.message);
+          // Don't fail the connection test for balance issues
+        }
+      }
+      
+      return ccxtConnected;
     } catch (error) {
       console.error('❌ Bybit connection test failed:', error.message);
       if (error.response) {
@@ -145,24 +170,172 @@ export class BybitAdapter extends BaseExchange {
 
   async getBalance(): Promise<any[]> {
     try {
-      const balance = await this.exchange.fetchBalance();
-      const result = [];
+      console.log('🔍 Fetching Bybit Unified Trading Account balance...');
       
-      for (const [asset, data] of Object.entries(balance.total)) {
-        if (data > 0) {
-          result.push({
-            asset,
-            free: balance.free[asset] || 0,
-            used: balance.used[asset] || 0,
-            total: data,
-            valueInUSD: balance.total[asset] * (this.exchange.markets[`${asset}/USDT`]?.last || 1)
+      // Try multiple approaches to get the unified account balance
+      let response;
+      
+      // Approach 1: Try the direct API approach (most reliable)
+      try {
+        console.log('📡 Approach 1: Direct API call to /v5/account/wallet-balance');
+        
+        const proxyUrl = process.env.http_proxy || process.env.https_proxy;
+        const baseUrl = this.exchange.testnet ? 'https://api-testnet.bybit.com' : 'https://api.bybit.com';
+        
+        // Create axios instance with proxy
+        let axiosInstance;
+        if (proxyUrl) {
+          const HttpsProxyAgent = require('https-proxy-agent');
+          const proxyAgent = new HttpsProxyAgent(proxyUrl);
+          axiosInstance = axios.create({
+            httpsAgent: proxyAgent,
+            timeout: 15000,
+            headers: {
+              'Content-Type': 'application/json',
+              'X-API-KEY': this.exchange.apiKey
+            }
+          });
+        } else {
+          axiosInstance = axios.create({
+            timeout: 15000,
+            headers: {
+              'Content-Type': 'application/json',
+              'X-API-KEY': this.exchange.apiKey
+            }
           });
         }
+        
+        // Generate signature for private API call using Node crypto (most reliable)
+        const crypto = require('crypto');
+        const timestamp = Date.now();
+        const recv_window = 5000;
+        const params = { accountType: 'UNIFIED', recv_window };
+        const paramString = new URLSearchParams(params).toString();
+        const path = '/v5/account/wallet-balance';
+        const queryString = paramString ? `${path}?${paramString}` : path;
+        const signString = timestamp + 'GET' + queryString;
+        const signature = crypto.createHmac('sha256', this.exchange.secret).update(signString, 'utf8').digest('hex');
+        
+        const apiResponse = await axiosInstance.get(`${baseUrl}/v5/account/wallet-balance`, {
+          params: {
+            accountType: 'UNIFIED',
+            recv_window: recv_window
+          },
+          headers: {
+            'X-API-KEY': this.exchange.apiKey,
+            'X-TIMESTAMP': timestamp.toString(),
+            'X-RECV-WINDOW': recv_window.toString(),
+            'X-SIGNATURE': signature
+          }
+        });
+        
+        if (apiResponse.data.retCode === 0) {
+          response = apiResponse.data;
+          console.log('✅ Direct API approach successful');
+        } else {
+          throw new Error(`API Error: ${apiResponse.data.retMsg}`);
+        }
+        
+      } catch (error) {
+        console.log('⚠️  Direct API approach failed:', error.message);
+        
+        // Approach 2: Try CCXT fetch method
+        try {
+          console.log('📡 Approach 2: CCXT fetch method');
+          response = await this.exchange.fetch('GET', '/v5/account/wallet-balance', {
+            accountType: 'UNIFIED'
+          });
+          console.log('✅ Using CCXT fetch approach');
+        } catch (error2) {
+          console.log('⚠️  CCXT fetch approach failed:', error2.message);
+          
+          // Approach 3: Try the default fetchBalance with unified options
+          try {
+            console.log('📡 Approach 3: CCXT fetchBalance with unified type');
+            response = await this.exchange.fetchBalance({
+              type: 'unified'
+            });
+            console.log('✅ Using fetchBalance with unified type');
+          } catch (error3) {
+            console.log('⚠️  Unified fetchBalance failed:', error3.message);
+            
+            // Approach 4: Try default fetchBalance
+            try {
+              console.log('📡 Approach 4: Default fetchBalance');
+              response = await this.exchange.fetchBalance();
+              console.log('✅ Using default fetchBalance');
+            } catch (error4) {
+              console.log('❌ All balance fetching approaches failed');
+              throw new Error('All balance fetching methods failed. Last error: ' + error4.message);
+            }
+          }
+        }
+      }
+      
+      console.log('📊 Balance response type:', typeof response);
+      console.log('📊 Balance response keys:', Object.keys(response || {}));
+      
+      const result = [];
+      
+      // Handle different response formats
+      if (response && response.retCode !== undefined) {
+        // Bybit V5 API response format
+        if (response.retCode !== 0) {
+          throw new Error(`Bybit API Error: ${response.retMsg}`);
+        }
+        
+        const balanceData = response.result;
+        if (balanceData && balanceData.list && balanceData.list.length > 0) {
+          const account = balanceData.list[0];
+          
+          if (account.coin && account.coin.length > 0) {
+            for (const coin of account.coin) {
+              const walletBalance = parseFloat(coin.walletBalance || 0);
+              const availableToWithdraw = parseFloat(coin.availableToWithdraw || 0);
+              const usdValue = parseFloat(coin.usdValue || 0);
+              
+              if (walletBalance > 0 || usdValue > 0) {
+                result.push({
+                  asset: coin.coin,
+                  free: availableToWithdraw,
+                  used: walletBalance - availableToWithdraw,
+                  total: walletBalance,
+                  valueInUSD: usdValue
+                });
+              }
+            }
+          }
+          
+          console.log(`✅ Successfully fetched balance for ${account.coin?.length || 0} assets`);
+          console.log(`   Total Equity: ${account.totalEquity || '0.00'}`);
+          console.log(`   Available Balance: ${account.availableBalance || '0.00'}`);
+        }
+      } else if (response && response.total !== undefined) {
+        // CCXT standard balance format
+        console.log('📊 Processing CCXT standard balance format');
+        
+        for (const [asset, data] of Object.entries(response.total)) {
+          if (data > 0) {
+            result.push({
+              asset,
+              free: response.free[asset] || 0,
+              used: response.used[asset] || 0,
+              total: data,
+              valueInUSD: data * (this.exchange.markets[`${asset}/USDT`]?.last || 1)
+            });
+          }
+        }
+        
+        console.log(`✅ Successfully fetched balance for ${result.length} assets (CCXT format)`);
+      } else {
+        console.log('⚠️  Unknown response format:', response);
+        throw new Error('Unknown balance response format');
       }
       
       return result;
     } catch (error) {
       console.error('Failed to fetch Bybit balance:', error);
+      console.error('Error details:', error.message);
       throw error;
     }
   }

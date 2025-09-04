@@ -880,8 +880,42 @@ const handleDialogClose = () => {
 // 刷新账户数据
 const refreshAccountData = async () => {
   try {
-    ElMessage.success('账户数据已刷新')
+    if (!currentExchange.value.id) {
+      ElMessage.warning('请先选择交易所')
+      return
+    }
+    
+    // 调用余额API
+    const response = await exchangeApi.getBalance(currentExchange.value.id)
+    
+    if (response.success && response.data) {
+      // 更新当前交易所的余额信息
+      const currentExchangeIndex = exchanges.value.findIndex(ex => ex.id === activeExchange.value)
+      if (currentExchangeIndex !== -1) {
+        const exchange = exchanges.value[currentExchangeIndex]
+        
+        // 计算总资产和可用余额
+        const totalAssets = response.data.reduce((sum, balance) => sum + (balance.valueInUSD || 0), 0)
+        const availableBalance = response.data.reduce((sum, balance) => sum + (balance.free || 0), 0)
+        
+        // 更新交易所数据
+        exchange.totalAssets = totalAssets
+        exchange.availableBalance = availableBalance
+        exchange.balances = response.data
+        
+        console.log('✅ 余额刷新成功:', {
+          totalAssets,
+          availableBalance,
+          balances: response.data
+        })
+      }
+      
+      ElMessage.success('账户余额已刷新')
+    } else {
+      throw new Error(response.message || '获取余额失败')
+    }
   } catch (error) {
+    console.error('刷新账户数据失败:', error)
     ElMessage.error('刷新失败: ' + error.message)
   }
 }
