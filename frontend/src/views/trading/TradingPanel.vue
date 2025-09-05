@@ -450,7 +450,7 @@ import {
   Download
 } from '@element-plus/icons-vue'
 import { exchangeApi } from '@/api/exchange'
-import { placeOrder } from '@/api/trading'
+import { placeOrder, getOrders, getPositions } from '@/api/trading'
 
 interface ExchangeBalance {
   asset: string
@@ -955,11 +955,35 @@ const refreshPositions = async () => {
       return
     }
     
-    // 这里可以调用获取持仓的API
-    // const response = await getPositions(currentExchange.value.id)
-    ElMessage.success('持仓数据已刷新')
+    console.log('🔄 刷新持仓数据...')
+    const response = await getPositions(currentExchange.value.id)
+    console.log('📊 持仓响应:', response)
+    
+    if (response.success && response.data) {
+      // 更新当前交易所的持仓列表
+      const currentExchangeIndex = exchanges.value.findIndex(ex => ex.id === activeExchange.value)
+      if (currentExchangeIndex !== -1) {
+        // 转换持仓数据格式
+        const formattedPositions = response.data.map((position: any) => ({
+          symbol: position.symbol,
+          side: position.side === 'long' ? 'long' : 'short',
+          amount: position.quantity,
+          avgPrice: position.price,
+          currentPrice: position.currentPrice || position.price,
+          pnl: position.pnl || 0,
+          pnlPercent: position.pnlPercent || 0
+        }))
+        
+        exchanges.value[currentExchangeIndex].positions = formattedPositions
+        console.log('✅ 持仓数据更新成功:', formattedPositions)
+      }
+      ElMessage.success('持仓数据已刷新')
+    } else {
+      throw new Error(response.message || '获取持仓失败')
+    }
   } catch (error) {
-    ElMessage.error('刷新持仓失败')
+    console.error('刷新持仓失败:', error)
+    ElMessage.error('刷新持仓失败: ' + error.message)
   }
 }
 
@@ -970,11 +994,38 @@ const refreshOrders = async () => {
       return
     }
     
-    // 这里可以调用获取订单的API
-    // const response = await getOrders({ accountId: currentExchange.value.id })
-    ElMessage.success('订单数据已刷新')
+    console.log('🔄 刷新订单数据...')
+    const response = await getOrders({ accountId: currentExchange.value.id })
+    console.log('📊 订单响应:', response)
+    
+    if (response.success && response.data) {
+      // 更新当前交易所的订单列表
+      const currentExchangeIndex = exchanges.value.findIndex(ex => ex.id === activeExchange.value)
+      if (currentExchangeIndex !== -1) {
+        // 转换订单数据格式
+        const formattedOrders = response.data.orders.map((order: any) => ({
+          id: order.id,
+          symbol: order.symbol,
+          type: order.type === 'buy' ? 'buy' : 'sell',
+          orderType: order.orderType || 'limit',
+          amount: order.quantity,
+          price: order.price,
+          status: order.status === 'executed' ? '已成交' : 
+                 order.status === 'pending' ? '待成交' : 
+                 order.status === 'failed' ? '失败' : order.status,
+          createdAt: new Date(order.timestamp || order.createdAt)
+        }))
+        
+        exchanges.value[currentExchangeIndex].orders = formattedOrders
+        console.log('✅ 订单数据更新成功:', formattedOrders)
+      }
+      ElMessage.success('订单数据已刷新')
+    } else {
+      throw new Error(response.message || '获取订单失败')
+    }
   } catch (error) {
-    ElMessage.error('刷新订单失败')
+    console.error('刷新订单失败:', error)
+    ElMessage.error('刷新订单失败: ' + error.message)
   }
 }
 
@@ -1060,9 +1111,10 @@ const submitOrder = async () => {
     ElMessage.success(`${currentExchange.value.name} ${tradingForm.type === 'buy' ? '买入' : '卖出'}订单已提交`)
     resetForm()
     
-    // 自动刷新订单列表
+    // 自动刷新订单列表和持仓数据
     setTimeout(() => {
       refreshOrders()
+      refreshPositions()
     }, 1000)
     
   } catch (error: any) {
