@@ -65,6 +65,76 @@ app.get('/debug', (req, res) => {
   });
 });
 
+// Bybit API debug endpoint
+app.get('/debug-bybit', async (req, res) => {
+  try {
+    console.log('🧪 Bybit API Debug endpoint called');
+    
+    // Test with the first available exchange
+    const exchanges = exchangeService.getAllExchangeStatuses();
+    const exchangeIds = Object.keys(exchanges);
+    
+    if (exchangeIds.length === 0) {
+      return res.json({
+        success: false,
+        message: 'No exchanges available'
+      });
+    }
+    
+    const exchangeId = exchangeIds[0];
+    console.log(`🔍 Testing with exchange: ${exchangeId}`);
+    
+    // Test getTicker
+    console.log('📈 Testing getTicker...');
+    try {
+      const ticker = await exchangeService.getTicker(exchangeId, 'BTC/USDT');
+      console.log('✅ getTicker success:', ticker);
+    } catch (error) {
+      console.log('❌ getTicker failed:', error.message);
+    }
+    
+    // Test getBalance
+    console.log('💰 Testing getBalance...');
+    try {
+      const balance = await exchangeService.getBalance(exchangeId);
+      console.log('✅ getBalance success:', balance);
+    } catch (error) {
+      console.log('❌ getBalance failed:', error.message);
+    }
+    
+    // Test getPositions
+    console.log('📊 Testing getPositions...');
+    try {
+      const positions = await exchangeService.getPositions(exchangeId);
+      console.log('✅ getPositions success:', positions);
+    } catch (error) {
+      console.log('❌ getPositions failed:', error.message);
+    }
+    
+    // Test getOrders
+    console.log('📋 Testing getOrders...');
+    try {
+      const orders = await exchangeService.getOrders(exchangeId);
+      console.log('✅ getOrders success:', orders);
+    } catch (error) {
+      console.log('❌ getOrders failed:', error.message);
+    }
+    
+    res.json({
+      success: true,
+      message: 'Bybit API debug test completed',
+      exchangeId: exchangeId
+    });
+    
+  } catch (error) {
+    console.error('❌ Debug endpoint failed:', error);
+    res.json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
 // API Routes
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);

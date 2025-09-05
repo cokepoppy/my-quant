@@ -188,10 +188,23 @@ router.get('/positions', authenticate, async (req: AuthRequest, res) => {
     // Get current market prices for PnL calculation
     for (const position of positions) {
       try {
-        // For now, use the last trade price as current price
-        // In real implementation, this would fetch from exchange API
-        const marketData = await exchangeService.getTicker(position.accountId, position.symbol.replace('/', ''));
-        position.currentPrice = marketData.last || position.entryPrice;
+        // Get the account to find the exchange ID
+        const account = await prisma.account.findUnique({
+          where: { id: position.accountId },
+          select: { accountId: true }
+        });
+        
+        if (!account?.accountId) {
+          throw new Error('Account not found or no exchange ID');
+        }
+        
+        console.log(`📈 Fetching market data for ${position.symbol} from exchange ${account.accountId}`);
+        
+        // Fetch real market data from Bybit
+        const marketData = await exchangeService.getTicker(account.accountId, position.symbol.replace('/', ''));
+        position.currentPrice = marketData.last || marketData.bid || marketData.ask || position.entryPrice;
+        
+        console.log(`✅ Got market data for ${position.symbol}: $${position.currentPrice}`);
         
         // Calculate PnL
         if (position.side === 'long') {
@@ -203,8 +216,10 @@ router.get('/positions', authenticate, async (req: AuthRequest, res) => {
         // Calculate PnL percentage
         position.pnlPercentage = (position.pnl / (position.entryPrice * Math.abs(position.quantity))) * 100;
         
+        console.log(`💰 Calculated PnL for ${position.symbol}: $${position.pnl} (${position.pnlPercentage.toFixed(2)}%)`);
+        
       } catch (error) {
-        console.log(`Failed to get market data for ${position.symbol}, using entry price`);
+        console.log(`❌ Failed to get market data for ${position.symbol}, using entry price:`, error.message);
         position.currentPrice = position.entryPrice;
         position.pnl = 0;
         position.pnlPercentage = 0;

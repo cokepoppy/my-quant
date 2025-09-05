@@ -594,7 +594,37 @@ export class BybitAdapter extends BaseExchange {
 
   async getTicker(symbol: string): Promise<any> {
     try {
+      console.log('📈 BybitAdapter: Fetching ticker...');
+      console.log('📤 Request details:');
+      console.log('  - Symbol:', symbol);
+      console.log('  - Exchange ID:', this.config.id);
+      console.log('  - Testnet:', this.config.testnet);
+      
+      const startTime = Date.now();
       const ticker = await this.exchange.fetchTicker(symbol);
+      const endTime = Date.now();
+      
+      console.log('✅ BybitAdapter: Ticker fetched successfully!');
+      console.log('⏱️  fetchTicker duration:', endTime - startTime, 'ms');
+      console.log('📥 Raw CCXT ticker response:');
+      console.log('  - Symbol:', ticker.symbol);
+      console.log('  - Bid:', ticker.bid);
+      console.log('  - Ask:', ticker.ask);
+      console.log('  - Last:', ticker.last);
+      console.log('  - High:', ticker.high);
+      console.log('  - Low:', ticker.low);
+      console.log('  - Volume:', ticker.volume);
+      console.log('  - Timestamp:', ticker.timestamp);
+      console.log('  - Datetime:', ticker.datetime);
+      console.log('  - Change:', ticker.change);
+      console.log('  - Percentage:', ticker.percentage);
+      console.log('  - Average:', ticker.average);
+      console.log('  - Vwap:', ticker.vwap);
+      console.log('  - Open:', ticker.open);
+      console.log('  - Close:', ticker.close);
+      console.log('  - Previous Close:', ticker.previousClose);
+      console.log('  - Full CCXT ticker object:', JSON.stringify(ticker, null, 2));
+      
       return {
         symbol: ticker.symbol,
         bid: ticker.bid,
