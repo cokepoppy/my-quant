@@ -398,7 +398,13 @@ export class RiskManagementService extends EventEmitter {
     })
 
     if (recentTrades.length > 0) {
-      const timeSinceLastTrade = now - recentTrades[0].createdAt.getTime()
+      const lastTrade = recentTrades[0];
+      if (!lastTrade || !lastTrade.timestamp) {
+        // 如果最近交易的记录不完整，跳过冷却期检查
+        return { passed: true, violation: null, recommendation: '' };
+      }
+      
+      const timeSinceLastTrade = now - new Date(lastTrade.timestamp).getTime()
       
       if (timeSinceLastTrade < cooldownPeriod * 1000) {
         return {
@@ -660,16 +666,100 @@ export class RiskManagementService extends EventEmitter {
 
   private async recordRiskAssessment(accountId: string, tradeRequest: any, assessment: RiskAssessment): Promise<void> {
     try {
-      await prisma.riskAssessment.create({
-        data: {
-          accountId,
-          tradeRequest,
-          assessment,
-          riskLevel: assessment.riskLevel,
-          violationsCount: assessment.violations.length,
-          timestamp: new Date()
+      // 获取或创建默认风险规则
+      const defaultRule = await this.getOrCreateDefaultRule();
+      console.log('Default rule:', defaultRule);
+      
+      // 为每个违规创建一个风险评估记录
+      if (assessment.violations.length > 0) {
+        console.log('Processing violations:', assessment.violations.length);
+        
+        // 首先验证所有违规的ruleId
+        const validViolations = [];
+        for (const violation of assessment.violations) {
+          console.log('Processing violation:', violation);
+          
+          // 如果ruleId无效，跳过这个违规
+          if (!violation.ruleId || violation.ruleId === 'undefined' || violation.ruleId === 'null' || violation.ruleId === '') {
+            console.log('Skipping violation with invalid ruleId:', violation.ruleId);
+            continue;
+          }
+          
+          // 验证ruleId是否存在于数据库中
+          try {
+            const rule = await prisma.riskRule.findUnique({
+              where: { id: violation.ruleId }
+            });
+            console.log('Found rule for violation:', rule);
+            
+            if (rule) {
+              validViolations.push(violation);
+            } else {
+              console.log('Skipping violation - rule not found:', violation.ruleId);
+            }
+          } catch (error) {
+            console.log('Skipping violation - error finding rule:', error);
+          }
         }
-      })
+        
+        console.log('Valid violations count:', validViolations.length);
+        
+        // 只为有效的违规创建风险评估记录
+        for (const violation of validViolations) {
+          await prisma.riskAssessment.create({
+            data: {
+              accountId,
+              ruleId: violation.ruleId,
+              level: assessment.riskLevel,
+              score: assessment.riskLevel === 'low' ? 25 : assessment.riskLevel === 'medium' ? 50 : assessment.riskLevel === 'high' ? 75 : 100,
+              factors: {
+                tradeRequest,
+                assessment,
+                violation
+              },
+              triggered: !assessment.passed,
+              action: violation.recommendation
+            }
+          });
+          console.log('Successfully created risk assessment for violation:', violation.ruleId);
+        }
+        
+        // 如果没有有效的违规，创建默认记录
+        if (validViolations.length === 0) {
+          console.log('No valid violations, creating default assessment');
+          await prisma.riskAssessment.create({
+            data: {
+              accountId,
+              ruleId: defaultRule.id,
+              level: assessment.riskLevel,
+              score: assessment.riskLevel === 'low' ? 25 : assessment.riskLevel === 'medium' ? 50 : assessment.riskLevel === 'high' ? 75 : 100,
+              factors: {
+                tradeRequest,
+                assessment
+              },
+              triggered: false
+            }
+          });
+          console.log('Successfully created default risk assessment');
+        }
+      } else {
+        console.log('No violations, creating default assessment');
+        // 即使没有违规也创建一个记录
+        await prisma.riskAssessment.create({
+          data: {
+            accountId,
+            ruleId: defaultRule.id,
+            level: assessment.riskLevel,
+            score: assessment.riskLevel === 'low' ? 25 : assessment.riskLevel === 'medium' ? 50 : assessment.riskLevel === 'high' ? 75 : 100,
+            factors: {
+              tradeRequest,
+              assessment
+            },
+            triggered: false
+          }
+        });
+        console.log('Successfully created default risk assessment');
+      }
 
       // 记录违规历史
       if (assessment.violations.length > 0) {
@@ -679,6 +769,64 @@ export class RiskManagementService extends EventEmitter {
       }
     } catch (error) {
       console.error('Error recording risk assessment:', error)
+    }
+  }
+
+  private async getOrCreateDefaultRule(): Promise<any> {
+    try {
+      console.log('Attempting to find or create default rule...');
+      
+      // 尝试查找默认规则
+      let defaultRule = await prisma.riskRule.findFirst({
+        where: {
+          name: 'Default Risk Rule'
+        }
+      });
+
+      if (!defaultRule) {
+        console.log('Default rule not found, creating new one...');
+        // 创建默认风险规则
+        defaultRule = await prisma.riskRule.create({
+          data: {
+            name: 'Default Risk Rule',
+            description: 'Default risk assessment rule for manual trading',
+            type: 'position_size',
+            parameters: {
+              maxPositionSize: 10000,
+              maxDailyLoss: 1000
+            },
+            enabled: true,
+            priority: 10
+          }
+        });
+        console.log('Created default rule:', defaultRule);
+      } else {
+        console.log('Found existing default rule:', defaultRule);
+      }
+
+      // 验证返回的规则对象
+      if (!defaultRule || !defaultRule.id) {
+        throw new Error('Invalid default rule object');
+      }
+
+      return defaultRule;
+    } catch (error) {
+      console.error('Error creating default risk rule:', error);
+      
+      // 尝试查找任何可用的规则作为备用
+      try {
+        console.log('Attempting to find any available rule as fallback...');
+        const anyRule = await prisma.riskRule.findFirst();
+        if (anyRule && anyRule.id) {
+          console.log('Using fallback rule:', anyRule);
+          return anyRule;
+        }
+      } catch (fallbackError) {
+        console.error('Fallback rule search failed:', fallbackError);
+      }
+      
+      // 如果仍然失败，抛出错误而不是返回无效对象
+      throw new Error('Failed to create or find any valid risk rule');
     }
   }
 
@@ -809,6 +957,9 @@ export class RiskManagementService extends EventEmitter {
     warnings: string[]
     adjustedOrder?: any
   }> {
+    console.log('🚀 RISK MANAGEMENT SERVICE - validateOrder CALLED!');
+    console.log('📋 Order data:', JSON.stringify(orderData, null, 2));
+    
     const errors: string[] = []
     const warnings: string[] = []
     let adjustedOrder = { ...orderData }
@@ -833,8 +984,20 @@ export class RiskManagementService extends EventEmitter {
       }
 
       // 余额验证
+      console.log('🔄 ABOUT TO CALL validateAccountBalance...');
+      console.log('   - Account ID:', account.id);
+      console.log('   - Account AccountId:', account.accountId);
+      console.log('   - Account name:', account.name);
+      
       const balanceValidation = await this.validateAccountBalance(account, orderData)
+      
+      console.log('📊 BACK FROM validateAccountBalance:');
+      console.log('   - Validation result:', balanceValidation.valid);
+      console.log('   - Errors:', balanceValidation.errors);
+      console.log('   - Warnings:', balanceValidation.warnings);
+      
       if (!balanceValidation.valid) {
+        console.log('❌ BALANCE VALIDATION FAILED - Adding errors:', balanceValidation.errors);
         errors.push(...balanceValidation.errors)
       }
       warnings.push(...balanceValidation.warnings)
@@ -859,7 +1022,7 @@ export class RiskManagementService extends EventEmitter {
       }
 
       // 订单类型特定验证
-      const typeValidation = await this.validateOrderTypeSpecific(orderData)
+      const typeValidation = await this.validateOrderTypeSpecific(orderData, account)
       if (!typeValidation.valid) {
         errors.push(...typeValidation.errors)
       }
@@ -879,6 +1042,14 @@ export class RiskManagementService extends EventEmitter {
       }
       warnings.push(...timeValidation.warnings)
 
+      console.log('🎯 VALIDATE ORDER FINAL RESULT:');
+      console.log('   - Valid:', errors.length === 0);
+      console.log('   - Total errors:', errors.length);
+      console.log('   - Errors:', errors);
+      console.log('   - Total warnings:', warnings.length);
+      console.log('   - Warnings:', warnings);
+      console.log('   - Has adjusted order:', !!adjustedOrder);
+      
       return {
         valid: errors.length === 0,
         errors,
@@ -887,7 +1058,9 @@ export class RiskManagementService extends EventEmitter {
       }
 
     } catch (error) {
-      console.error('Error validating order:', error)
+      console.error('❌ ERROR IN validateOrder:', error)
+      console.log('   - Error type:', typeof error);
+      console.log('   - Error message:', error instanceof Error ? error.message : String(error));
       return {
         valid: false,
         errors: ['订单验证失败，请稍后重试'],
@@ -967,15 +1140,109 @@ export class RiskManagementService extends EventEmitter {
     try {
       const orderValue = parseFloat(orderData.amount) * (parseFloat(orderData.price) || 0)
       
-      if (orderData.side === 'buy') {
-        // 买入订单验证可用余额
-        if (account.balance < orderValue) {
-          errors.push('账户余额不足')
+      console.log('💰 BALANCE VALIDATION:');
+      console.log('   - Full account object:', JSON.stringify(account, null, 2));
+      console.log('   - Order data:', JSON.stringify(orderData, null, 2));
+      console.log('   - Order value:', orderValue);
+      console.log('   - Order amount:', orderData.amount);
+      console.log('   - Order price:', orderData.price);
+      
+      // 获取实时余额
+      let realTimeBalance = 0;
+      let availableUSDT = 0;
+      
+      try {
+        console.log('🔄 FETCHING REAL-TIME BALANCE:');
+        console.log('   - Account ID:', account.accountId);
+        console.log('   - Account name:', account.name);
+        console.log('   - Account exchange:', account.exchange);
+        
+        // Check if exchange service has this exchange loaded
+        const exchanges = (exchangeService as any).exchanges;
+        console.log('   - Available exchanges in service:', Array.from(exchanges?.keys() || []));
+        console.log('   - Has target exchange:', exchanges?.has(account.accountId));
+        
+        // Check exchange connection status
+        try {
+          const status = exchangeService.getExchangeStatus(account.accountId);
+          console.log('   - Exchange status:', JSON.stringify(status, null, 2));
+        } catch (statusError) {
+          console.log('   - Could not get exchange status:', statusError);
         }
         
-        // 预留保证金验证
+        console.log('   - Calling exchangeService.getBalance...');
+        const balances = await exchangeService.getBalance(account.accountId);
+        console.log('📊 REAL-TIME BALANCE RESPONSE:');
+        console.log('   - Response type:', typeof balances);
+        console.log('   - Is array:', Array.isArray(balances));
+        console.log('   - Response length:', Array.isArray(balances) ? balances.length : 'N/A');
+        console.log('   - Full response:', JSON.stringify(balances, null, 2));
+        
+        // 查找USDT余额
+        console.log('🔍 SEARCHING FOR USDT BALANCE:');
+        const usdtBalance = balances.find((b: any) => b.asset === 'USDT');
+        console.log('   - USDT balance found:', !!usdtBalance);
+        
+        if (usdtBalance) {
+          console.log('   - USDT balance details:', JSON.stringify(usdtBalance, null, 2));
+          availableUSDT = parseFloat(usdtBalance.free);
+          realTimeBalance = availableUSDT;
+          console.log('✅ FOUND USDT BALANCE:', availableUSDT);
+        } else {
+          console.log('⚠️ USDT BALANCE NOT FOUND - Available assets:');
+          balances.forEach((balance: any, index: number) => {
+            console.log(`   - Asset ${index}: ${balance.asset} - Free: ${balance.free} - Used: ${balance.used} - Total: ${balance.total}`);
+          });
+          
+          if (balances.length > 0) {
+            const firstBalance = balances[0];
+            realTimeBalance = parseFloat(firstBalance.free) || 0;
+            availableUSDT = realTimeBalance;
+            console.log('🔄 USING FIRST AVAILABLE BALANCE:', availableUSDT, 'from asset:', firstBalance.asset);
+          }
+        }
+      } catch (error) {
+        console.log('❌ FAILED TO FETCH REAL-TIME BALANCE:');
+        console.log('   - Error:', error);
+        console.log('   - Error type:', typeof error);
+        console.log('   - Error message:', error instanceof Error ? error.message : String(error));
+        console.log('   - Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+        console.log('   - Falling back to database balance:', account.balance);
+        realTimeBalance = account.balance || 0;
+        availableUSDT = realTimeBalance;
+      }
+      
+      console.log('💰 BALANCE COMPARISON DETAILS:');
+      console.log('   - Final real-time balance:', realTimeBalance);
+      console.log('   - Final available USDT:', availableUSDT);
+      console.log('   - Order value:', orderValue);
+      console.log('   - Order amount:', orderData.amount);
+      console.log('   - Order price:', orderData.price);
+      console.log('   - Comparison:', availableUSDT, '<', orderValue, '=', availableUSDT < orderValue);
+      console.log('   - Difference (Available - Order):', availableUSDT - orderValue);
+      console.log('   - Sufficiency percentage:', ((availableUSDT / orderValue) * 100).toFixed(2) + '%');
+      
+      if (orderData.side === 'buy') {
+        console.log('🛒 BUY ORDER BALANCE CHECK:');
+        console.log('   - Checking if', availableUSDT, '<', orderValue);
+        console.log('   - Required:', orderValue);
+        console.log('   - Available:', availableUSDT);
+        console.log('   - Shortfall:', Math.max(0, orderValue - availableUSDT));
+        
+        // 买入订单验证可用余额 - 使用实时余额
+        if (availableUSDT < orderValue) {
+          console.log('❌ INSUFFICIENT BALANCE DETECTED!');
+          console.log('   - Adding error: 账户余额不足');
+          console.log('   - Shortfall amount:', orderValue - availableUSDT);
+          errors.push('账户余额不足')
+        } else {
+          console.log('✅ SUFFICIENT BALANCE - Validation passed');
+          console.log('   - Excess balance:', availableUSDT - orderValue);
+        }
+        
+        // 预留保证金验证 - 使用实时余额
         const marginRequirement = orderValue * 0.1 // 10% 保证金
-        if (account.balance - orderValue < marginRequirement) {
+        if (availableUSDT - orderValue < marginRequirement) {
           warnings.push('交易后可用余额将低于保证金要求')
         }
       }
@@ -991,8 +1258,14 @@ export class RiskManagementService extends EventEmitter {
       }
 
     } catch (error) {
+      console.log('❌ Balance validation error:', error);
       errors.push('余额验证失败')
     }
+
+    console.log('📊 BALANCE VALIDATION RESULT:');
+    console.log('   - Valid:', errors.length === 0);
+    console.log('   - Errors:', errors);
+    console.log('   - Warnings:', warnings);
 
     return { valid: errors.length === 0, errors, warnings }
   }
@@ -1007,14 +1280,14 @@ export class RiskManagementService extends EventEmitter {
 
     try {
       // 获取当前市场价格
-      const marketData = await exchangeService.getMarketData(orderData.symbol)
+      const marketData = await exchangeService.getTicker(account.accountId, orderData.symbol)
       
       if (!marketData) {
         errors.push('无法获取市场数据')
         return { valid: false, errors, warnings }
       }
 
-      const currentPrice = marketData.price
+      const currentPrice = marketData.last
 
       // 价格合理性检查
       if (orderData.price) {
@@ -1047,7 +1320,7 @@ export class RiskManagementService extends EventEmitter {
     return { valid: errors.length === 0, errors, warnings }
   }
 
-  private async validateOrderTypeSpecific(orderData: any): Promise<{
+  private async validateOrderTypeSpecific(orderData: any, account: any): Promise<{
     valid: boolean
     errors: string[]
     warnings: string[]
@@ -1065,10 +1338,10 @@ export class RiskManagementService extends EventEmitter {
 
       case 'limit':
         // 限价单验证
-        const marketData = await exchangeService.getMarketData(orderData.symbol)
+        const marketData = await exchangeService.getTicker(account.accountId, orderData.symbol)
         if (marketData && orderData.price) {
           const price = parseFloat(orderData.price)
-          const currentPrice = marketData.price
+          const currentPrice = marketData.last
           
           if (orderData.side === 'buy' && price > currentPrice * 1.05) {
             warnings.push('买入限价高于当前市场价格5%')

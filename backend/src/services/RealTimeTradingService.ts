@@ -208,7 +208,7 @@ export class RealTimeTradingService extends EventEmitter {
         prisma.trade.count({
           where: {
             accountId,
-            createdAt: { gte: today }
+            timestamp: { gte: today }
           }
         }),
         this.calculateDailyPnL(accountId),
@@ -369,16 +369,16 @@ export class RealTimeTradingService extends EventEmitter {
           symbol,
           status: 'completed'
         },
-        orderBy: { createdAt: 'desc' }
+        orderBy: { timestamp: 'desc' }
       });
 
-      if (!lastTrade) return false;
+      if (!lastTrade || !lastTrade.timestamp) return false;
 
       const config = this.tradingConfigs.get(accountId);
       if (!config) return false;
 
       const cooldownMs = config.cooldownPeriod * 60 * 1000;
-      const timeSinceLastTrade = Date.now() - lastTrade.createdAt.getTime();
+      const timeSinceLastTrade = Date.now() - new Date(lastTrade.timestamp).getTime();
 
       return timeSinceLastTrade < cooldownMs;
     } catch (error) {
@@ -467,7 +467,7 @@ export class RealTimeTradingService extends EventEmitter {
       const trades = await prisma.trade.findMany({
         where: {
           accountId,
-          createdAt: { gte: today },
+          timestamp: { gte: today },
           status: 'completed'
         }
       });

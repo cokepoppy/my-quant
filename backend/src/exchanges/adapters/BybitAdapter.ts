@@ -19,7 +19,17 @@ export class BybitAdapter extends BaseExchange {
       enableRateLimit: config.enableRateLimit,
       timeout: 30000,
       options: {
-        defaultType: 'spot' // 可以根据需要改为 'linear', 'inverse' 等
+        defaultType: 'spot', // 可以根据需要改为 'linear', 'inverse' 等
+        // 启用详细的CCXT日志
+        verbose: true,
+        // 自定义日志记录器
+        log: (message: string) => {
+          console.log('🔍 CCXT Log:', message);
+        },
+        // 自定义请求日志
+        fetchHeaders: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
       }
     };
     
@@ -469,6 +479,16 @@ export class BybitAdapter extends BaseExchange {
 
   async placeOrder(orderRequest: any): Promise<any> {
     try {
+      console.log('🔧 BybitAdapter: Creating order...');
+      console.log('📤 CCXT createOrder parameters:');
+      console.log('  - Symbol:', orderRequest.symbol);
+      console.log('  - Type:', orderRequest.type);
+      console.log('  - Side:', orderRequest.side);
+      console.log('  - Amount:', orderRequest.amount);
+      console.log('  - Price:', orderRequest.price);
+      console.log('  - Params:', JSON.stringify(orderRequest.params, null, 2));
+      
+      const startTime = Date.now();
       const order = await this.exchange.createOrder(
         orderRequest.symbol,
         orderRequest.type,
@@ -477,6 +497,24 @@ export class BybitAdapter extends BaseExchange {
         orderRequest.price,
         orderRequest.params
       );
+      const endTime = Date.now();
+      
+      console.log('✅ BybitAdapter: Order created successfully!');
+      console.log('⏱️  CCXT createOrder duration:', endTime - startTime, 'ms');
+      console.log('📥 Raw CCXT response:');
+      console.log('  - Order ID:', order.id);
+      console.log('  - Symbol:', order.symbol);
+      console.log('  - Type:', order.type);
+      console.log('  - Side:', order.side);
+      console.log('  - Amount:', order.amount);
+      console.log('  - Price:', order.price);
+      console.log('  - Status:', order.status);
+      console.log('  - Filled:', order.filled);
+      console.log('  - Average:', order.average);
+      console.log('  - Fee:', order.fee);
+      console.log('  - Datetime:', order.datetime);
+      console.log('  - Last Trade Timestamp:', order.lastTradeTimestamp);
+      console.log('  - Full CCXT order object:', JSON.stringify(order, null, 2));
       
       return {
         exchangeId: order.id,
@@ -496,7 +534,20 @@ export class BybitAdapter extends BaseExchange {
         metadata: order
       };
     } catch (error) {
-      console.error('Failed to place Bybit order:', error);
+      console.error('❌ BybitAdapter: Failed to place order!');
+      console.error('📊 Error details:');
+      console.error('  - Error message:', error.message);
+      console.error('  - Error code:', error.code);
+      console.error('  - Error type:', error.constructor.name);
+      if (error.response) {
+        console.error('  - HTTP Status:', error.response.status);
+        console.error('  - HTTP Headers:', JSON.stringify(error.response.headers, null, 2));
+        console.error('  - Response Body:', JSON.stringify(error.response.data, null, 2));
+      }
+      if (error.request) {
+        console.error('  - Request details:', error.request);
+      }
+      console.error('  - Full error object:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
       throw error;
     }
   }

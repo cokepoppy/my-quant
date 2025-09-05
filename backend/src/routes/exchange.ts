@@ -518,6 +518,11 @@ router.post('/:id/sync', authenticate, async (req: AuthRequest, res) => {
 router.get('/:id/balance', authenticate, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
+    
+    console.log('💰 BALANCE API CALLED!');
+    console.log('📋 Request params:', req.params);
+    console.log('📋 Request headers:', req.headers);
+    console.log('📋 User info:', req.user);
 
     // 检查账户所有权
     const account = await prisma.account.findFirst({
@@ -525,14 +530,24 @@ router.get('/:id/balance', authenticate, async (req: AuthRequest, res) => {
     });
 
     if (!account) {
+      console.log('❌ Account not found:', id);
       return res.status(404).json({
         success: false,
         message: 'Account not found'
       });
     }
 
+    console.log('✅ Account found:', {
+      id: account.id,
+      accountId: account.accountId,
+      name: account.name,
+      exchange: account.exchange
+    });
+
     // 获取余额数据
+    console.log('🔄 Fetching balance from exchange:', account.accountId);
     const balances = await exchangeService.getBalance(account.accountId);
+    console.log('📊 Balance response from exchange:', balances);
 
     // 更新数据库中的余额数据
     await prisma.balance.deleteMany({
@@ -552,6 +567,13 @@ router.get('/:id/balance', authenticate, async (req: AuthRequest, res) => {
       });
     }
 
+    console.log('✅ Balance data saved to database');
+    console.log('📤 Sending balance response:', {
+      success: true,
+      message: 'Balance retrieved successfully',
+      data: balances
+    });
+    
     res.json({
       success: true,
       message: 'Balance retrieved successfully',

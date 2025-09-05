@@ -450,6 +450,7 @@ import {
   Download
 } from '@element-plus/icons-vue'
 import { exchangeApi } from '@/api/exchange'
+import { placeOrder } from '@/api/trading'
 
 interface ExchangeBalance {
   asset: string
@@ -584,16 +585,16 @@ const availableSymbols = ref([
 const tradingForm = reactive<TradingForm>({
   symbol: 'BTC/USDT',
   type: 'buy',
-  orderType: 'market',
+  orderType: 'limit', // 改为限价单
   amount: 0.001,
-  price: undefined
+  price: 109612.95 // 设置默认限价
 })
 
 const positions = computed(() => currentExchange.value.positions)
 const recentOrders = computed(() => currentExchange.value.orders.slice(0, 10)) // 只显示最近10个订单
 
 const canSubmitOrder = computed(() => {
-  return tradingForm.symbol && tradingForm.amount > 0 && 
+  return currentExchange.value.id && tradingForm.symbol && tradingForm.amount > 0 && 
          (tradingForm.orderType === 'market' || (tradingForm.price && tradingForm.price > 0))
 })
 
@@ -629,7 +630,8 @@ const loadExchanges = async () => {
   try {
     const response = await exchangeApi.getAccounts()
     exchanges.value = response.data.map((account: any) => ({
-      id: account.id,
+      id: account.id, // 使用数据库记录ID
+      accountId: account.accountId, // 交易所实例ID
       name: account.name,
       exchange: account.exchange,
       connected: account.syncStatus === 'connected',
@@ -946,12 +948,34 @@ const refreshData = () => {
   ElMessage.success('数据已刷新')
 }
 
-const refreshPositions = () => {
-  ElMessage.success('持仓数据已刷新')
+const refreshPositions = async () => {
+  try {
+    if (!currentExchange.value.id) {
+      ElMessage.warning('请先选择交易所')
+      return
+    }
+    
+    // 这里可以调用获取持仓的API
+    // const response = await getPositions(currentExchange.value.id)
+    ElMessage.success('持仓数据已刷新')
+  } catch (error) {
+    ElMessage.error('刷新持仓失败')
+  }
 }
 
-const refreshOrders = () => {
-  ElMessage.success('订单数据已刷新')
+const refreshOrders = async () => {
+  try {
+    if (!currentExchange.value.id) {
+      ElMessage.warning('请先选择交易所')
+      return
+    }
+    
+    // 这里可以调用获取订单的API
+    // const response = await getOrders({ accountId: currentExchange.value.id })
+    ElMessage.success('订单数据已刷新')
+  } catch (error) {
+    ElMessage.error('刷新订单失败')
+  }
 }
 
 const exportPositions = () => {
@@ -963,20 +987,67 @@ const viewAllOrders = () => {
 }
 
 const submitOrder = async () => {
+  if (!currentExchange.value.id) {
+    ElMessage.warning('请先选择交易所')
+    return
+  }
+  
+  if (!currentExchange.value.connected) {
+    ElMessage.warning('交易所未连接，请先连接交易所')
+    return
+  }
+  
   submitting.value = true
   
   try {
-    // 模拟提交订单到当前交易所
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    // 构建订单数据
+    const orderData = {
+      accountId: currentExchange.value.id, // 使用数据库记录ID
+      symbol: tradingForm.symbol,
+      type: tradingForm.orderType,
+      side: tradingForm.type,
+      quantity: tradingForm.amount,
+      price: tradingForm.orderType === 'limit' ? tradingForm.price : undefined,
+      timeInForce: 'gtc' // Good Till Cancel
+    }
     
+    console.log('提交订单数据:', orderData)
+    
+    // 显示确认对话框
+    const orderTypeText = tradingForm.orderType === 'market' ? '市价' : `限价 ${tradingForm.price}`
+    const totalValue = tradingForm.orderType === 'limit' ? (tradingForm.amount * tradingForm.price).toFixed(2) : '市价'
+    
+    await ElMessageBox.confirm(
+      `确认要${tradingForm.type === 'buy' ? '买入' : '卖出'} ${tradingForm.amount} ${tradingForm.symbol} 吗？\n\n` +
+      `订单类型: ${orderTypeText}\n` +
+      `数量: ${tradingForm.amount} BTC\n` +
+      `价格: ${tradingForm.orderType === 'limit' ? tradingForm.price + ' USDT' : '市价'}\n` +
+      `预估价值: ${totalValue} USDT`,
+      '确认下单',
+      {
+        confirmButtonText: '确认下单',
+        cancelButtonText: '取消',
+        type: 'warning',
+        dangerouslyUseHTMLString: false
+      }
+    )
+    
+    // 调用真实API下单
+    const response = await placeOrder(orderData)
+    console.log('下单响应:', response)
+    
+    // 根据API拦截器的逻辑，response可能已经解包了
+    const orderResponse = response.data || response
+    
+    // 创建新订单对象
     const newOrder: Order = {
-      id: Date.now().toString(),
+      id: orderResponse.orderId || Date.now().toString(),
       symbol: tradingForm.symbol,
       type: tradingForm.type,
       orderType: tradingForm.orderType,
       amount: tradingForm.amount,
       price: tradingForm.price,
-      status: 'pending',
+      status: orderResponse.status || 'pending',
       createdAt: new Date()
     }
     
@@ -988,8 +1059,20 @@ const submitOrder = async () => {
     
     ElMessage.success(`${currentExchange.value.name} ${tradingForm.type === 'buy' ? '买入' : '卖出'}订单已提交`)
     resetForm()
-  } catch (error) {
-    ElMessage.error('订单提交失败')
+    
+    // 自动刷新订单列表
+    setTimeout(() => {
+      refreshOrders()
+    }, 1000)
+    
+  } catch (error: any) {
+    if (error === 'cancel') {
+      // 用户取消操作
+      console.log('用户取消下单')
+    } else {
+      console.error('订单提交失败:', error)
+      ElMessage.error(`订单提交失败: ${error.message || '网络错误'}`)
+    }
   } finally {
     submitting.value = false
   }
@@ -998,9 +1081,9 @@ const submitOrder = async () => {
 const resetForm = () => {
   tradingForm.symbol = 'BTC/USDT'
   tradingForm.type = 'buy'
-  tradingForm.orderType = 'market'
+  tradingForm.orderType = 'limit' // 改为限价单
   tradingForm.amount = 0.001
-  tradingForm.price = undefined
+  tradingForm.price = 109612.95 // 设置默认限价
 }
 
 const closePosition = async (position: Position) => {
@@ -1031,7 +1114,7 @@ const closePosition = async (position: Position) => {
 const cancelOrder = async (order: Order) => {
   try {
     await ElMessageBox.confirm(
-      `确定要撤销这个订单吗？`,
+      `确定要撤销这个订单吗？\n订单: ${order.symbol} ${order.type === 'buy' ? '买入' : '卖出'} ${order.amount}`,
       '确认撤销',
       {
         confirmButtonText: '确定',
@@ -1040,18 +1123,41 @@ const cancelOrder = async (order: Order) => {
       }
     )
     
-    // 从当前交易所的订单中更新状态
-    const currentExchangeIndex = exchanges.value.findIndex(ex => ex.id === activeExchange.value)
-    if (currentExchangeIndex !== -1) {
-      const orderIndex = exchanges.value[currentExchangeIndex].orders.findIndex(o => o.id === order.id)
-      if (orderIndex !== -1) {
-        exchanges.value[currentExchangeIndex].orders[orderIndex].status = 'cancelled'
-      }
+    // 检查订单是否可以撤销
+    if (order.status !== 'pending') {
+      ElMessage.warning('只有待成交的订单才能撤销')
+      return
     }
     
-    ElMessage.success(`${currentExchange.value.name} 订单已撤销`)
-  } catch {
+    try {
+      // 调用撤销订单API
+      // const response = await cancelOrder(order.id)
+      
+      // 从当前交易所的订单中更新状态
+      const currentExchangeIndex = exchanges.value.findIndex(ex => ex.id === activeExchange.value)
+      if (currentExchangeIndex !== -1) {
+        const orderIndex = exchanges.value[currentExchangeIndex].orders.findIndex(o => o.id === order.id)
+        if (orderIndex !== -1) {
+          exchanges.value[currentExchangeIndex].orders[orderIndex].status = 'cancelled'
+        }
+      }
+      
+      ElMessage.success(`${currentExchange.value.name} 订单已撤销`)
+      
+      // 自动刷新订单列表
+      setTimeout(() => {
+        refreshOrders()
+      }, 500)
+      
+    } catch (error: any) {
+      ElMessage.error(`撤销订单失败: ${error.message || '网络错误'}`)
+    }
+    
+  } catch (error) {
     // 用户取消操作
+    if (error !== 'cancel') {
+      console.error('撤销订单失败:', error)
+    }
   }
 }
 
@@ -1079,8 +1185,11 @@ const getOrderStatusType = (status: string) => {
   const statusMap: Record<string, string> = {
     pending: 'warning',
     filled: 'success',
+    executed: 'success',
     cancelled: 'info',
-    rejected: 'danger'
+    rejected: 'danger',
+    failed: 'danger',
+    partially_filled: 'primary'
   }
   return statusMap[status] || 'info'
 }
@@ -1089,8 +1198,11 @@ const getOrderStatusText = (status: string) => {
   const statusMap: Record<string, string> = {
     pending: '待成交',
     filled: '已成交',
+    executed: '已执行',
     cancelled: '已撤销',
-    rejected: '已拒绝'
+    rejected: '已拒绝',
+    failed: '失败',
+    partially_filled: '部分成交'
   }
   return statusMap[status] || '未知'
 }

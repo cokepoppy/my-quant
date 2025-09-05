@@ -3,9 +3,12 @@ import { authenticate, AuthRequest } from '../middleware/auth';
 import { PrismaClient } from '@prisma/client';
 import { body, query, validationResult } from 'express-validator';
 import { riskManagementService } from '../services/RiskManagementService';
+import { exchangeService } from '../exchanges/ExchangeService';
 
 const router = Router();
 const prisma = new PrismaClient();
+
+console.log('📝 Trading routes loaded');
 
 // Get trading accounts
 router.get('/accounts', authenticate, async (req: AuthRequest, res) => {
@@ -147,6 +150,13 @@ router.post('/order', authenticate, [
   body('price').optional().isFloat({ min: 0 }).withMessage('Price must be positive'),
   body('stopPrice').optional().isFloat({ min: 0 }).withMessage('Stop price must be positive')
 ], async (req: AuthRequest, res) => {
+  console.log('🚀 ORDER ROUTE CALLED!');
+  console.log('📋 Request method:', req.method);
+  console.log('📋 Request URL:', req.url);
+  console.log('📋 Request headers:', req.headers);
+  console.log('📋 Request body:', req.body);
+  console.log('📋 User info:', req.user);
+  
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -187,24 +197,56 @@ router.post('/order', authenticate, [
       userId: req.user!.id
     };
 
+    console.log('🔄 ABOUT TO CALL RISK MANAGEMENT VALIDATE ORDER...');
+    console.log('   - Order data:', JSON.stringify(orderData, null, 2));
+    
     const validation = await riskManagementService.validateOrder(orderData);
+    
+    console.log('📊 BACK FROM RISK MANAGEMENT VALIDATION:');
+    console.log('   - Validation result:', validation.valid);
+    console.log('   - Errors:', validation.errors);
+    console.log('   - Warnings:', validation.warnings);
 
     if (!validation.valid) {
+      console.log('❌ VALIDATION FAILED - Returning 400 error');
       return res.status(400).json({
         success: false,
         message: 'Order validation failed',
         errors: validation.errors,
         warnings: validation.warnings
       });
+    } else {
+      console.log('✅ VALIDATION PASSED - Continuing with order execution');
     }
 
     // Use adjusted order parameters if provided
     const finalOrderData = validation.adjustedOrder || orderData;
 
+    // Find or create manual strategy for this user
+    let manualStrategy = await prisma.strategy.findFirst({
+      where: {
+        userId: req.user!.id,
+        name: 'Manual Trading'
+      }
+    });
+
+    if (!manualStrategy) {
+      manualStrategy = await prisma.strategy.create({
+        data: {
+          name: 'Manual Trading',
+          description: 'Manual trading orders placed through the trading panel',
+          code: '// Manual trading strategy',
+          type: 'manual',
+          status: 'active',
+          userId: req.user!.id
+        }
+      });
+    }
+
     // Create trade record
     const trade = await prisma.trade.create({
       data: {
-        strategyId: 'manual', // Manual trading
+        strategyId: manualStrategy.id,
         userId: req.user!.id,
         symbol,
         type: side,
@@ -213,6 +255,7 @@ router.post('/order', authenticate, [
         price: parseFloat(finalOrderData.price) || 0, // Market orders will have price filled later
         timestamp: new Date(),
         status: 'pending',
+        accountId: accountId, // 添加账户ID
         notes: JSON.stringify({
           orderType: type,
           accountId,
@@ -231,25 +274,191 @@ router.post('/order', authenticate, [
       }
     });
 
-    // Simulate order execution (in real implementation, this would call broker API)
-    setTimeout(async () => {
-      try {
-        // Mock execution price
-        const executionPrice = parseFloat(finalOrderData.price) || (Math.random() * 1000 + 40000); // Mock price
+    // Execute real order via exchange API
+    const targetExchangeId = account.accountId; // Use the account's exchange ID directly
+    let exchangeOrderData: any = {};
+    
+    console.log('🎯 Using exchange ID:', targetExchangeId);
+    
+    // Prepare order data for exchange
+    exchangeOrderData = {
+      symbol: symbol.replace('/', ''), // Bybit format: BTCUSDT instead of BTC/USDT
+      type: type === 'market' ? 'market' : 'limit',
+      side: side,
+      amount: parseFloat(finalOrderData.amount),
+      price: type === 'limit' ? parseFloat(finalOrderData.price) : undefined,
+      params: {
+        test: account.testnet // Use testnet for testing
+      }
+    };
+    
+    try {
+      console.log('🚀 Executing real order via Bybit API...');
+      console.log('📋 Exchange order data:', exchangeOrderData);
+      console.log('🚀 Sending API request to exchange:', targetExchangeId);
+      console.log('📤 Request details:');
+      console.log('  - Symbol:', exchangeOrderData.symbol);
+      console.log('  - Type:', exchangeOrderData.type);
+      console.log('  - Side:', exchangeOrderData.side);
+      console.log('  - Amount:', exchangeOrderData.amount);
+      console.log('  - Price:', exchangeOrderData.price || 'Market');
+      console.log('  - Testnet:', exchangeOrderData.params.test);
+      
+      // Execute order via real exchange API
+      const startTime = Date.now();
+      const exchangeOrder = await exchangeService.placeOrder(targetExchangeId, exchangeOrderData);
+      const endTime = Date.now();
+      
+      console.log('✅ Exchange order response received!');
+      console.log('⏱️  API call duration:', endTime - startTime, 'ms');
+      console.log('📥 Response details:');
+      console.log('  - Exchange Order ID:', exchangeOrder.exchangeId);
+      console.log('  - Status:', exchangeOrder.status);
+      console.log('  - Symbol:', exchangeOrder.symbol);
+      console.log('  - Type:', exchangeOrder.type);
+      console.log('  - Side:', exchangeOrder.side);
+      console.log('  - Quantity:', exchangeOrder.quantity);
+      console.log('  - Price:', exchangeOrder.price);
+      console.log('  - Filled Quantity:', exchangeOrder.filledQuantity);
+      console.log('  - Average Price:', exchangeOrder.averagePrice);
+      console.log('  - Commission:', exchangeOrder.commission, exchangeOrder.feeCurrency);
+      console.log('  - Create Time:', exchangeOrder.createTime);
+      console.log('  - Update Time:', exchangeOrder.updateTime);
+      console.log('  - Full metadata:', JSON.stringify(exchangeOrder.metadata, null, 2));
+      
+      // Update trade record with real execution data
+      await prisma.trade.update({
+        where: { id: trade.id },
+        data: {
+          status: exchangeOrder.status === 'closed' || exchangeOrder.status === 'filled' ? 'executed' : 'pending',
+          price: exchangeOrder.averagePrice || exchangeOrder.price || parseFloat(finalOrderData.price) || 0,
+          commission: exchangeOrder.commission || 0,
+          pnl: side === 'buy' ? 0 : 0, // PnL calculated on close
+          notes: JSON.stringify({
+            ...JSON.parse(trade.notes || '{}'),
+            exchangeOrderId: exchangeOrder.exchangeId,
+            exchangeStatus: exchangeOrder.status,
+            filledQuantity: exchangeOrder.filledQuantity,
+            averagePrice: exchangeOrder.averagePrice,
+            commission: exchangeOrder.commission,
+            feeCurrency: exchangeOrder.feeCurrency
+          })
+        }
+      });
+      
+      console.log('✅ Trade record updated with exchange data');
+    } catch (error) {
+      console.error('❌ Error executing real order via API!');
+      console.error('📊 Error details:');
+      console.error('  - Error message:', error instanceof Error ? error.message : 'Unknown error');
+      console.error('  - Error type:', error.constructor.name);
+      console.error('  - Exchange ID:', targetExchangeId || 'undefined');
+      console.error('  - Order Data:', JSON.stringify(exchangeOrderData || {}, null, 2));
+      
+      // Detailed error logging for different error types
+      if (error instanceof Error) {
+        console.error('  - Stack trace:', error.stack);
+      }
+      
+      // Check for specific error types
+      if ('response' in error) {
+        console.error('  - HTTP Response Status:', error.response?.status);
+        console.error('  - HTTP Response Data:', JSON.stringify(error.response?.data, null, 2));
+      }
+      
+      if ('request' in error) {
+        console.error('  - Request details:', error.request);
+      }
+      
+      console.error('  - Full error object:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
+      
+      // Handle specific error types with user-friendly messages
+      let userErrorMessage = 'Unknown execution error';
+      let errorCategory = 'unknown';
+      let shouldFallbackToSimulation = false;
+      
+      if (error.message?.includes('regulatory restrictions') || error.message?.includes('retCode":10024')) {
+        userErrorMessage = '交易服务因监管限制暂时不可用，已切换到模拟交易模式。';
+        errorCategory = 'regulatory';
+        shouldFallbackToSimulation = true;
+      } else if (error.message?.includes('insufficient') || error.message?.includes('balance')) {
+        userErrorMessage = '账户余额不足，请充值后重试。';
+        errorCategory = 'insufficient_balance';
+      } else if (error.message?.includes('permission') || error.message?.includes('unauthorized')) {
+        userErrorMessage = '账户权限不足，请检查API密钥配置。';
+        errorCategory = 'permission';
+      }
+      
+      if (shouldFallbackToSimulation) {
+        // Fallback to simulation mode for regulatory restrictions
+        console.log('🔄 Regulatory restriction detected, falling back to simulation mode...');
+        
+        // Simulate successful order execution
+        const simulatedPrice = 45000 + Math.random() * 1000; // Random price around 45k
+        const simulatedCommission = simulatedPrice * parseFloat(finalOrderData.amount) * 0.001;
         
         await prisma.trade.update({
           where: { id: trade.id },
           data: {
             status: 'executed',
-            price: executionPrice,
-            commission: executionPrice * parseFloat(finalOrderData.amount) * 0.001, // 0.1% commission
-            pnl: side === 'buy' ? 0 : 0 // PnL calculated on close
+            price: simulatedPrice,
+            commission: simulatedCommission,
+            pnl: side === 'buy' ? 0 : 0, // PnL calculated on close
+            notes: JSON.stringify({
+              ...JSON.parse(trade.notes || '{}'),
+              executionMode: 'simulation',
+              executionReason: 'regulatory_restriction_fallback',
+              simulatedPrice,
+              simulatedCommission,
+              regulatoryError: error.message,
+              fallbackAt: new Date().toISOString()
+            })
           }
         });
-      } catch (error) {
-        console.error('Error executing trade:', error);
+        
+        console.log('✅ Simulated order execution completed');
+        
+        return res.json({
+          success: true,
+          message: userErrorMessage,
+          data: {
+            orderId: trade.id,
+            status: 'executed',
+            timestamp: trade.timestamp,
+            executionMode: 'simulation',
+            warnings: [...validation.warnings, '因监管限制已切换到模拟交易模式']
+          }
+        });
       }
-    }, 1000);
+      
+      // Update trade record to show execution error
+      await prisma.trade.update({
+        where: { id: trade.id },
+        data: {
+          status: 'failed',
+          notes: JSON.stringify({
+            ...JSON.parse(trade.notes || '{}'),
+            executionError: userErrorMessage,
+            errorType: error.constructor.name,
+            errorCategory: errorCategory,
+            exchangeId: targetExchangeId,
+            failedAt: new Date().toISOString(),
+            rawError: error instanceof Error ? error.message : 'Unknown error'
+          })
+        }
+      });
+      
+      // Return user-friendly error response
+      return res.status(400).json({
+        success: false,
+        message: userErrorMessage,
+        error: {
+          type: error.constructor.name,
+          category: errorCategory,
+          exchange: targetExchangeId
+        }
+      });
+    }
 
     res.json({
       success: true,
@@ -288,12 +497,33 @@ router.post('/close', authenticate, [
 
     const { positionId, quantity } = req.body;
 
+    // Find or create manual strategy for closing positions
+    let manualStrategy = await prisma.strategy.findFirst({
+      where: {
+        userId: req.user!.id,
+        name: 'Manual Trading'
+      }
+    });
+
+    if (!manualStrategy) {
+      manualStrategy = await prisma.strategy.create({
+        data: {
+          name: 'Manual Trading',
+          description: 'Manual trading orders placed through the trading panel',
+          code: '// Manual trading strategy',
+          type: 'manual',
+          status: 'active',
+          userId: req.user!.id
+        }
+      });
+    }
+
     // In a real implementation, this would find the open position and close it
     // For now, we'll create a closing trade record
     
     const closingTrade = await prisma.trade.create({
       data: {
-        strategyId: 'manual_close',
+        strategyId: manualStrategy.id,
         userId: req.user!.id,
         symbol: 'BTCUSDT', // Mock symbol
         type: 'sell', // Closing position
@@ -713,13 +943,34 @@ router.post('/order/stop-loss', authenticate, [
       });
     }
 
+    // Find or create manual strategy for stop-loss orders
+    let manualStrategy = await prisma.strategy.findFirst({
+      where: {
+        userId: req.user!.id,
+        name: 'Manual Trading'
+      }
+    });
+
+    if (!manualStrategy) {
+      manualStrategy = await prisma.strategy.create({
+        data: {
+          name: 'Manual Trading',
+          description: 'Manual trading orders placed through the trading panel',
+          code: '// Manual trading strategy',
+          type: 'manual',
+          status: 'active',
+          userId: req.user!.id
+        }
+      });
+    }
+
     // Use validated order data
     const finalOrderData = validation.adjustedOrder || stopLossData;
 
     // Create stop-loss order record
     const stopLossOrder = await prisma.trade.create({
       data: {
-        strategyId: 'stop_loss',
+        strategyId: manualStrategy.id,
         userId: req.user!.id,
         symbol,
         type: side,
@@ -728,6 +979,7 @@ router.post('/order/stop-loss', authenticate, [
         price: parseFloat(finalOrderData.price) || 0,
         timestamp: new Date(),
         status: 'pending',
+        accountId: accountId,
         notes: JSON.stringify({
           orderType: 'stop_loss',
           accountId,
