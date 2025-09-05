@@ -17,10 +17,12 @@ async function checkAccounts() {
       console.log(`\n📊 Account:`);
       console.log(`   ID: ${account.id}`);
       console.log(`   Account ID: ${account.accountId}`);
-      console.log(`   Email: ${account.email}`);
+      console.log(`   Name: ${account.name}`);
       console.log(`   Exchange: ${account.exchange}`);
       console.log(`   Sync Status: ${account.syncStatus}`);
       console.log(`   Testnet: ${account.testnet}`);
+      console.log(`   API Key: ${account.apiKey ? account.apiKey.substring(0, 8) + '...' : 'Not set'}`);
+      console.log(`   API Secret: ${account.apiSecret ? account.apiSecret.substring(0, 8) + '...' : 'Not set'}`);
     }
     
     await prisma.$disconnect();
