@@ -93,43 +93,135 @@ router.get('/accounts/:id', authenticate, async (req: AuthRequest, res) => {
   }
 });
 
-// Get positions
+// Get positions - updated to return real data from executed trades
 router.get('/positions', authenticate, async (req: AuthRequest, res) => {
   try {
+    console.log('📋 GET POSITIONS ENDPOINT CALLED');
+    console.log('📋 Request query:', req.query);
+    console.log('📋 User info:', req.user);
+    
     const { accountId } = req.query;
 
-    // For now, return mock positions data
-    // In a real implementation, this would fetch from broker API
-    const positions = [
-      {
-        id: '1',
-        symbol: 'BTCUSDT',
-        side: 'long',
-        quantity: 0.5,
-        entryPrice: 45000,
-        currentPrice: 46500,
-        pnl: 750,
-        pnlPercentage: 1.67,
-        timestamp: new Date()
-      },
-      {
-        id: '2',
-        symbol: 'ETHUSDT',
-        side: 'short',
-        quantity: 2.0,
-        entryPrice: 3200,
-        currentPrice: 3100,
-        pnl: 200,
-        pnlPercentage: 3.13,
-        timestamp: new Date()
-      }
-    ];
+    // Build where clause
+    const whereClause: any = {
+      userId: req.user!.id,
+      status: 'executed'
+    };
 
-    res.json({
+    if (accountId) {
+      whereClause.accountId = accountId;
+    }
+
+    console.log('📋 Where clause:', whereClause);
+
+    // Get all executed trades to calculate positions
+    const trades = await prisma.trade.findMany({
+      where: whereClause,
+      select: {
+        id: true,
+        symbol: true,
+        type: true,
+        side: true,
+        quantity: true,
+        price: true,
+        status: true,
+        timestamp: true,
+        commission: true,
+        pnl: true,
+        notes: true,
+        accountId: true
+      },
+      orderBy: {
+        timestamp: 'desc'
+      }
+    });
+
+    console.log('📋 Found trades:', trades.length);
+
+    // Calculate positions from trades
+    const positionMap = new Map();
+    
+    trades.forEach(trade => {
+      const notes = JSON.parse(trade.notes || '{}');
+      const symbol = trade.symbol;
+      const side = trade.side; // 'long' or 'short'
+      const quantity = trade.quantity;
+      const price = trade.price;
+      
+      if (!positionMap.has(symbol)) {
+        positionMap.set(symbol, {
+          id: `pos_${symbol}_${trade.accountId}`,
+          symbol: symbol,
+          side: side,
+          quantity: 0,
+          entryPrice: price,
+          currentPrice: price, // Will update with market data later
+          pnl: 0,
+          pnlPercentage: 0,
+          timestamp: trade.timestamp,
+          accountId: trade.accountId,
+          trades: []
+        });
+      }
+      
+      const position = positionMap.get(symbol);
+      position.trades.push(trade);
+      
+      // Calculate net position
+      if (side === 'long') {
+        position.quantity += quantity;
+      } else {
+        position.quantity -= quantity;
+      }
+      
+      // Update entry price (average)
+      if (position.quantity !== 0) {
+        const totalValue = position.trades.reduce((sum, t) => sum + (t.quantity * t.price), 0);
+        const totalQuantity = position.trades.reduce((sum, t) => sum + t.quantity, 0);
+        position.entryPrice = totalValue / totalQuantity;
+      }
+    });
+
+    // Filter out positions with zero quantity
+    const positions = Array.from(positionMap.values()).filter(pos => Math.abs(pos.quantity) > 0.000001);
+
+    // Get current market prices for PnL calculation
+    for (const position of positions) {
+      try {
+        // For now, use the last trade price as current price
+        // In real implementation, this would fetch from exchange API
+        const marketData = await exchangeService.getTicker(position.accountId, position.symbol.replace('/', ''));
+        position.currentPrice = marketData.last || position.entryPrice;
+        
+        // Calculate PnL
+        if (position.side === 'long') {
+          position.pnl = (position.currentPrice - position.entryPrice) * Math.abs(position.quantity);
+        } else {
+          position.pnl = (position.entryPrice - position.currentPrice) * Math.abs(position.quantity);
+        }
+        
+        // Calculate PnL percentage
+        position.pnlPercentage = (position.pnl / (position.entryPrice * Math.abs(position.quantity))) * 100;
+        
+      } catch (error) {
+        console.log(`Failed to get market data for ${position.symbol}, using entry price`);
+        position.currentPrice = position.entryPrice;
+        position.pnl = 0;
+        position.pnlPercentage = 0;
+      }
+    }
+
+    console.log('📋 Calculated positions:', positions.length);
+
+    const response = {
       success: true,
       message: 'Positions retrieved successfully',
       data: positions
-    });
+    };
+
+    console.log('📋 Sending response:', JSON.stringify(response, null, 2));
+    
+    res.json(response);
   } catch (error) {
     console.error('Error fetching positions:', error);
     res.status(500).json({
@@ -389,6 +481,9 @@ router.post('/order', authenticate, [
         errorCategory = 'permission';
       }
       
+      // Make sure targetExchangeId is defined for error handling
+      const errorExchangeId = targetExchangeId || account.accountId || 'unknown';
+      
       if (shouldFallbackToSimulation) {
         // Fallback to simulation mode for regulatory restrictions
         console.log('🔄 Regulatory restriction detected, falling back to simulation mode...');
@@ -455,7 +550,7 @@ router.post('/order', authenticate, [
         error: {
           type: error.constructor.name,
           category: errorCategory,
-          exchange: targetExchangeId
+          exchange: errorExchangeId
         }
       });
     }
@@ -598,13 +693,18 @@ router.get('/orders/simple', authenticate, async (req: AuthRequest, res) => {
   }
 });
 
-// Get order history
+// Get order history - updated to match frontend expected format
 router.get('/orders', authenticate, [
   query('page').optional().isInt({ min: 1 }).withMessage('Page must be positive integer'),
   query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('Limit must be between 1 and 100'),
-  query('status').optional().isIn(['all', 'pending', 'executed', 'cancelled', 'failed']).withMessage('Invalid status')
+  query('status').optional().isIn(['all', 'pending', 'executed', 'cancelled', 'failed']).withMessage('Invalid status'),
+  query('accountId').optional().isString().withMessage('Account ID must be a string')
 ], async (req: AuthRequest, res) => {
   try {
+    console.log('📋 GET ORDERS ENDPOINT CALLED');
+    console.log('📋 Request query:', req.query);
+    console.log('📋 User info:', req.user);
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
@@ -617,6 +717,7 @@ router.get('/orders', authenticate, [
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
     const status = req.query.status as string || 'all';
+    const accountId = req.query.accountId as string;
     const offset = (page - 1) * limit;
 
     const whereClause: any = {
@@ -626,6 +727,12 @@ router.get('/orders', authenticate, [
     if (status !== 'all') {
       whereClause.status = status;
     }
+    
+    if (accountId) {
+      whereClause.accountId = accountId;
+    }
+
+    console.log('📋 Where clause:', whereClause);
 
     const [trades, total] = await Promise.all([
       prisma.trade.findMany({
@@ -640,7 +747,8 @@ router.get('/orders', authenticate, [
           status: true,
           timestamp: true,
           commission: true,
-          pnl: true
+          pnl: true,
+          notes: true
         },
         orderBy: {
           timestamp: 'desc'
@@ -651,19 +759,44 @@ router.get('/orders', authenticate, [
       prisma.trade.count({ where: whereClause })
     ]);
 
-    res.json({
+    console.log('📋 Found trades:', trades.length);
+
+    // Format trades to match frontend expected format
+    const formattedTrades = trades.map(trade => {
+      const notes = JSON.parse(trade.notes || '{}');
+      return {
+        id: trade.id,
+        symbol: trade.symbol,
+        type: trade.side === 'long' ? 'buy' : 'sell',
+        orderType: notes.orderType || 'limit',
+        quantity: trade.quantity,
+        price: trade.price,
+        status: trade.status === 'executed' ? '已成交' : 
+               trade.status === 'pending' ? '待成交' : 
+               trade.status === 'failed' ? '失败' : trade.status,
+        timestamp: trade.timestamp,
+        createdAt: trade.timestamp,
+        exchangeOrderId: notes.exchangeOrderId,
+        filledQuantity: notes.filledQuantity,
+        averagePrice: notes.averagePrice,
+        commission: trade.commission
+      };
+    });
+
+    const response = {
       success: true,
       message: 'Orders retrieved successfully',
       data: {
-        orders: trades,
-        pagination: {
-          page,
-          limit,
-          total,
-          pages: Math.ceil(total / limit)
-        }
+        orders: formattedTrades,
+        total,
+        page,
+        limit
       }
-    });
+    };
+
+    console.log('📋 Sending response:', JSON.stringify(response, null, 2));
+    
+    res.json(response);
   } catch (error) {
     console.error('Error fetching orders:', error);
     res.status(500).json({
