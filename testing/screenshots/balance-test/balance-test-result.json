@@ -1,0 +1,133 @@
+{
+  "timestamp": "2025-09-02T02:09:15.221Z",
+  "balanceInfo": {
+    "accountElements": [
+      {
+        "tagName": "HTML",
+        "text": "量化交易控制台 - 量化交易系统\n  @charset \"UTF-8\";:root{--el-color-white:#ffffff;--el-color-black:#000000;--el-col",
+        "isVisible": false
+      },
+      {
+        "tagName": "BODY",
+        "text": "系统运行正常 市场时间: 10:09:11总资产$125,430+2.50% 今日盈亏+$580.50运行策略3/5量量化交易员管理员3Q量化交易系统仪表盘总览策略管理策略列表策略编辑器策略模板回测分",
+        "isVisible": false
+      },
+      {
+        "tagName": "DIV",
+        "text": "系统运行正常 市场时间: 10:09:11总资产$125,430+2.50% 今日盈亏+$580.50运行策略3/5量量化交易员管理员3Q量化交易系统仪表盘总览策略管理策略列表策略编辑器策略模板回测分",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "系统运行正常 市场时间: 10:09:11总资产$125,430+2.50% 今日盈亏+$580.50运行策略3/5量量化交易员管理员3Q量化交易系统仪表盘总览策略管理策略列表策略编辑器策略模板回测分",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "系统运行正常 市场时间: 10:09:11总资产$125,430+2.50% 今日盈亏+$580.50运行策略3/5量量化交易员管理员3Q量化交易系统仪表盘总览策略管理策略列表策略编辑器策略模板回测分",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "Q量化交易系统仪表盘总览策略管理策略列表策略编辑器策略模板回测分析回测设置回测结果参数优化新策略回测实盘交易交易面板实时交易订单管理持仓管理账户管理交易日志风控设置风控规则预警监控数据管理市场数据数据",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "总览交易面板总资产US$125,430.50 0.47% 今日 可用余额US$45,230.00 占总资产 36.1% 今日盈亏+US$580.250.47% 收益率 累计盈亏+US$12,580.5",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "总览交易面板总资产US$125,430.50 0.47% 今日 可用余额US$45,230.00 占总资产 36.1% 今日盈亏+US$580.250.47% 收益率 累计盈亏+US$12,580.5",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "总资产US$125,430.50 0.47% 今日 可用余额US$45,230.00 占总资产 36.1% 今日盈亏+US$580.250.47% 收益率 累计盈亏+US$12,580.5011.2%",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "总资产US$125,430.50 0.47% 今日 可用余额US$45,230.00 占总资产 36.1% 今日盈亏+US$580.250.47% 收益率 累计盈亏+US$12,580.5011.2%",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "总资产US$125,430.50 0.47% 今日 可用余额US$45,230.00 占总资产 36.1% 今日盈亏+US$580.250.47% 收益率 累计盈亏+US$12,580.5011.2%",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "总资产US$125,430.50 0.47% 今日 可用余额US$45,230.00 占总资产 36.1% 今日盈亏+US$580.250.47% 收益率 累计盈亏+US$12,580.5011.2%",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "总资产US$125,430.50 0.47% 今日",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "可用余额US$45,230.00 占总资产 36.1%",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "今日盈亏+US$580.250.47% 收益率",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "交易管理 刷新数据  设置 test@gmail.com🟢US$0.00 断开连接 添加交易所账户余额 (test@gmail.com) 连接状态: 已连接 刷新 总资产US$0.00+0% 可用余",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "交易管理 刷新数据  设置 test@gmail.com🟢US$0.00 断开连接 添加交易所账户余额 (test@gmail.com) 连接状态: 已连接 刷新 总资产US$0.00+0% 可用余",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "test@gmail.com🟢US$0.00 断开连接 添加交易所账户余额 (test@gmail.com) 连接状态: 已连接 刷新 总资产US$0.00+0% 可用余额US$0.00100%冻结",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "账户余额 (test@gmail.com) 连接状态: 已连接 刷新 总资产US$0.00+0% 可用余额US$0.00100%冻结资金US$0.00今日盈亏+US$0.00",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "总资产US$0.00+0% 可用余额US$0.00100%冻结资金US$0.00今日盈亏+US$0.00",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "总资产US$0.00+0%",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "可用余额US$0.00100%",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "今日盈亏+US$0.00",
+        "isVisible": true
+      }
+    ],
+    "balanceText": "",
+    "totalAssets": "",
+    "availableBalance": "",
+    "todayProfit": "",
+    "hasBalance": false,
+    "balanceDetails": []
+  },
+  "conclusion": "账户无余额",
+  "totalAssets": "",
+  "availableBalance": "",
+  "todayProfit": "",
+  "refreshClicked": true
+}

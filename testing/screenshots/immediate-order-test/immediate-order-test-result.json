@@ -1,0 +1,204 @@
+{
+  "timestamp": "2025-09-01T09:34:37.873Z",
+  "orderButtons": [
+    {
+      "text": "立即下单",
+      "className": "el-button el-button--success el-button--large",
+      "id": "",
+      "isVisible": true
+    }
+  ],
+  "formAnalysis": {
+    "hasForm": false,
+    "inputs": [
+      {
+        "type": "radio",
+        "name": "el-id-1245-20",
+        "placeholder": "",
+        "value": "1d",
+        "id": "",
+        "className": "el-radio-button__original-radio"
+      },
+      {
+        "type": "radio",
+        "name": "el-id-1245-20",
+        "placeholder": "",
+        "value": "1w",
+        "id": "",
+        "className": "el-radio-button__original-radio"
+      },
+      {
+        "type": "radio",
+        "name": "el-id-1245-20",
+        "placeholder": "",
+        "value": "1m",
+        "id": "",
+        "className": "el-radio-button__original-radio"
+      },
+      {
+        "type": "radio",
+        "name": "el-id-1245-20",
+        "placeholder": "",
+        "value": "3m",
+        "id": "",
+        "className": "el-radio-button__original-radio"
+      },
+      {
+        "type": "radio",
+        "name": "el-id-1245-20",
+        "placeholder": "",
+        "value": "1y",
+        "id": "",
+        "className": "el-radio-button__original-radio"
+      },
+      {
+        "type": "text",
+        "name": "",
+        "placeholder": "",
+        "value": "",
+        "id": "el-id-1245-34",
+        "className": "el-select__input is-default"
+      },
+      {
+        "type": "radio",
+        "name": "el-id-1245-32",
+        "placeholder": "",
+        "value": "buy",
+        "id": "",
+        "className": "el-radio-button__original-radio"
+      },
+      {
+        "type": "radio",
+        "name": "el-id-1245-32",
+        "placeholder": "",
+        "value": "sell",
+        "id": "",
+        "className": "el-radio-button__original-radio"
+      },
+      {
+        "type": "radio",
+        "name": "el-id-1245-33",
+        "placeholder": "",
+        "value": "market",
+        "id": "",
+        "className": "el-radio-button__original-radio"
+      },
+      {
+        "type": "radio",
+        "name": "el-id-1245-33",
+        "placeholder": "",
+        "value": "limit",
+        "id": "",
+        "className": "el-radio-button__original-radio"
+      },
+      {
+        "type": "number",
+        "name": "",
+        "placeholder": "价格",
+        "value": "",
+        "id": "el-id-1245-37",
+        "className": "el-input__inner"
+      },
+      {
+        "type": "number",
+        "name": "",
+        "placeholder": "交易数量",
+        "value": "0.001",
+        "id": "el-id-1245-38",
+        "className": "el-input__inner"
+      }
+    ],
+    "selects": [],
+    "tradingPairs": [
+      "量化交易控制台 - 量化交易系统\n  @charset \"UTF-8\";:root{--el-col",
+      "系统运行正常 市场时间: 17:34:32总资产$125,430+2.50% 今日盈亏+$580.5",
+      "系统运行正常 市场时间: 17:34:32总资产$125,430+2.50% 今日盈亏+$580.5",
+      "系统运行正常 市场时间: 17:34:32总资产$125,430+2.50% 今日盈亏+$580.5",
+      "系统运行正常 市场时间: 17:34:32总资产$125,430+2.50% 今日盈亏+$580.5",
+      "Q量化交易系统仪表盘总览策略管理策略列表策略编辑器策略模板回测分析回测设置回测结果参数优化新策略回测",
+      "总览交易面板总资产US$125,430.50 0.47% 今日 可用余额US$45,230.00 占",
+      "总览交易面板总资产US$125,430.50 0.47% 今日 可用余额US$45,230.00 占",
+      "总资产US$125,430.50 0.47% 今日 可用余额US$45,230.00 占总资产 36",
+      "总资产US$125,430.50 0.47% 今日 可用余额US$45,230.00 占总资产 36",
+      "总资产US$125,430.50 0.47% 今日 可用余额US$45,230.00 占总资产 36",
+      "策略表现 查看全部 MA双均线策略趋势跟踪收益率+12.5% 夏普比率1.85最大回撤-3.2%运行",
+      "最近活动MA策略已启动BTC/USDT 1小时线5分钟前买入订单已成交BTC/USDT 0.1 @ ",
+      "MA策略已启动BTC/USDT 1小时线5分钟前买入订单已成交BTC/USDT 0.1 @ $45,",
+      "MA策略已启动BTC/USDT 1小时线5分钟前",
+      "MA策略已启动BTC/USDT 1小时线5分钟前",
+      "BTC/USDT 1小时线",
+      "买入订单已成交BTC/USDT 0.1 @ $45,23015分钟前",
+      "买入订单已成交BTC/USDT 0.1 @ $45,23015分钟前",
+      "BTC/USDT 0.1 @ $45,230",
+      "交易管理 刷新数据  设置 test@gmail.com🟢US$0.00 断开连接 添加交易所账户",
+      "交易管理 刷新数据  设置 test@gmail.com🟢US$0.00 断开连接 添加交易所账户",
+      "test@gmail.com🟢US$0.00 断开连接 添加交易所账户余额 (test@gmail",
+      "快速交易交易对BTC/USDT方向买入卖出类型市价限价价格数量  立即下单",
+      "交易对BTC/USDT方向买入卖出类型市价限价价格数量  立即下单",
+      "交易对BTC/USDT方向买入卖出",
+      "交易对BTC/USDT",
+      "BTC/USDT",
+      "BTC/USDT",
+      "BTC/USDT",
+      "BTC/USDT",
+      "BTC/USDT",
+      "关闭所有关闭其他关闭左侧关闭右侧刷新当前BTC/USDTETH/USDTBNB/USDTSOL/US",
+      "BTC/USDTETH/USDTBNB/USDTSOL/USDTXRP/USDT",
+      "BTC/USDTETH/USDTBNB/USDTSOL/USDTXRP/USDT",
+      "BTC/USDTETH/USDTBNB/USDTSOL/USDTXRP/USDT",
+      "BTC/USDTETH/USDTBNB/USDTSOL/USDTXRP/USDT",
+      "BTC/USDTETH/USDTBNB/USDTSOL/USDTXRP/USDT",
+      "BTC/USDT",
+      "BTC/USDT",
+      "ETH/USDT",
+      "ETH/USDT",
+      "BNB/USDT",
+      "BNB/USDT",
+      "SOL/USDT",
+      "SOL/USDT",
+      "XRP/USDT",
+      "XRP/USDT"
+    ],
+    "orderTypes": [
+      "量化交易控制台 - 量化交易系统\n  @charset \"UTF-8\";:root{--el-col",
+      "量化交易控制台 - 量化交易系统\n  @charset \"UTF-8\";:root{--el-col",
+      "/* Bloomberg-Inspired Dark Theme */\n/* Professiona",
+      "/* Bright Professional Trading Theme */\r\n/* Enhanc",
+      "/* Premium Global Styles for All Pages */\n/* Bloom",
+      "/* 全局样式重置 */\n* {\n  margin: 0;\n  padding: 0;\n  box-",
+      "/* Clean & Bright Trading Theme */\n/* 简洁明快的量化交易界面主",
+      ".tab-system[data-v-2ef7a4b3] {\n  display: flex;\n  ",
+      ".v3-layout[data-v-9a358e25] {\n  height: 100vh;\n  d",
+      ".dashboard-overview[data-v-5508e14f] {\n  padding: ",
+      "系统运行正常 市场时间: 17:34:32总资产$125,430+2.50% 今日盈亏+$580.5",
+      "系统运行正常 市场时间: 17:34:32总资产$125,430+2.50% 今日盈亏+$580.5",
+      "系统运行正常 市场时间: 17:34:32总资产$125,430+2.50% 今日盈亏+$580.5",
+      "系统运行正常 市场时间: 17:34:32总资产$125,430+2.50% 今日盈亏+$580.5",
+      "Q量化交易系统仪表盘总览策略管理策略列表策略编辑器策略模板回测分析回测设置回测结果参数优化新策略回测",
+      "总览交易面板总资产US$125,430.50 0.47% 今日 可用余额US$45,230.00 占",
+      "总览交易面板总资产US$125,430.50 0.47% 今日 可用余额US$45,230.00 占",
+      "总资产US$125,430.50 0.47% 今日 可用余额US$45,230.00 占总资产 36",
+      "交易管理 刷新数据  设置 test@gmail.com🟢US$0.00 断开连接 添加交易所账户",
+      "交易管理 刷新数据  设置 test@gmail.com🟢US$0.00 断开连接 添加交易所账户",
+      "test@gmail.com🟢US$0.00 断开连接 添加交易所账户余额 (test@gmail",
+      "快速交易交易对BTC/USDT方向买入卖出类型市价限价价格数量  立即下单",
+      "交易对BTC/USDT方向买入卖出类型市价限价价格数量  立即下单",
+      "类型市价限价价格",
+      "类型市价限价",
+      "市价限价",
+      "市价",
+      "市价",
+      "限价",
+      "限价"
+    ],
+    "forms": []
+  },
+  "dialogAnalysis": {
+    "hasDialog": true,
+    "hasOrderForm": false,
+    "inputs": [],
+    "buttons": [],
+    "dialogContent": ""
+  },
+  "orderClicked": true
+}

@@ -1,0 +1,11 @@
+{
+  "timestamp": "2025-09-02T02:36:16.080Z",
+  "beforeRefresh": [],
+  "afterRefresh": [],
+  "balanceChange": 0,
+  "hasBalance": false,
+  "canTrade": false,
+  "fixSuccessful": false,
+  "expectedAmount": 1000,
+  "actualAmount": 0
+}

@@ -1,0 +1,77 @@
+{
+  "timestamp": "2025-09-01T08:58:36.778Z",
+  "testAccount": "test@example.com",
+  "testPassword": "password123",
+  "initialUrl": "http://localhost:3001/login",
+  "finalUrl": "http://localhost:3001/",
+  "initialTitle": "登录 - 量化交易系统",
+  "finalTitle": "量化交易控制台 - 量化交易系统",
+  "loginSuccess": true,
+  "pageAnalysis": {
+    "title": "登录 - 量化交易系统",
+    "url": "http://localhost:3001/login",
+    "forms": [
+      {
+        "index": 0,
+        "action": "http://localhost:3001/login",
+        "method": "get",
+        "id": "",
+        "className": "el-form el-form--default el-form--label-right login-form"
+      }
+    ],
+    "inputs": [
+      {
+        "index": 0,
+        "type": "email",
+        "name": "",
+        "id": "el-id-6788-4",
+        "placeholder": "请输入邮箱地址",
+        "className": "el-input__inner",
+        "required": false
+      },
+      {
+        "index": 1,
+        "type": "password",
+        "name": "",
+        "id": "el-id-6788-5",
+        "placeholder": "请输入密码",
+        "className": "el-input__inner",
+        "required": false
+      },
+      {
+        "index": 2,
+        "type": "checkbox",
+        "name": "",
+        "id": "",
+        "placeholder": "",
+        "className": "el-checkbox__original",
+        "required": false
+      }
+    ],
+    "buttons": [
+      {
+        "index": 0,
+        "type": "button",
+        "text": "登录",
+        "id": "",
+        "className": "el-button el-button--primary el-button--large login-button"
+      }
+    ],
+    "links": [
+      {
+        "index": 0,
+        "text": "忘记密码？",
+        "href": "http://localhost:3001/forgot-password",
+        "id": "",
+        "className": "forgot-password"
+      },
+      {
+        "index": 1,
+        "text": "立即注册",
+        "href": "http://localhost:3001/register",
+        "id": "",
+        "className": "register-link"
+      }
+    ]
+  }
+}

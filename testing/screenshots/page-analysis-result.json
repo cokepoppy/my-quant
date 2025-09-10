@@ -1,0 +1,147 @@
+{
+  "timestamp": "2025-09-01T09:08:35.015Z",
+  "mainPageAnalysis": {
+    "url": "http://localhost:3001/",
+    "title": "量化交易控制台 - 量化交易系统",
+    "navigation": [],
+    "links": [],
+    "buttons": [
+      {
+        "text": "3",
+        "className": "el-button el-button--small is-text"
+      },
+      {
+        "text": "查看全部",
+        "className": "el-button el-button--small is-text"
+      }
+    ],
+    "menus": [
+      {
+        "text": "总览",
+        "className": "nav-item active"
+      },
+      {
+        "text": "策略列表",
+        "className": "nav-item"
+      },
+      {
+        "text": "策略编辑器",
+        "className": "nav-item"
+      },
+      {
+        "text": "策略模板",
+        "className": "nav-item"
+      },
+      {
+        "text": "回测设置",
+        "className": "nav-item"
+      },
+      {
+        "text": "回测结果",
+        "className": "nav-item"
+      },
+      {
+        "text": "参数优化",
+        "className": "nav-item"
+      },
+      {
+        "text": "新策略回测",
+        "className": "nav-item"
+      },
+      {
+        "text": "交易面板",
+        "className": "nav-item"
+      },
+      {
+        "text": "实时交易",
+        "className": "nav-item"
+      },
+      {
+        "text": "订单管理",
+        "className": "nav-item"
+      },
+      {
+        "text": "持仓管理",
+        "className": "nav-item"
+      },
+      {
+        "text": "账户管理",
+        "className": "nav-item"
+      },
+      {
+        "text": "交易日志",
+        "className": "nav-item"
+      },
+      {
+        "text": "风控规则",
+        "className": "nav-item"
+      },
+      {
+        "text": "预警监控",
+        "className": "nav-item"
+      },
+      {
+        "text": "市场数据",
+        "className": "nav-item"
+      },
+      {
+        "text": "数据源测试",
+        "className": "nav-item"
+      },
+      {
+        "text": "数据导入",
+        "className": "nav-item"
+      },
+      {
+        "text": "用户管理",
+        "className": "nav-item"
+      },
+      {
+        "text": "系统设置",
+        "className": "nav-item"
+      },
+      {
+        "text": "系统日志",
+        "className": "nav-item"
+      },
+      {
+        "text": "浅色主题",
+        "className": "nav-item"
+      },
+      {
+        "text": "帮助",
+        "className": "nav-item"
+      },
+      {
+        "text": "关闭所有",
+        "className": "el-dropdown-menu__item"
+      },
+      {
+        "text": "关闭其他",
+        "className": "el-dropdown-menu__item"
+      },
+      {
+        "text": "关闭左侧",
+        "className": "el-dropdown-menu__item"
+      },
+      {
+        "text": "关闭右侧",
+        "className": "el-dropdown-menu__item"
+      },
+      {
+        "text": "刷新当前",
+        "className": "el-dropdown-menu__item"
+      }
+    ]
+  },
+  "tradingPages": [
+    "/trading",
+    "/trade",
+    "/exchange",
+    "/order",
+    "/market",
+    "/dashboard",
+    "/strategy"
+  ],
+  "testResults": "已输出到控制台"
+}

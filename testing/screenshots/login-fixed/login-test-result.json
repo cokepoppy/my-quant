@@ -1,0 +1,56 @@
+{
+  "timestamp": "2025-09-01T09:02:21.883Z",
+  "testAccount": "test@example.com",
+  "testPassword": "password123",
+  "initialUrl": "http://localhost:3001/login",
+  "finalUrl": "http://localhost:3001/",
+  "finalTitle": "量化交易控制台 - 量化交易系统",
+  "loginSuccess": true,
+  "pageCheck": {
+    "title": "登录 - 量化交易系统",
+    "bodyClasses": "dark",
+    "hasStyles": true,
+    "hasFonts": false,
+    "formExists": true,
+    "inputsExist": true,
+    "buttonsExist": true
+  },
+  "contentCheck": {
+    "inputs": [
+      {
+        "type": "email",
+        "placeholder": "请输入邮箱地址",
+        "value": "",
+        "visible": true,
+        "computedStyle": "block"
+      },
+      {
+        "type": "password",
+        "placeholder": "请输入密码",
+        "value": "",
+        "visible": true,
+        "computedStyle": "block"
+      },
+      {
+        "type": "checkbox",
+        "placeholder": "",
+        "value": "on",
+        "visible": true,
+        "computedStyle": "block"
+      }
+    ],
+    "buttons": [
+      {
+        "text": "登录",
+        "visible": true,
+        "computedStyle": "flex"
+      }
+    ],
+    "forms": [
+      {
+        "action": "http://localhost:3001/login",
+        "visible": true
+      }
+    ]
+  }
+}

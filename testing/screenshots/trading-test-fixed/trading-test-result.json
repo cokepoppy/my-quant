@@ -1,0 +1,25 @@
+{
+  "timestamp": "2025-09-01T09:09:53.326Z",
+  "tradingCheck": {
+    "url": "http://localhost:3001/trading",
+    "title": "交易管理 - 量化交易系统",
+    "hasTradingContent": false,
+    "forms": 0,
+    "inputs": 0,
+    "buttons": 0,
+    "selectElements": 0,
+    "tradingKeywords": [],
+    "pageContent": "\n    \n    \n  \n"
+  },
+  "formFillResult": {},
+  "orderResult": {
+    "hasSuccessMessage": true,
+    "hasErrorMessage": false,
+    "pageContent": "模拟交易下单交易类型: 买入 卖出价格: 数量: 立即下单\n                        下单成功！\n                        交易类型: 买入\n                        价格: 50000\n                        数量: 0.01\n                        时间: 9/1/2025, 5:09:51 PM\n                    \n    \n    \n  \n"
+  },
+  "testData": {
+    "price": "50000",
+    "amount": "0.01",
+    "action": "buy"
+  }
+}

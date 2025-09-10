@@ -1,0 +1,450 @@
+{
+  "timestamp": "2025-09-01T09:31:54.413Z",
+  "accountAnalysis": {
+    "hasExchangeAccounts": true,
+    "accounts": [],
+    "connectButtons": [
+      {
+        "text": "断开连接",
+        "className": "el-button el-button--danger el-button--small",
+        "id": "",
+        "isVisible": true
+      }
+    ],
+    "accountElements": [
+      {
+        "tagName": "HTML",
+        "text": "量化交易控制台 - 量化交易系统\n  @charset \"UTF-8\";:root{--el-color-white:#ffffff;--el-color-black:#000000;--el-col",
+        "className": "dark",
+        "id": "",
+        "isVisible": false
+      },
+      {
+        "tagName": "HEAD",
+        "text": "量化交易控制台 - 量化交易系统\n  @charset \"UTF-8\";:root{--el-color-white:#ffffff;--el-color-black:#000000;--el-col",
+        "className": "",
+        "id": "",
+        "isVisible": false
+      },
+      {
+        "tagName": "STYLE",
+        "text": ".trading-panel[data-v-ed6ac088] {\n  padding: 16px;\n  height: 100%;\n  overflow-y: auto;\n}\n.page-heade",
+        "className": "",
+        "id": "",
+        "isVisible": false
+      },
+      {
+        "tagName": "BODY",
+        "text": "系统运行正常 市场时间: 17:31:48总资产$125,430+2.50% 今日盈亏+$580.50运行策略3/5量量化交易员管理员3Q量化交易系统仪表盘总览策略管理策略列表策略编辑器策略模板回测分",
+        "className": "dark",
+        "id": "",
+        "isVisible": false
+      },
+      {
+        "tagName": "DIV",
+        "text": "系统运行正常 市场时间: 17:31:48总资产$125,430+2.50% 今日盈亏+$580.50运行策略3/5量量化交易员管理员3Q量化交易系统仪表盘总览策略管理策略列表策略编辑器策略模板回测分",
+        "className": "",
+        "id": "app",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "系统运行正常 市场时间: 17:31:48总资产$125,430+2.50% 今日盈亏+$580.50运行策略3/5量量化交易员管理员3Q量化交易系统仪表盘总览策略管理策略列表策略编辑器策略模板回测分",
+        "className": "",
+        "id": "app",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "系统运行正常 市场时间: 17:31:48总资产$125,430+2.50% 今日盈亏+$580.50运行策略3/5量量化交易员管理员3Q量化交易系统仪表盘总览策略管理策略列表策略编辑器策略模板回测分",
+        "className": "v3-layout",
+        "id": "",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "Q量化交易系统仪表盘总览策略管理策略列表策略编辑器策略模板回测分析回测设置回测结果参数优化新策略回测实盘交易交易面板实时交易订单管理持仓管理账户管理交易日志风控设置风控规则预警监控数据管理市场数据数据",
+        "className": "main-content",
+        "id": "",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "Q量化交易系统仪表盘总览策略管理策略列表策略编辑器策略模板回测分析回测设置回测结果参数优化新策略回测实盘交易交易面板实时交易订单管理持仓管理账户管理交易日志风控设置风控规则预警监控数据管理市场数据数据",
+        "className": "sidebar-nav",
+        "id": "",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "仪表盘总览策略管理策略列表策略编辑器策略模板回测分析回测设置回测结果参数优化新策略回测实盘交易交易面板实时交易订单管理持仓管理账户管理交易日志风控设置风控规则预警监控数据管理市场数据数据源测试数据导入",
+        "className": "nav-content",
+        "id": "",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "实盘交易交易面板实时交易订单管理持仓管理账户管理交易日志",
+        "className": "nav-section",
+        "id": "",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "交易面板实时交易订单管理持仓管理账户管理交易日志",
+        "className": "nav-items",
+        "id": "",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "账户管理",
+        "className": "nav-item",
+        "id": "",
+        "isVisible": true
+      },
+      {
+        "tagName": "SPAN",
+        "text": "账户管理",
+        "className": "nav-text",
+        "id": "",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "总览交易面板总资产US$125,430.50 0.47% 今日 可用余额US$45,230.00 占总资产 36.1% 今日盈亏+US$580.250.47% 收益率 累计盈亏+US$12,580.5",
+        "className": "tab-area",
+        "id": "",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "总览交易面板总资产US$125,430.50 0.47% 今日 可用余额US$45,230.00 占总资产 36.1% 今日盈亏+US$580.250.47% 收益率 累计盈亏+US$12,580.5",
+        "className": "tab-system",
+        "id": "",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "总资产US$125,430.50 0.47% 今日 可用余额US$45,230.00 占总资产 36.1% 今日盈亏+US$580.250.47% 收益率 累计盈亏+US$12,580.5011.2%",
+        "className": "tab-content",
+        "id": "",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "总资产US$125,430.50 0.47% 今日 可用余额US$45,230.00 占总资产 36.1% 今日盈亏+US$580.250.47% 收益率 累计盈亏+US$12,580.5011.2%",
+        "className": "tab-pane",
+        "id": "",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "总资产US$125,430.50 0.47% 今日 可用余额US$45,230.00 占总资产 36.1% 今日盈亏+US$580.250.47% 收益率 累计盈亏+US$12,580.5011.2%",
+        "className": "dashboard-overview",
+        "id": "",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "策略表现 查看全部 MA双均线策略趋势跟踪收益率+12.5% 夏普比率1.85最大回撤-3.2%运行中网格交易策略套利收益率+8.7% 夏普比率2.12最大回撤-1.8%运行中RSI超卖策略均值回归收",
+        "className": "bottom-grid",
+        "id": "",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "最近活动MA策略已启动BTC/USDT 1小时线5分钟前买入订单已成交BTC/USDT 0.1 @ $45,23015分钟前数据同步完成市场数据已更新30分钟前风险预警账户回撤达到警戒线45分钟前",
+        "className": "activity-card",
+        "id": "",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "MA策略已启动BTC/USDT 1小时线5分钟前买入订单已成交BTC/USDT 0.1 @ $45,23015分钟前数据同步完成市场数据已更新30分钟前风险预警账户回撤达到警戒线45分钟前",
+        "className": "activity-list",
+        "id": "",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "风险预警账户回撤达到警戒线45分钟前",
+        "className": "activity-item",
+        "id": "",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "风险预警账户回撤达到警戒线45分钟前",
+        "className": "activity-content",
+        "id": "",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "账户回撤达到警戒线",
+        "className": "activity-description",
+        "id": "",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "交易管理 刷新数据  设置 test@gmail.com🟢US$0.00 断开连接 添加交易所账户余额 (test@gmail.com) 连接状态: 已连接 刷新 总资产US$0.00+0% 可用余",
+        "className": "tab-pane active",
+        "id": "",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "交易管理 刷新数据  设置 test@gmail.com🟢US$0.00 断开连接 添加交易所账户余额 (test@gmail.com) 连接状态: 已连接 刷新 总资产US$0.00+0% 可用余",
+        "className": "trading-panel",
+        "id": "",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "test@gmail.com🟢US$0.00 断开连接 添加交易所账户余额 (test@gmail.com) 连接状态: 已连接 刷新 总资产US$0.00+0% 可用余额US$0.00100%冻结",
+        "className": "trading-content",
+        "id": "",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "test@gmail.com🟢US$0.00 断开连接 添加交易所",
+        "className": "exchange-tabs",
+        "id": "",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "test@gmail.com🟢US$0.00 断开连接 添加交易所",
+        "className": "exchange-tabs-container",
+        "id": "",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "添加交易所",
+        "className": "exchange-tab add-exchange",
+        "id": "",
+        "isVisible": true
+      },
+      {
+        "tagName": "SPAN",
+        "text": "添加交易所",
+        "className": "",
+        "id": "",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "账户余额 (test@gmail.com) 连接状态: 已连接 刷新 总资产US$0.00+0% 可用余额US$0.00100%冻结资金US$0.00今日盈亏+US$0.00",
+        "className": "account-section",
+        "id": "",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "账户余额 (test@gmail.com) 连接状态: 已连接 刷新",
+        "className": "section-header",
+        "id": "",
+        "isVisible": true
+      },
+      {
+        "tagName": "H3",
+        "text": "账户余额 (test@gmail.com)",
+        "className": "",
+        "id": "",
+        "isVisible": true
+      }
+    ],
+    "pageContent": "\n    系统运行正常 市场时间: 17:31:48总资产$125,430+2.50% 今日盈亏+$580.50运行策略3/5量量化交易员管理员3Q量化交易系统仪表盘总览策略管理策略列表策略编辑器策略模板回测分析回测设置回测结果参数优化新策略回测实盘交易交易面板实时交易订单管理持仓管理账户管理交易日志风控设置风控规则预警监控数据管理市场数据数据源测试数据导入系统管理用户管理系统设置系统日志浅色主题帮助总览交易面板总资产US$125,430.50 0.47% 今日 可用余额US$45,230.00 占总资产 36.1% 今日盈亏+US$580.250.47% 收益率 累计盈亏+US$12,580.5011.2% 收益率 资产曲线1日1周1月3月1年收益分布策略表现 查看全部 MA双均线策略趋势跟踪收益率+12.5% 夏普比率1.85最大回撤-3.2%运行中网格交易策略套利收益率+8.7% 夏普比率2.12最大回撤-1.8%运行中RSI超卖策略均值回归收益率-2.3% 夏普比率0.68最大回撤-5.1%已暂停最近活动MA策略已启动BTC/USDT 1小时线5分钟前买入订单已成交BTC/USDT 0.1 @ $45,23015分钟前数据同步完成市场数据已更新30分钟前风险预警账户回撤达到警戒线45分钟前交易管理 刷新数据  设置 test@gmail.com🟢US$0.00 断开连接 添加交易所账户余额 (test@gmail.com) 连接状态: 已连接 刷新 总资产US$0.00+0% 可用余额US$0.00100%冻结资金US$0.00今日盈亏+US$0.00快速交易交易对BTC/USDT方向买入卖出类型市价限价价格数量  立即下单 当前持仓 (0) 刷新  导出 品种方向数量开仓价当前价浮动盈亏盈亏%操作No Data最近订单 (0) 刷新  查看全部 品种方向类型数量价格状态时间操作No Data连接正常 数据同步: 刚刚所有策略运行正常市场数据实时同步通知中心\n    \n  \n关闭所有关闭其他关闭左侧关闭右侧刷新当前BTC/USDTETH/USDTBNB/USDTSOL/USDTXRP/USDT"
+  },
+  "connectionResult": {
+    "hasSuccessMessage": true,
+    "hasErrorMessage": false,
+    "hasConnectedStatus": true,
+    "pageContent": "\n    系统运行正常 市场时间: 17:31:53总资产$125,430+2.50% 今日盈亏+$580.50运行策略3/5量量化交易员管理员3Q量化交易系统仪表盘总览策略管理策略列表策略编辑器策略模板回测分析回测设置回测结果参数优化新策略回测实盘交易交易面板实时交易订单管理持仓管理账户管理交易日志风控设置风控规则预警监控数据管理市场数据数据源测试数据导入系统管理用户管理系统设置系统日志浅色主题帮助总览交易面板总资产US$125,387.39 0.43% 今日 可用余额US$45,230.00 占总资产 36.1% 今日盈亏+US$537.140.43% 收益率 累计盈亏+US$12,580.5011.2% 收益率 资产曲线1日1周1月3月1年收益分布策略表现 查看全部 MA双均线策略趋势跟踪收益率+12.5% 夏普比率1.85最大回撤-3.2%运行中网格交易策略套利收益率+8.7% 夏普比率2.12最大回撤-1.8%运行中RSI超卖策略均值回归收益率-2.3% 夏普比率0.68最大回撤-5.1%已暂停最近活动MA策略已启动BTC/USDT 1小时线5分钟前买入订单已成交BTC/USDT 0.1 @ $45,23015分钟前数据同步完成市场数据已更新30分钟前风险预警账户回撤达到警戒线45分钟前交易管理 刷新数据  设置 test@gmail.com🟢US$0.00 断开连接 添加交易所账户余额 (test@gmail.com) 连接状态: 已连接 刷新 总资产US$0.00+0% 可用余额US$0.00100%冻结资金US$0.00今日盈亏+US$0.00快速交易交易对BTC/USDT方向买入卖出类型市价限价价格数量  立即下单 当前持仓 (0) 刷新  导出 品种方向数量开仓价当前价浮动盈亏盈亏%操作No Data最近订单 (0) 刷新  查看全部 品种方向类型数量价格状态时间操作No Data连接正常 数据同步: 刚刚所有策略运行正常市场数据实时同步通知中心\n    \n  \n关闭所有关闭其他关闭左侧关闭右侧刷新当前BTC/USDTETH/USDTBNB/USDTSOL/USDTXRP/USDT确认断开连接确定要断开 test@gmail.com 的连接吗？取消确定"
+  },
+  "finalAnalysis": {
+    "connectedAccounts": [],
+    "statusElements": [
+      {
+        "tagName": "HTML",
+        "text": "量化交易控制台 - 量化交易系统\n  @charset \"UTF-8\";:root{--el-color-white:#ffffff;--el-color-black:#000000;--el-col",
+        "isVisible": false
+      },
+      {
+        "tagName": "BODY",
+        "text": "系统运行正常 市场时间: 17:31:53总资产$125,430+2.50% 今日盈亏+$580.50运行策略3/5量量化交易员管理员3Q量化交易系统仪表盘总览策略管理策略列表策略编辑器策略模板回测分",
+        "isVisible": false
+      },
+      {
+        "tagName": "DIV",
+        "text": "系统运行正常 市场时间: 17:31:53总资产$125,430+2.50% 今日盈亏+$580.50运行策略3/5量量化交易员管理员3Q量化交易系统仪表盘总览策略管理策略列表策略编辑器策略模板回测分",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "系统运行正常 市场时间: 17:31:53总资产$125,430+2.50% 今日盈亏+$580.50运行策略3/5量量化交易员管理员3Q量化交易系统仪表盘总览策略管理策略列表策略编辑器策略模板回测分",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "系统运行正常 市场时间: 17:31:53总资产$125,430+2.50% 今日盈亏+$580.50运行策略3/5量量化交易员管理员3Q量化交易系统仪表盘总览策略管理策略列表策略编辑器策略模板回测分",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "Q量化交易系统仪表盘总览策略管理策略列表策略编辑器策略模板回测分析回测设置回测结果参数优化新策略回测实盘交易交易面板实时交易订单管理持仓管理账户管理交易日志风控设置风控规则预警监控数据管理市场数据数据",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "总览交易面板总资产US$125,387.39 0.43% 今日 可用余额US$45,230.00 占总资产 36.1% 今日盈亏+US$537.140.43% 收益率 累计盈亏+US$12,580.5",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "总览交易面板总资产US$125,387.39 0.43% 今日 可用余额US$45,230.00 占总资产 36.1% 今日盈亏+US$537.140.43% 收益率 累计盈亏+US$12,580.5",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "总资产US$125,387.39 0.43% 今日 可用余额US$45,230.00 占总资产 36.1% 今日盈亏+US$537.140.43% 收益率 累计盈亏+US$12,580.5011.2%",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "交易管理 刷新数据  设置 test@gmail.com🟢US$0.00 断开连接 添加交易所账户余额 (test@gmail.com) 连接状态: 已连接 刷新 总资产US$0.00+0% 可用余",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "交易管理 刷新数据  设置 test@gmail.com🟢US$0.00 断开连接 添加交易所账户余额 (test@gmail.com) 连接状态: 已连接 刷新 总资产US$0.00+0% 可用余",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "test@gmail.com🟢US$0.00 断开连接 添加交易所账户余额 (test@gmail.com) 连接状态: 已连接 刷新 总资产US$0.00+0% 可用余额US$0.00100%冻结",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "账户余额 (test@gmail.com) 连接状态: 已连接 刷新 总资产US$0.00+0% 可用余额US$0.00100%冻结资金US$0.00今日盈亏+US$0.00",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "账户余额 (test@gmail.com) 连接状态: 已连接 刷新",
+        "isVisible": true
+      },
+      {
+        "tagName": "DIV",
+        "text": "连接状态: 已连接 刷新",
+        "isVisible": true
+      },
+      {
+        "tagName": "SPAN",
+        "text": "连接状态: 已连接",
+        "isVisible": true
+      },
+      {
+        "tagName": "SPAN",
+        "text": "连接状态: 已连接",
+        "isVisible": true
+      }
+    ],
+    "buttons": [
+      {
+        "text": "",
+        "isVisible": true
+      },
+      {
+        "text": "3",
+        "isVisible": true
+      },
+      {
+        "text": "",
+        "isVisible": true
+      },
+      {
+        "text": "",
+        "isVisible": true
+      },
+      {
+        "text": "查看全部",
+        "isVisible": true
+      },
+      {
+        "text": "",
+        "isVisible": true
+      },
+      {
+        "text": "刷新数据",
+        "isVisible": true
+      },
+      {
+        "text": "设置",
+        "isVisible": true
+      },
+      {
+        "text": "断开连接",
+        "isVisible": true
+      },
+      {
+        "text": "刷新",
+        "isVisible": true
+      },
+      {
+        "text": "立即下单",
+        "isVisible": true
+      },
+      {
+        "text": "刷新",
+        "isVisible": true
+      },
+      {
+        "text": "导出",
+        "isVisible": true
+      },
+      {
+        "text": "刷新",
+        "isVisible": true
+      },
+      {
+        "text": "查看全部",
+        "isVisible": true
+      },
+      {
+        "text": "",
+        "isVisible": true
+      },
+      {
+        "text": "",
+        "isVisible": true
+      },
+      {
+        "text": "",
+        "isVisible": true
+      },
+      {
+        "text": "",
+        "isVisible": false
+      },
+      {
+        "text": "",
+        "isVisible": true
+      },
+      {
+        "text": "取消",
+        "isVisible": true
+      },
+      {
+        "text": "确定",
+        "isVisible": true
+      }
+    ]
+  },
+  "connectClicked": true
+}

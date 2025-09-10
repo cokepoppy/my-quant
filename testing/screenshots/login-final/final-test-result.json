@@ -1,0 +1,21 @@
+{
+  "timestamp": "2025-09-01T09:04:42.669Z",
+  "pageState": {
+    "hasLoginForm": true,
+    "hasEmailInput": true,
+    "hasPasswordInput": true,
+    "hasLoginButton": true,
+    "emailInputVisible": true,
+    "passwordInputVisible": true,
+    "loginButtonVisible": true,
+    "bodyClasses": "dark",
+    "appElement": true
+  },
+  "finalState": {
+    "url": "http://localhost:3001/",
+    "title": "量化交易控制台 - 量化交易系统",
+    "loginSuccess": true
+  },
+  "testAccount": "test@example.com",
+  "testPassword": "password123"
+}

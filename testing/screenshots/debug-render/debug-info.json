@@ -1,0 +1,92 @@
+{
+  "timestamp": "2025-09-01T09:03:18.290Z",
+  "pageContent": {
+    "title": "登录 - 量化交易系统",
+    "bodyInnerHTML": "\n    <div id=\"app\" data-v-app=\"\"><div id=\"app\"><!-- 路由视图 --><div data-v-fa254d35=\"\" class=\"login-container\"><div data-v-fa254d35=\"\" class=\"login-box\"><div data-v-fa254d35=\"\" class=\"login-header\"><h1 data-v-fa254d35=\"\">量化交易系统</h1><p data-v-fa254d35=\"\">欢迎回来，请登录您的账户</p></div><form data-v-fa254d35=\"\" class=\"el-form el-form--default el-form--label-right login-form\"><div data-v-fa254d35=\"\" class=\"el-form-item el-form-item--default is-required asterisk-left el-form-item--label-right\"><!--v-if--><div class=\"el-form-item__content\"><div data-v-fa254d35=\"\" class=\"el-input el-input--large el-input--prefix\"><!-- input --><!-- prepend slot --><!--v-if--><div class=\"el-input__wrapper\" tabindex=\"-1\"><!-- prefix slot --><span class=\"el-input__prefix\"><span class=\"el-input__prefix-inner\"><i class=\"el-icon el-input__icon\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1024 1024\"><path fill=\"currentColor\" d=\"M512 512a192 192 0 1 0 0-384 192 192 0 0 0 0 384m0 64a256 256 0 1 1 0-512 256 256 0 0 1 0 51",
+    "hasLoginForm": true,
+    "hasInputs": 3,
+    "hasButtons": 1,
+    "hasText": true,
+    "bodyClasses": "dark"
+  },
+  "cssCheck": {
+    "stylesCount": 14,
+    "styleSheets": [
+      {
+        "href": null,
+        "rules": 2437
+      },
+      {
+        "href": null,
+        "rules": 29
+      },
+      {
+        "href": null,
+        "rules": 96
+      },
+      {
+        "href": null,
+        "rules": 31
+      },
+      {
+        "href": null,
+        "rules": 80
+      },
+      {
+        "href": null,
+        "rules": 128
+      },
+      {
+        "href": null,
+        "rules": 94
+      },
+      {
+        "href": null,
+        "rules": 86
+      },
+      {
+        "href": null,
+        "rules": 36
+      },
+      {
+        "href": null,
+        "rules": 61
+      },
+      {
+        "href": null,
+        "rules": 42
+      },
+      {
+        "href": null,
+        "rules": 0
+      },
+      {
+        "href": null,
+        "rules": 65
+      },
+      {
+        "href": null,
+        "rules": 30
+      }
+    ]
+  },
+  "fontCheck": {
+    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif",
+    "fontSize": "14px",
+    "color": "rgb(30, 41, 59)",
+    "backgroundColor": "rgb(248, 250, 252)",
+    "display": "block",
+    "visibility": "visible",
+    "opacity": "1"
+  },
+  "iframeCheck": {
+    "iframes": 0,
+    "frames": 0,
+    "hasShadowDOM": false
+  },
+  "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/140.0.7339.16 Safari/537.36",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  }
+}

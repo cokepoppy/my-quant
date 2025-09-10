@@ -1,0 +1,216 @@
+{
+  "timestamp": "2025-09-01T09:28:04.771Z",
+  "formAnalysis": {
+    "hasDialog": false,
+    "hasForm": true,
+    "inputs": [
+      {
+        "type": "radio",
+        "name": "el-id-8083-20",
+        "placeholder": "",
+        "value": "1d",
+        "id": "",
+        "className": "el-radio-button__original-radio"
+      },
+      {
+        "type": "radio",
+        "name": "el-id-8083-20",
+        "placeholder": "",
+        "value": "1w",
+        "id": "",
+        "className": "el-radio-button__original-radio"
+      },
+      {
+        "type": "radio",
+        "name": "el-id-8083-20",
+        "placeholder": "",
+        "value": "1m",
+        "id": "",
+        "className": "el-radio-button__original-radio"
+      },
+      {
+        "type": "radio",
+        "name": "el-id-8083-20",
+        "placeholder": "",
+        "value": "3m",
+        "id": "",
+        "className": "el-radio-button__original-radio"
+      },
+      {
+        "type": "radio",
+        "name": "el-id-8083-20",
+        "placeholder": "",
+        "value": "1y",
+        "id": "",
+        "className": "el-radio-button__original-radio"
+      },
+      {
+        "type": "text",
+        "name": "",
+        "placeholder": "",
+        "value": "",
+        "id": "el-id-8083-38",
+        "className": "el-select__input is-default"
+      },
+      {
+        "type": "text",
+        "name": "",
+        "placeholder": "请输入账户名称",
+        "value": "",
+        "id": "el-id-8083-39",
+        "className": "el-input__inner"
+      },
+      {
+        "type": "password",
+        "name": "",
+        "placeholder": "请输入API Key",
+        "value": "",
+        "id": "el-id-8083-40",
+        "className": "el-input__inner"
+      },
+      {
+        "type": "password",
+        "name": "",
+        "placeholder": "请输入API Secret",
+        "value": "",
+        "id": "el-id-8083-41",
+        "className": "el-input__inner"
+      },
+      {
+        "type": "radio",
+        "name": "el-id-8083-36",
+        "placeholder": "",
+        "value": "true",
+        "id": "",
+        "className": "el-radio__original"
+      },
+      {
+        "type": "radio",
+        "name": "el-id-8083-36",
+        "placeholder": "",
+        "value": "false",
+        "id": "",
+        "className": "el-radio__original"
+      }
+    ],
+    "buttons": [
+      {
+        "text": "",
+        "type": "button",
+        "id": "",
+        "className": "el-button el-button--small is-text"
+      },
+      {
+        "text": "3",
+        "type": "button",
+        "id": "",
+        "className": "el-button el-button--small is-text"
+      },
+      {
+        "text": "",
+        "type": "button",
+        "id": "",
+        "className": "el-button el-button--small is-text"
+      },
+      {
+        "text": "",
+        "type": "button",
+        "id": "el-id-8083-6",
+        "className": "el-button el-button--small is-text el-tooltip__trigger"
+      },
+      {
+        "text": "查看全部",
+        "type": "button",
+        "id": "",
+        "className": "el-button el-button--small is-text"
+      },
+      {
+        "text": "",
+        "type": "button",
+        "id": "",
+        "className": "el-button el-button--small is-text"
+      },
+      {
+        "text": "刷新数据",
+        "type": "button",
+        "id": "",
+        "className": "el-button el-button--default"
+      },
+      {
+        "text": "设置",
+        "type": "button",
+        "id": "",
+        "className": "el-button el-button--default"
+      },
+      {
+        "text": "",
+        "type": "button",
+        "id": "",
+        "className": "el-dialog__headerbtn"
+      },
+      {
+        "text": "取消",
+        "type": "button",
+        "id": "",
+        "className": "el-button el-button--default"
+      },
+      {
+        "text": "测试连接",
+        "type": "button",
+        "id": "",
+        "className": "el-button el-button--primary el-button--default is-disabled"
+      },
+      {
+        "text": "保存并连接",
+        "type": "button",
+        "id": "",
+        "className": "el-button el-button--success el-button--default is-disabled"
+      },
+      {
+        "text": "",
+        "type": "button",
+        "id": "",
+        "className": "el-button el-button--small is-text el-tooltip__trigger"
+      },
+      {
+        "text": "",
+        "type": "button",
+        "id": "",
+        "className": "el-button el-button--small is-text el-tooltip__trigger"
+      },
+      {
+        "text": "",
+        "type": "button",
+        "id": "",
+        "className": "el-button el-button--small is-text el-tooltip__trigger"
+      },
+      {
+        "text": "",
+        "type": "button",
+        "id": "",
+        "className": "el-drawer__close-btn"
+      }
+    ],
+    "selects": [],
+    "formContent": "添加交易所交易所类型Bybit账户名称API KeyAPI Secret环境测试网实盘连接状态未测试取消 测试连接  保存并连接 ",
+    "modalExists": true
+  },
+  "formFillResult": {
+    "accountFilled": true,
+    "apiKeyFilled": true,
+    "apiSecretFilled": true,
+    "testClicked": true,
+    "saveClicked": true
+  },
+  "testData": {
+    "account": "test@gmail.com",
+    "apiKey": "AOhvPLn0ql4CodaS2g",
+    "apiSecret": "hpe1oGrwqmP70x1QPChck6i04nTd1SGpOYEZ"
+  },
+  "finalResult": {
+    "hasSuccessMessage": true,
+    "hasErrorMessage": false,
+    "hasExchangeAccount": true,
+    "pageContent": "\n    系统运行正常 市场时间: 17:28:04总资产$125,430+2.50% 今日盈亏+$580.50运行策略3/5量量化交易员管理员3Q量化交易系统仪表盘总览策略管理策略列表策略编辑器策略模板回测分析回测设置回测结果参数优化新策略回测实盘交易交易面板实时交易订单管理持仓管理账户管理交易日志风控设置风控规则预警监控数据管理市场数据数据源测试数据导入系统管理用户管理系统设置系统日志浅色主题帮助总览交易面板总资产US$125,475.55 0.50% 今日 可用余额US$45,230.00 占总资产 36.0% 今日盈亏+US$625.300.50% 收益率 累计盈亏+US$12,580.5011.2% 收益率 资产曲线1日1周1月3月1年收益分布策略表现 查看全部 MA双均线策略趋势跟踪收益率+12.5% 夏普比率1.85最大回撤-3.2%运行中网格交易策略套利收益率+8.7% 夏普比率2.12最大回撤-1.8%运行中RSI超卖策略均值回归收益率-2.3% 夏普比率0.68最大回撤-5.1%已暂停最近活动MA策略已启动BTC/USDT 1小时线5分钟前买入订单已成交BTC/USDT 0.1 @ $45,23015分钟前数据同步完成市场数据已更新30分钟前风险预警账户回撤达到警戒线45分钟前交易管理 刷新数据  设置 test@gmail.com⚪US$0.00 连接 添加交易所添加交易所交易所类型Bybit账户名称API KeyAPI Secret环境测试网实盘连接状态未测试取消 测试连接  保存并连接 连接正常 数据同步: 刚刚所有策略运行正常市场数据实时同步通知中心\n    \n  \n关闭所有关闭其他关闭左侧关闭右侧刷新当前币安 (Binance)OKX火币 (Huobi)Bybit交易所添加成功"
+  }
+}
