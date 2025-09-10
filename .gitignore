@@ -50,7 +50,7 @@ backups/
 # Data files
 data/
 *.csv
-*.json
+#*.json
 *.xml
 
 # IDE and editor files
@@ -94,9 +94,9 @@ docs/_build/
 site/
 
 # Package manager files
-package-lock.json
-yarn.lock
-pnpm-lock.yaml
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
 
 # Test files
 test-results/

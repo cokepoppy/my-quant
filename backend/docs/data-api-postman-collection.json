@@ -1,0 +1,100 @@
+{
+  "info": {
+    "name": "量化交易数据源API",
+    "description": "测试量化交易系统的数据源API接口",
+    "version": "1.0.0"
+  },
+  "item": [
+    {
+      "name": "健康检查",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:8000/health",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["health"]
+        }
+      }
+    },
+    {
+      "name": "获取数据源状态",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:8000/api/data/sources/status",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "data", "sources", "status"]
+        }
+      }
+    },
+    {
+      "name": "获取历史数据",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:8000/api/data/external/historical?symbol=AAPL&interval=1d&days=7",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "data", "external", "historical"],
+          "query": [
+            {
+              "key": "symbol",
+              "value": "AAPL"
+            },
+            {
+              "key": "interval",
+              "value": "1d"
+            },
+            {
+              "key": "days",
+              "value": "7"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "获取实时数据",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:8000/api/data/external/realtime?symbols=AAPL,GOOGL,TSLA",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "data", "external", "realtime"],
+          "query": [
+            {
+              "key": "symbols",
+              "value": "AAPL,GOOGL,TSLA"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "获取数据质量报告",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:8000/api/data/external/quality?symbols=AAPL,GOOGL",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "data", "external", "quality"],
+          "query": [
+            {
+              "key": "symbols",
+              "value": "AAPL,GOOGL"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

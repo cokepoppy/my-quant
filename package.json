@@ -1,0 +1,43 @@
+{
+  "name": "quant-trading-system",
+  "version": "1.0.0",
+  "description": "A comprehensive quantitative trading system built with Vue3 and Express",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "build": "npm run build:frontend && npm run build:backend",
+    "build:frontend": "cd frontend && npm run build",
+    "build:backend": "cd backend && npm run build",
+    "test": "npm run test:frontend && npm run test:backend && npm run test:e2e",
+    "test:frontend": "cd frontend && npm run test",
+    "test:backend": "cd backend && npm run test",
+    "test:e2e": "npx playwright test",
+    "test:e2e:ui": "npx playwright test --ui",
+    "test:e2e:debug": "npx playwright test --debug",
+    "test:e2e:headed": "npx playwright test --headed",
+    "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f"
+  },
+  "keywords": [
+    "quantitative-trading",
+    "vue3",
+    "express",
+    "typescript",
+    "financial",
+    "algorithmic-trading"
+  ],
+  "author": "Quant Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@types/node": "^24.3.0",
+    "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "@codemirror/lang-python": "^6.2.1"
+  }
+}
