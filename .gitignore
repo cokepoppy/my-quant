@@ -48,7 +48,7 @@ coverage/
 backups/
 
 # Data files
-data/
+#data/
 *.csv
 #*.json
 *.xml
