@@ -32,8 +32,9 @@ ehthumbs.db
 Thumbs.db
 
 # Logs
-logs/
 *.log
+# Ignore log directories but keep Vue component directories
+!src/views/logs/
 
 # Coverage directory used by tools like istanbul
 coverage/
